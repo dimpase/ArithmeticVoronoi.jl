@@ -18,9 +18,8 @@ D is the FIELD DISCRIMINANT, not the radicand. In every case the lattice is
 the free O-module O^2 and the action is K-linear. GL includes all scalar
 units; GL and SL retain -I. PSL is the separate quotient SL/{I,-I}.
 
-Run the commands below from the package directory, containing Project.toml.
-In the original workspace this is experiments/arithmetic_voronoi; in a
-standalone clone it is the repository root.
+Run the commands below from the repository root, containing Project.toml.
+README.txt provides the complete quick start for a fresh checkout.
 
 Get the saved archives
 -----------------------
@@ -91,25 +90,29 @@ pin OSCAR 1.8.2, Hecke 0.39.22 and the remaining Julia dependencies.
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-For the exporter, install a C++20 compiler, CMake, Ninja, Git, Python 3,
+For the exporter, install a C++20 compiler, CMake, Ninja, Make, Git, Python 3,
 pkg-config, GMP development files, Eigen, Boost.Serialization development
 files, and Linux prlimit. The recorded release used GCC 16.2.0, CMake 4.3.4,
 GMP 6.3.0, Eigen 3.4.1 and Boost 1.90; other combinations are not yet tested.
 Initial Julia installation and backend configuration need network access.
 
-  python3 scripts/configure_backend.py
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits --configure-default
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits --configure-fields
+  AV_BACKEND_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/arithmetic-voronoi/backend"
+  python3 scripts/configure_backend.py \
+    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build"
+  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
+    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-default
+  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
+    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-fields
 
 The two install commands select configurations for D5/D8 and D12/D13/D40,
 respectively. Both use the current exporter source, which supports all five
 fields; the second command can reuse the compiled target. Generated binaries
 and backend/config*.json are local installation files and are ignored by Git.
 
-By default, source/build directories live under
-/tmp/hilbert-ford/arithmetic_voronoi_backend. To choose persistent locations,
-pass the same absolute --source and --build paths to all three commands.
-The scripts verify the recorded upstream/submodule commits and local patch.
+The commands use a persistent cache outside the checkout. You may change
+AV_BACKEND_DIR to another absolute path; use the same --source and --build
+paths for configuration and both installations. The scripts verify the
+recorded upstream/submodule commits and local patch.
 They build with one job and a 10 GiB virtual-memory ceiling. Pin and license
 information is in backend/pins.json and backend/NOTICE.txt. Upstream sources
 and their submodules are fetched into the separate source directory, not
@@ -230,7 +233,7 @@ Repository contents
 --------------------
 
 src/, scripts/ and test/ contain the implementation, commands and regressions.
-README.txt retains the detailed engineering notes. PRESENTATION_JUSTIFICATION.md
+README.txt provides portable installation commands. PRESENTATION_JUSTIFICATION.md
 explains completeness; BACKEND_AUDIT.md records backend acceptance and scope.
 backend/ preserves our exporter, dependency pins and reference license notices.
 results/ contains selected reports and the sealed five-field dataset archive.
@@ -243,5 +246,5 @@ Historical receipts describe the original execution environment, including
 paths that need not exist in a fresh clone. Consult this guide for portable
 commands. The separate Ford/HSR experiments are outside this repository.
 
-See backend/NOTICE.txt for third-party licensing and attribution. No new
-blanket license is assigned to the project's own files by this check-in.
+See LICENSE for the project license and backend/NOTICE.txt for external
+dependency licensing and attribution.

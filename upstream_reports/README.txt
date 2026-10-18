@@ -21,14 +21,22 @@ The numbered .md files are the exact issue bodies. requests/ contains the
 submitted JSON payloads; posted/ contains readbacks from GitHub. The submission
 manifest verifies matching text, title, author and open status.
 
-Reproduce the CLI and GAP failures, sequentially with bounded memory:
+From the repository root, with AV_BACKEND_DIR set to the external cache used
+in README.txt, reproduce the CLI and GAP failures sequentially:
 
-  python3 experiments/arithmetic_voronoi/upstream_reports/reproduce.py
+These optional audit probes also require a standalone GAP executable on PATH
+(or --gap passed to reproduce.py). This is separate from the GAP dependency
+installed by the Julia project for ordinary computations.
+
+  python3 scripts/build_backend.py --target PERF_SerialPerfectComputation \
+    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build"
+  python3 upstream_reports/reproduce.py \
+    --source "$AV_BACKEND_DIR/source" \
+    --binary "$AV_BACKEND_DIR/build/bin/PERF_SerialPerfectComputation"
 
 The standalone GAP script embedded in #15 was also executed successfully:
 
-  python3 experiments/arithmetic_voronoi/upstream_reports/reproduce_gap.py \
-    /tmp/hilbert-ford/arithmetic_voronoi_backend/polyhedral_common
+  python3 upstream_reports/reproduce_gap.py "$AV_BACKEND_DIR/source"
 
 reproduction_summary.json identifies the accepted fresh logs/input directories.
 Earlier development failures remain as diagnostics and are not the submitted
