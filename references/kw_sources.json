@@ -1,0 +1,9 @@
+{
+  "citation": "F. Kirchheimer and J. Wolfart, Explizite Prasentation gewisser Hilbertscher Modulgruppen durch Erzeugende und Relationen, J. reine angew. Math. 315 (1980), 139-173",
+  "source_kind": "User-supplied English and German TeX transcriptions, read during the 2026-10-17 comparison; original published scan not inspected",
+  "sha256": {
+    "KWeng.tex": "ca413bb9f2bf0cf81ae26d24c085a18f91147d2bcf9307317ddb714cf032ade4",
+    "KWger.tex": "ed93f3449e473f381224b3900d320b2a2a31a6c611482ace7847c017a41496ed"
+  },
+  "redistribution": "The transcriptions are external inputs and are not included in this repository. These hashes identify the versions previously inspected; they do not verify a new local copy."
+}

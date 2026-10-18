@@ -1,0 +1,14 @@
+Loaded checker: /home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/dataset/v1/software/src/ArithmeticVoronoi.jl
+Verify D5 (algebraic)
+Verify D8 (algebraic)
+Verify D12 (algebraic)
+Verify D13 (algebraic)
+Verify D40 (algebraic)
+Algebraic consistency and path replay; no claim to re-certify complete two-cell coverage or saved Tietze isomorphisms at this level.
+Verify D5 (complete)
+Verify D8 (complete)
+Verify D12 (complete)
+Verify D13 (complete)
+Verify D40 (complete)
+Raw geometric completeness and fresh Tietze isomorphisms replayed; faithfulness invokes PRESENTATION_JUSTIFICATION.md, not matrix identities alone.
+

@@ -1,0 +1,44 @@
+# Local binaries and configurations contain absolute installation paths.
+/backend/bin/
+/backend/config.json
+/backend/config_fields.json
+# Historical local source preservation is not part of the distribution.
+/backend/pinned_sources.tar.gz
+/backend/pinned_sources.sha256
+/scripts/archive_backend_sources.py
+# Runtime issue reproductions may copy upstream functions; keep them local.
+/upstream_reports/reproduction_*/
+__pycache__/
+*.py[cod]
+*.partial
+
+# Keep frozen LFS archives and selected receipts. Expanded fixtures/datasets,
+# current field runs, backend caches and test scratch stay local.
+/results/*
+!/results/classical2.json
+!/results/D5.json
+!/results/D8.json
+!/results/examples_summary.json
+!/results/contracts_summary.json
+!/results/test_summary.txt
+!/results/two_cell_summary.json
+!/results/two_cell_tests.txt
+!/results/two_cell_test_summary.json
+!/results/TWO_CELL_RESULTS.txt
+!/results/FIELDS_WORDS_DATA_REPORT.txt
+!/results/fields_words_tests.json
+!/results/fields_delivery_summary.json
+!/results/fields_delivery_validation.log
+!/results/fields_dataset_complete_verification.json
+!/results/fields_portable_verification.json
+!/results/fields_portable_verification.log
+!/results/dataset/
+/results/dataset/*
+!/results/dataset/archive_manifest.json
+!/results/dataset/arithmetic_groups_dataset_v1.tar.gz
+!/results/sanitizer/
+/results/sanitizer/*
+!/results/sanitizer/summary.json
+!/results/sanitizer_fields/
+/results/sanitizer_fields/*
+!/results/sanitizer_fields/summary.json

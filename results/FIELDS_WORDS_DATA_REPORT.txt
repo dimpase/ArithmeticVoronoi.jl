@@ -1,0 +1,59 @@
+Arithmetic Voronoi: fields, constructive words and reusable data
+===============================================================
+
+Completed arithmetic groups are K-linear GL2(O), SL2(O), and
+the separately constructed PSL2(O). GL/SL retain -I. The lattice is O^2.
+
+D   class h   perfect forms   oriented loops   GL small   SL small   PSL small
+5   1         2              180              3/10       2/6        2/5
+8   1         2              182              3/11       2/6        2/5
+12  1         3              228              4/14       2/6        2/5
+13  1         9              554              2/7        2/8        2/5
+40  2         52             2618             3/21       2/18       2/13
+
+Small presentation sizes are generators / relators. Global two-cell orbit
+minimization is not performed: exhaustive local ridges in both orientations
+supply the complete redundant attaching loops.
+
+SL abelianizations (derived from the actual relators):
+  D5: free rank 0, torsion []
+  D8: free rank 0, torsion ['2', '2']
+  D12: free rank 0, torsion ['2', '6']
+  D13: free rank 0, torsion ['3', '3']
+  D40: free rank 0, torsion ['6', '6']
+
+Recorded complete in-process pipeline timings (seconds):
+  D5: initial complete run 6.043; enumeration cache=True; latest verified replay 10.005.
+  D8: initial complete run 5.236; enumeration cache=True; latest verified replay 3.723.
+  D12: initial complete run 58.367; enumeration cache=False; latest verified replay 7.649.
+  D13: initial complete run 109.800; enumeration cache=False; latest verified replay 12.531.
+  D40: initial complete run 84.432; enumeration cache=True; latest verified replay 80.507.
+
+D5/D8 initially reused preserved geometry. D12/D13 initial runs computed
+uncached enumeration and loops; first-use compilation and the original raw
+Smith-normal-form cost are included. D40 initial cold stages are separately
+retained in initial_cold_stage_checkpoint.json: 518.494 seconds for loops;
+raw and simplified presentations completed before interrupting an expensive
+raw abelianization. Its recorded complete run uses validated caches and
+the certified simplified presentation for the same invariant. There is no
+claimed uninterrupted cold end-to-end total for D40. All timings exclude
+Julia/OSCAR startup and the separate regression suite; one Julia thread.
+
+Words: exact general cone descent for valid matrices in these five fields,
+with GL/SL/PSL alphabets, resource errors, partial checkpoints, and exact
+complete-path cache replay. No canonical or shortest-word guarantee.
+
+Literature: explicit maps both ways for all four reference fields, proved
+by independently faithful presentations and commuting matrix maps. D8
+English (10.1) has -2 where the German transcription and exact relation
+give -5. No original-paper error is asserted without its scan.
+
+D40: ordinary class number two; the nonprincipal ideal (2,w) has norm two.
+The integer-primitive, O-nonunimodular vector (2,w) is included at trace 28
+by bounded lattice enumeration. No PID assumption enters the Voronoi engine.
+
+Verification: results/fields_delivery_validation.log, fields_words_tests.json,
+sanitizer_fields/summary.json and fields_dataset_complete_verification.json.
+Data: results/dataset/v1/dataset.json, with exact coefficients, all maps,
+certificates and the pinned checker under software/. LMFDB labels remain
+null pending verification; no submission, publication or contact was made.

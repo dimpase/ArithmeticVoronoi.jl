@@ -1,0 +1,31 @@
+{
+    "examples": {
+        "5": {
+            "SL_relators": 1564,
+            "SL_generators": 77,
+            "GL_generators": 20,
+            "ridges": [
+                75,
+                15
+            ],
+            "GL_relators": 390,
+            "status": "passed",
+            "loops": 180,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/two_cell_tests_25f1Xx"
+        },
+        "8": {
+            "SL_relators": 1168,
+            "SL_generators": 65,
+            "GL_generators": 17,
+            "ridges": [
+                15,
+                76
+            ],
+            "GL_relators": 291,
+            "status": "passed",
+            "loops": 182,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/two_cell_tests_zmfocO"
+        }
+    },
+    "status": "passed"
+}

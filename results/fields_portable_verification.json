@@ -1,0 +1,72 @@
+{
+    "loaded_software": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/dataset/v1/software/src/ArithmeticVoronoi.jl",
+    "levels": {
+        "algebraic": {
+            "schema": "av_dataset_verification_v1",
+            "status": "passed",
+            "level": "algebraic",
+            "examples": [
+                {
+                    "discriminant": 5,
+                    "status": "passed",
+                    "level": "algebraic"
+                },
+                {
+                    "discriminant": 8,
+                    "status": "passed",
+                    "level": "algebraic"
+                },
+                {
+                    "discriminant": 12,
+                    "status": "passed",
+                    "level": "algebraic"
+                },
+                {
+                    "discriminant": 13,
+                    "status": "passed",
+                    "level": "algebraic"
+                },
+                {
+                    "discriminant": 40,
+                    "status": "passed",
+                    "level": "algebraic"
+                }
+            ],
+            "limitation": "Algebraic consistency and path replay; no claim to re-certify complete two-cell coverage or saved Tietze isomorphisms at this level."
+        },
+        "complete": {
+            "schema": "av_dataset_verification_v1",
+            "status": "passed",
+            "level": "complete",
+            "examples": [
+                {
+                    "discriminant": 5,
+                    "status": "passed",
+                    "level": "complete"
+                },
+                {
+                    "discriminant": 8,
+                    "status": "passed",
+                    "level": "complete"
+                },
+                {
+                    "discriminant": 12,
+                    "status": "passed",
+                    "level": "complete"
+                },
+                {
+                    "discriminant": 13,
+                    "status": "passed",
+                    "level": "complete"
+                },
+                {
+                    "discriminant": 40,
+                    "status": "passed",
+                    "level": "complete"
+                }
+            ],
+            "limitation": "Raw geometric completeness and fresh Tietze isomorphisms replayed; faithfulness invokes PRESENTATION_JUSTIFICATION.md, not matrix identities alone."
+        }
+    },
+    "status": "passed"
+}

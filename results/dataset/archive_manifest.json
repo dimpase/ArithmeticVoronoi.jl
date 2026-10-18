@@ -1,0 +1,25 @@
+{
+  "archive": "arithmetic_groups_dataset_v1.tar.gz",
+  "sha256": "fd6170e82af7e36a4892b39878502c9411ce58491d027cee53bf2afa30d9d248",
+  "bytes": 9043795,
+  "artifacts": 4118,
+  "dataset_manifest_sha256": "40e06df1be81096f83428eede93ef6f52734df1aa385a52e8eada064f5f07caa",
+  "publication_status": "local candidate, no DOI, no submission or contact",
+  "portable_verification": {
+    "status": "passed",
+    "levels": [
+      "algebraic",
+      "complete"
+    ],
+    "field_discriminants": [
+      5,
+      8,
+      12,
+      13,
+      40
+    ],
+    "receipt": "../fields_portable_verification.json",
+    "receipt_sha256": "39ad7daaaea01fd2fdc982ffe9c25e96a4b021d556e36ade012ba56c6481ebb6",
+    "loaded_software": "v1/software/src/ArithmeticVoronoi.jl"
+  }
+}

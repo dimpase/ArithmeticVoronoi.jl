@@ -1,0 +1,279 @@
+{
+    "oscar_version": "1.8.2",
+    "gap_version": "4.16.1",
+    "executable": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/backend/bin/AV_ExportPerfectOrbits",
+    "examples": [
+        {
+            "warm_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 0.019068474,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 1,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 3
+                    }
+                ],
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "32d0f44b0c32fe80a050864acdaf40898ab7397161245d8aa3a99b298fad0829",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": true,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "name": "classical2",
+            "cold_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 35.026291646,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 1,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 3
+                    }
+                ],
+                "backend_seconds": 0.025666968,
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "32d0f44b0c32fe80a050864acdaf40898ab7397161245d8aa3a99b298fad0829",
+                "run_directory": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/runs/request FHqzQ3",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": false,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "minimal_vector_pair_counts": [
+                3
+            ],
+            "cold_in_process_seconds": 51.319154014,
+            "warm_in_process_seconds": 0.030455589,
+            "facets": [
+                3
+            ],
+            "orbits": 1,
+            "labelled_neighbours": 1,
+            "status": "complete",
+            "stabilizer_orders": [
+                "12"
+            ],
+            "facet_orbits": [
+                {
+                    "facet_orbits": 1,
+                    "representative": 1,
+                    "unresolved_facets": 0,
+                    "facets": 3
+                }
+            ]
+        },
+        {
+            "warm_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 0.033124453,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 6,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 22
+                    },
+                    {
+                        "facet_orbits": 2,
+                        "representative": 2,
+                        "unresolved_facets": 0,
+                        "facets": 6
+                    }
+                ],
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "a81709875b91d7e93c984d9eac9fa963d5fd9f9892220d6bffc619a36e7d7518",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": true,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "name": "D5",
+            "cold_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 7.63575458,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 6,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 22
+                    },
+                    {
+                        "facet_orbits": 2,
+                        "representative": 2,
+                        "unresolved_facets": 0,
+                        "facets": 6
+                    }
+                ],
+                "backend_seconds": 0.063392713,
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "a81709875b91d7e93c984d9eac9fa963d5fd9f9892220d6bffc619a36e7d7518",
+                "run_directory": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/runs/request CAha7U",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": false,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "minimal_vector_pair_counts": [
+                10,
+                6
+            ],
+            "cold_in_process_seconds": 7.719082753,
+            "warm_in_process_seconds": 0.033576829,
+            "facets": [
+                22,
+                6
+            ],
+            "orbits": 2,
+            "labelled_neighbours": 8,
+            "status": "complete",
+            "stabilizer_orders": [
+                "20",
+                "12"
+            ],
+            "facet_orbits": [
+                {
+                    "facet_orbits": 6,
+                    "representative": 1,
+                    "unresolved_facets": 0,
+                    "facets": 22
+                },
+                {
+                    "facet_orbits": 2,
+                    "representative": 2,
+                    "unresolved_facets": 0,
+                    "facets": 6
+                }
+            ]
+        },
+        {
+            "warm_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 0.029429927,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 2,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 6
+                    },
+                    {
+                        "facet_orbits": 5,
+                        "representative": 2,
+                        "unresolved_facets": 0,
+                        "facets": 24
+                    }
+                ],
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "557e0aa0ab65c05a2c92083edc2321e615bdcfb4bf26181d608817d6767d0d3e",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": true,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "name": "D8",
+            "cold_provenance": {
+                "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+                "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+                "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+                "validation_seconds": 0.448304869,
+                "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+                "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+                "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+                "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+                "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+                "closure": [
+                    {
+                        "facet_orbits": 2,
+                        "representative": 1,
+                        "unresolved_facets": 0,
+                        "facets": 6
+                    },
+                    {
+                        "facet_orbits": 5,
+                        "representative": 2,
+                        "unresolved_facets": 0,
+                        "facets": 24
+                    }
+                ],
+                "backend_seconds": 0.063673835,
+                "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+                "cache_key": "557e0aa0ab65c05a2c92083edc2321e615bdcfb4bf26181d608817d6767d0d3e",
+                "run_directory": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/runs/request p8L4M8",
+                "schema": "arithmetic_voronoi_v1",
+                "from_cache": false,
+                "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+            },
+            "minimal_vector_pair_counts": [
+                6,
+                12
+            ],
+            "cold_in_process_seconds": 0.528730069,
+            "warm_in_process_seconds": 0.029824037,
+            "facets": [
+                6,
+                24
+            ],
+            "orbits": 2,
+            "labelled_neighbours": 7,
+            "status": "complete",
+            "stabilizer_orders": [
+                "12",
+                "16"
+            ],
+            "facet_orbits": [
+                {
+                    "facet_orbits": 2,
+                    "representative": 1,
+                    "unresolved_facets": 0,
+                    "facets": 6
+                },
+                {
+                    "facet_orbits": 5,
+                    "representative": 2,
+                    "unresolved_facets": 0,
+                    "facets": 24
+                }
+            ]
+        }
+    ],
+    "gap_jl_version": "0.17.6",
+    "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+    "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+    "hecke_version": "0.39.22",
+    "julia_version": "1.13.2"
+}

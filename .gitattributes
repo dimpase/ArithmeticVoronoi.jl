@@ -1,0 +1,4 @@
+# Preserve historical transcripts and submitted issue bodies byte for byte.
+results/fields_portable_verification.log -whitespace
+upstream_reports/03-gap-process.md -whitespace
+*.tar.gz filter=lfs diff=lfs merge=lfs -text

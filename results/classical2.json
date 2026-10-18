@@ -1,0 +1,396 @@
+{
+    "schema": "arithmetic_voronoi_v1",
+    "problem": {
+        "discriminant": 1,
+        "degree": 1,
+        "rank": 2,
+        "polynomial_coefficients": [
+            0,
+            1
+        ],
+        "order": "maximal",
+        "order_basis": [
+            "1"
+        ],
+        "lattice": "free O^2",
+        "coordinate_order": [
+            "e1",
+            "e2"
+        ],
+        "multiplication": [
+            [
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0"
+            ]
+        ],
+        "form_basis": [
+            [
+                [
+                    "1",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "1"
+                ],
+                [
+                    "1",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "1"
+                ]
+            ]
+        ],
+        "group": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+        "action": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)"
+    },
+    "completion_status": "complete",
+    "normalization": "minimum squared trace length one; one common rational scale",
+    "transporter_convention": "H=transpose(g)*F_target*g; g maps neighbour minimal vectors to target minimal vectors",
+    "word_convention": "matrix products in written order; negative stabilizer index denotes inverse",
+    "forms": [
+        {
+            "id": 1,
+            "form_coefficients": [
+                [
+                    [
+                        "1"
+                    ],
+                    [
+                        "1/2"
+                    ]
+                ],
+                [
+                    [
+                        "1/2"
+                    ],
+                    [
+                        "1"
+                    ]
+                ]
+            ],
+            "trace_gram": [
+                [
+                    "1",
+                    "1/2"
+                ],
+                [
+                    "1/2",
+                    "1"
+                ]
+            ],
+            "minimum": "1",
+            "minimal_vectors": [
+                [
+                    "0",
+                    "1"
+                ],
+                [
+                    "1",
+                    "-1"
+                ],
+                [
+                    "1",
+                    "0"
+                ]
+            ],
+            "minimal_vector_convention": "up to sign, first nonzero coordinate positive; signed actions retained",
+            "evaluation_rays": [
+                [
+                    "0",
+                    "0",
+                    "1"
+                ],
+                [
+                    "1",
+                    "-2",
+                    "1"
+                ],
+                [
+                    "1",
+                    "0",
+                    "0"
+                ]
+            ],
+            "stabilizer_order": "12",
+            "stabilizer_generators": [
+                [
+                    [
+                        [
+                            "1"
+                        ],
+                        [
+                            "1"
+                        ]
+                    ],
+                    [
+                        [
+                            "-1"
+                        ],
+                        [
+                            "0"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1"
+                        ],
+                        [
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "1"
+                        ],
+                        [
+                            "1"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "1"
+                        ],
+                        [
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "-1"
+                        ],
+                        [
+                            "-1"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1"
+                        ],
+                        [
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "0"
+                        ],
+                        [
+                            "-1"
+                        ]
+                    ]
+                ]
+            ],
+            "facets": [
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2
+                    ],
+                    "normal": [
+                        "2",
+                        "1",
+                        "0"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "0"
+                            ],
+                            [
+                                "-1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1"
+                            ],
+                            [
+                                "1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        2,
+                        3,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3
+                    ],
+                    "normal": [
+                        "0",
+                        "-1",
+                        "0"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1"
+                            ],
+                            [
+                                "-1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1"
+                            ],
+                            [
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        3
+                    ],
+                    "normal": [
+                        "0",
+                        "1",
+                        "2"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1"
+                            ],
+                            [
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0"
+                            ],
+                            [
+                                "1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            ]
+        }
+    ],
+    "neighbours": [
+        {
+            "source": 1,
+            "source_facet": [
+                2,
+                3
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "3/2"
+                ],
+                [
+                    "3/2",
+                    "3"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "-1"
+                    ],
+                    [
+                        "-1"
+                    ]
+                ],
+                [
+                    [
+                        "1"
+                    ],
+                    [
+                        "2"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                -1,
+                -2
+            ]
+        }
+    ],
+    "pending_facets": [
+    ],
+    "provenance": {
+        "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+        "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+        "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+        "validation_seconds": 35.026291646,
+        "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+        "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+        "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+        "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+        "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+        "closure": [
+            {
+                "facet_orbits": 1,
+                "representative": 1,
+                "unresolved_facets": 0,
+                "facets": 3
+            }
+        ],
+        "backend_seconds": 0.025666968,
+        "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+        "cache_key": "32d0f44b0c32fe80a050864acdaf40898ab7397161245d8aa3a99b298fad0829",
+        "run_directory": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/runs/request FHqzQ3",
+        "schema": "arithmetic_voronoi_v1",
+        "from_cache": false,
+        "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+    }
+}

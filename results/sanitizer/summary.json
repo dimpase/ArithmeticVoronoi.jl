@@ -1,0 +1,168 @@
+{
+    "cases": {
+        "D5": {
+            "returncode": 0,
+            "raw_export_sha256": "b7565d58e6b937391148d321d3abd438dfd084ce77ebf0ced3d3194228ed20d1",
+            "maximum_sampled_rss_bytes": 128860160,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+            "orbit_map_to_release": [
+                1,
+                2
+            ],
+            "success": true,
+            "input_sha256": "37e130b02a574288976b452cb890dac83dec07023f7794852e94efafbc1fc88f",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.39835732098435983,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/D5/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/D5/output.json",
+                "50ef4d29268041fdc0b6cdc888a07f006a178f07684f89ff0b2bf85966b7038c"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "math_validation_seconds": 5.262770015,
+            "expected_returncode": 0,
+            "rss_ceiling_bytes": 10737418240
+        },
+        "unsupported_arithmetic": {
+            "returncode": 64,
+            "maximum_sampled_rss_bytes": 15450112,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "not applicable",
+            "success": true,
+            "input_sha256": "fb3318420accb0ea9163b34efef4ffd95a0a6cac43f3b0d0657d90ab8c7c5e29",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.04853528999956325,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/unsupported_arithmetic/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/unsupported_arithmetic/output.json",
+                "672a377c444d690adef2874005664b4ea407d04d819f21490d4cdfb3013e07a9"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "expected_returncode": 64,
+            "rss_ceiling_bytes": 10737418240
+        },
+        "unsupported_boundary": {
+            "returncode": 64,
+            "maximum_sampled_rss_bytes": 15601664,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "not applicable",
+            "success": true,
+            "input_sha256": "ef8f5635dd13d445ec6a841369fc5812252dcb43d10f76a4bce8cc6f5bf02505",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.051505188981536776,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/unsupported_boundary/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/unsupported_boundary/output.json",
+                "8c482aed5620198a83e2c0e72467cd36375eb82e04e947ebf3b706f90143bf4e"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "expected_returncode": 64,
+            "rss_ceiling_bytes": 10737418240
+        },
+        "malformed": {
+            "returncode": 1,
+            "maximum_sampled_rss_bytes": 15290368,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "not applicable",
+            "success": true,
+            "input_sha256": "1e63b126207f1a5eea0e02cbc054762b2e0a02152cfb3e316abf4bf1bb187771",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.04819640202913433,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/malformed/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/malformed/output.json",
+                "d46266e30daddce5838d11c61d4a6c9a4a71a1fe704d80f800e43d3fdbdb16b0"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "expected_returncode": 1,
+            "rss_ceiling_bytes": 10737418240
+        },
+        "D8": {
+            "returncode": 0,
+            "raw_export_sha256": "001a615ab8fa71a7a5e541623f00ae883cae7cb9afef644741ad628216cb5b85",
+            "maximum_sampled_rss_bytes": 125042688,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+            "orbit_map_to_release": [
+                1,
+                2
+            ],
+            "success": true,
+            "input_sha256": "5287ca927e2ca08b51f513c64c37de064c62d1eec34e65a4a7910bf2a8f365af",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.38834791094996035,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/D8/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/D8/output.json",
+                "222ff5343c017fb623a481b6a457449834471d6f846c6004cfd63252aa3024e5"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "math_validation_seconds": 0.42575403,
+            "expected_returncode": 0,
+            "rss_ceiling_bytes": 10737418240
+        },
+        "classical2": {
+            "returncode": 0,
+            "raw_export_sha256": "da938848c265c5068078d9369adcbcbf9ae90c3bcacc39de9e4e05a318c5fdf3",
+            "maximum_sampled_rss_bytes": 32600064,
+            "deadline_seconds": 60,
+            "sanitizer_options": {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+                "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+            },
+            "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+            "orbit_map_to_release": [
+                1
+            ],
+            "success": true,
+            "input_sha256": "ca871437807f4418e902052a6888e181000324a1b346415c70bc08d74cad3116",
+            "sanitizer_clean": true,
+            "elapsed_seconds": 0.07821334997424856,
+            "watchdog_failure": null,
+            "argv": [
+                "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/classical2/input.nml",
+                "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer/classical2/output.json",
+                "c007470e925c53e7a92faf1ca2ab59bed6236319c5df87f55ba7ef6e35fef2e9"
+            ],
+            "executable_sha256": "ac10134c08fa7bed7debdd14b6baed081a4b6411d0d0fb269d5b5452e6fb7b74",
+            "math_validation_seconds": 54.353929626,
+            "expected_returncode": 0,
+            "rss_ceiling_bytes": 10737418240
+        }
+    },
+    "independent_math_validation": "passed",
+    "status": "passed",
+    "coverage": "selected exporter and instantiated upstream C++ headers; linked nauty/GMP/Boost libraries uninstrumented"
+}
