@@ -123,7 +123,9 @@ and options for an external build directory or an existing pinned checkout.
 
 CMake checks that the installed Traces interface compiles and links, and stops
 with an installation hint when it is missing or unusable. For a nonstandard
-installation, set CMAKE_PREFIX_PATH, or Nauty_INCLUDE_DIR and Nauty_LIBRARY.
+installation, set CMAKE_PREFIX_PATH, or Nauty_INCLUDE_DIR, Nauty_CORE_INCLUDE_DIR
+and Nauty_LIBRARY. Discovery uses pkg-config metadata and standard CMake
+searches for each header and the library.
 Stock Traces works through the backend's exact group construction from
 generators. CTest checks all five fields and a rejected boundary request.
 

@@ -115,7 +115,9 @@ in this repository. The native build and all generated files are ignored.
 CMake requires an installed nauty/Traces and checks that its Traces interface
 compiles and links. Configuration stops with an installation hint if it is
 missing or unusable. For a nonstandard installation, set CMAKE_PREFIX_PATH,
-or set Nauty_INCLUDE_DIR and Nauty_LIBRARY explicitly. Stock Traces uses the
+or set Nauty_INCLUDE_DIR (traces.h), Nauty_CORE_INCLUDE_DIR (nauty.h), and
+Nauty_LIBRARY explicitly. Detection uses pkg-config metadata when present
+and standard CMake header/library searches. Stock Traces uses the
 backend's exact group construction from generators.
 
 One install creates backend/bin/AV_ExportPerfectOrbits, both backend/config.json
