@@ -26,7 +26,8 @@ function load_simplification(P,path,matrices,relations)
 end
 
 function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"),
-                            simplify=true,timeout=600.0,reuse_baseline=D in (5,8))
+                            simplify=true,timeout=600.0,reuse_baseline=:auto)
+    (reuse_baseline isa Bool || reuse_baseline===:auto) || throw(ArgumentError("reuse_baseline must be true, false or :auto"))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
         history=joinpath(directory,"history");mkpath(history)
@@ -64,12 +65,16 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
     run["backend_seconds"]=get(E.provenance,"backend_seconds",nothing)
     write_enumeration(joinpath(directory,"enumeration.json"),E);save()
     ctx=stage("ridges",()->TwoCellContext(E))
-    certdir=reuse_baseline ? joinpath(PACKAGE_ROOT,"results/two_cells","D$D") : joinpath(directory,"two_cells")
+    baseline=joinpath(PACKAGE_ROOT,"results/two_cells","D$D")
+    use_baseline=reuse_baseline===true || (reuse_baseline===:auto && compatible_two_cell_cache(ctx,baseline))
+    run["reused_baseline"]=use_baseline
+    certdir=use_baseline ? baseline : joinpath(directory,"two_cells")
     cells=stage("two_cells_and_coverage",()->begin
         ledgerpath=joinpath(certdir,"coverage.json")
         saved=isfile(ledgerpath) ? JSON3.read(read(ledgerpath,String),Dict{String,Any}) : nothing
-        if reuse_baseline || (!isnothing(saved) && saved["status"]=="complete")
+        if use_baseline || (!isnothing(saved) && saved["status"]=="complete")
             ledger=saved
+            ensure(!isnothing(ledger),"restore the requested baseline fixtures before using reuse_baseline=true")
             ensure(ledger["source_hash"]==ctx.source_hash,"complete ridge cache belongs to another enumeration")
             certificates=TwoCellCertificate[read_two_cell(ctx,joinpath(certdir,file)) for e in ledger["entries"] for file in e["certificates"]]
             for k in 1:2:length(certificates);reverse_cycle_check(ctx,certificates[k],certificates[k+1]);end
@@ -91,7 +96,7 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
         path=joinpath(directory,string(name)*"_simplified.json")
         original=joinpath(PACKAGE_ROOT,"results/two_cells","D$D",string(name)*"_simplified.json")
         small[name]=stage(string(name)*"_simplification",()->begin
-            if reuse_baseline && name!=:PSL
+            if use_baseline && name!=:PSL
                 load_simplification(P,original,object.generator_matrices,object.relators)
             elseif isfile(path)
                 load_simplification(P,path,object.generator_matrices,object.relators)

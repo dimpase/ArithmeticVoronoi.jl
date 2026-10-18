@@ -98,6 +98,14 @@ function TwoCellContext(E::ArithmeticVoronoiEnumeration)
         [[n for n in E.neighbours if n.source==i] for i in eachindex(E.representatives)],digest)
 end
 
+function compatible_two_cell_cache(ctx::TwoCellContext,directory)
+    path=joinpath(directory,"coverage.json")
+    isfile(path) || return false
+    ledger=JSON3.read(read(path,String),Dict{String,Any})
+    get(ledger,"schema",nothing)==TWO_CELL_SCHEMA && get(ledger,"status",nothing)=="complete" &&
+        get(ledger,"source_hash",nothing)==ctx.source_hash
+end
+
 function eval_matrix_word(ctx::TwoCellContext,word)
     E=ctx.enumeration;P=E.problem;value=identity_matrix(P.field,P.rank)
     for (kind,i,j) in word

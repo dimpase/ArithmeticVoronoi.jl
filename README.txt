@@ -160,6 +160,8 @@ For D5/D8 runs that reuse the original regression geometry, restore it first:
 The restoration script verifies all file hashes and refuses to overwrite
 different existing files. The word example instead computes its own ridge
 data and can be run for any of the five fields without restoring these fixtures.
+The pipeline reuses restored fixtures only when their exact source enumeration
+matches; otherwise it computes and validates fresh two-cell certificates.
 
 Tests and reproducibility
 --------------------------

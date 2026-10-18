@@ -176,10 +176,13 @@ Outputs are under results/fields/D12/, including:
   run.json                    stage statuses, elapsed seconds and cache use
   initial_complete_run.json    retained first successful in-process timing
 
-The pipeline's default for D5/D8 reuses the original two-cell fixtures in
-results/two_cells/ after the restoration step above. For a separate computation
-in any supported field, use the following Julia API to avoid reusing those
-baseline fixtures:
+The pipeline defaults to reuse_baseline=:auto: it reuses restored two-cell
+fixtures only when their exact source hash matches the current enumeration.
+Generator and facet labels can differ between installations. Otherwise the
+pipeline computes and validates fresh certificates in the run directory,
+leaving the frozen fixtures intact. reuse_baseline=true requires a matching
+baseline; a mismatch is an error. For a separate computation in any supported
+field, use:
 
   using ArithmeticVoronoi
   R = run_field_pipeline(8; directory="results/my_D8", reuse_baseline=false)

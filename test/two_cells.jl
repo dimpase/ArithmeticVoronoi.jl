@@ -8,6 +8,13 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
         P=arithmetic_problem(D);I=identity_matrix(P.field,2)
         E=enumerate_perfect_forms(P);ctx=TwoCellContext(E)
         directory=joinpath(TCROOT,"results/two_cells","D$D")
+        if !TCAV.compatible_two_cell_cache(ctx,directory)
+            # Frozen certificates refer to exact generator and facet labels.
+            # Another valid enumeration needs its own independently checked loops.
+            println("D$D: computing two-cell fixtures for source ",ctx.source_hash);flush(stdout)
+            directory=mktempdir(joinpath(TCROOT,"results");prefix="two_cell_fixtures_D$(D)_",cleanup=false)
+            enumerate_two_cells(ctx;directory)
+        end
         coverage=JSON3.read(read(joinpath(directory,"coverage.json"),String),Dict{String,Any})
         @test coverage["status"]=="complete"
         @test length.(ctx.ridges)==(D==5 ? [75,15] : [15,76]) # measured regression fixtures
