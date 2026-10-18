@@ -30,20 +30,10 @@ network access. Python is not required to build or install the exporter.
 Linux computations also use prlimit from util-linux. macOS computations use
 the system ps command to monitor resident memory.
 
-On macOS, install current Xcode Command Line Tools and the Homebrew packages:
-
-  xcode-select --install
-  brew install cmake ninja pkgconf gmp eigen@3 boost nauty git-lfs python
-
-Configure with Homebrew's prefixes so CMake finds Eigen 3, including its
-versioned installation, on both Apple Silicon and Intel Macs:
-
-  cmake --preset release \
-    -DCMAKE_PREFIX_PATH="$(brew --prefix eigen@3);$(brew --prefix)"
-
-Continue with the build/install commands below. CMake reports a clear error
-if the selected C++ standard library lacks std::format. See the package lists:
-https://formulae.brew.sh/formula/nauty and https://formulae.brew.sh/formula/eigen@3
+The exporter is provided by the separate PerfectForms Julia package:
+https://github.com/dimpase/PerfectForms.jl
+Its README gives dependency installation and CMake options, including macOS
+Homebrew prefixes and generic system-nauty detection.
 
 Get the checkout and data
 -------------------------
@@ -91,45 +81,41 @@ Install this checkout's pinned Julia dependencies:
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-Configure, build and install the native exporter with CMake:
+Locate the pinned PerfectForms dependency and build it with ordinary CMake:
 
-  cmake --preset release
-  cmake --build --preset release
-  cmake --install build
+  perfect_forms_source="$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')"
+  cmake -S "$perfect_forms_source" -B build/perfect-forms -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG' \
+    -DCMAKE_INSTALL_PREFIX="$PWD/backend-install"
+  cmake --build build/perfect-forms --parallel 1
+  ctest --test-dir build/perfect-forms --output-on-failure
+  cmake --install build/perfect-forms
+  export PERFECT_FORMS_BACKEND_CONFIG="$PWD/backend-install/config.json"
 
-The release preset uses Ninja, one build job and -O1 to limit compiler memory.
-It installs into this checkout's backend/ directory. For a hard 10 GiB build
-memory ceiling on Linux, use prlimit --as=10737418240 before the build command.
-No administrator access is needed. The equivalent configuration without presets is:
+The build directory and install prefix can be any writable directories; the
+Julia dependency's source directory need not be writable. CMake fetches and
+verifies PerfectForms' exact upstream and submodule pins. An installed
+nauty/Traces is required, using pkg-config metadata and standard CMake
+searches. No source tree or binary is bundled in ArithmeticVoronoi.
 
-  cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-    '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG' -DCMAKE_INSTALL_PREFIX="$PWD/backend"
-  cmake --build build --parallel 1
-  cmake --install build
+On macOS install current Xcode Command Line Tools, then, with Homebrew:
 
-CMake fetches and verifies the exact upstream and submodule revisions in
-backend/pins.json. Sources live in build/_deps/ and remain unmodified; the
-upstream standalone build is not configured. No dependency source is tracked
-in this repository. The native build and all generated files are ignored.
+  brew install cmake ninja pkgconf gmp eigen@3 boost nauty git-lfs python
 
-CMake requires an installed nauty/Traces and checks that its Traces interface
-compiles and links. Configuration stops with an installation hint if it is
-missing or unusable. For a nonstandard installation, set CMAKE_PREFIX_PATH,
-or set Nauty_INCLUDE_DIR (traces.h), Nauty_CORE_INCLUDE_DIR (nauty.h), and
-Nauty_LIBRARY explicitly. Detection uses pkg-config metadata when present
-and standard CMake header/library searches. Stock Traces uses the
-backend's exact group construction from generators.
+Add -DCMAKE_PREFIX_PATH="$(brew --prefix eigen@3);$(brew --prefix)" to the
+configure command above. These prefixes work on Apple Silicon and Intel Macs.
 
-One install creates backend/bin/AV_ExportPerfectOrbits, both backend/config.json
-and backend/config_fields.json, and backend/backend-build.json. Both selectors
-use the same executable, supporting all five fields. They record absolute
-paths and executable hashes. Reinstall after rebuilding or relocating the
-checkout; changed executables invalidate computation caches.
+Build serially to limit compiler memory. On Linux, prefix the build command
+with prlimit --as=10737418240 for a hard 10 GiB address-space ceiling.
+One exporter supports all five fields. backend-install/config.json selects
+its absolute path and SHA256; backend-install/backend-build.json records
+its compiler, upstream pins and system-nauty provenance. Set the environment
+variable in each new shell, or pass BackendConfig with an absolute executable
+path. Reinstall after changing or moving a binary; its SHA controls cache use.
 
-An external build directory works too: replace build in the explicit commands
-with a writable directory of your choice. For an existing clean pinned source
-checkout, set -DFETCHCONTENT_SOURCE_DIR_POLYHEDRAL_COMMON=/absolute/source/path
-at configuration. Its commit and submodule revisions are still checked.
+PerfectForms owns our C++ code, CMake build, raw JSON protocol and process
+controls. ArithmeticVoronoi owns the arithmetic models, exact validation,
+mathematical caches, two-cells, presentations and constructive words.
 
 Run a computation
 ------------------
@@ -168,7 +154,7 @@ Tests and reproducibility
 
 Check the native exporter, then run the Julia regressions:
 
-  ctest --preset release
+  ctest --test-dir build/perfect-forms --output-on-failure
   python3 scripts/restore_fixtures.py
   julia --startup-file=no --project=. test/runtests.jl
 
@@ -184,7 +170,8 @@ https://github.com/dimpase/arithmetic_voronoi/actions/workflows/ci.yml
 
 If an archive is a short Git LFS pointer file, run git lfs pull. A
 missing_executable error means the backend has not been installed here;
-run cmake --install build after a successful build. For a separate
+run cmake --install build/perfect-forms after a successful build, and set
+PERFECT_FORMS_BACKEND_CONFIG as above. For a separate
 D8 computation, use run_field_pipeline(8; directory="results/my_D8",
 reuse_baseline=false) after using ArithmeticVoronoi in Julia. See
 USER_GUIDE.txt for the full API and resource-limit behaviour.
@@ -198,7 +185,7 @@ Further reading
   DATASET_SCHEMA.md             exact encodings and verification levels
   KW_COMPARISON.md               explicit Kirchheimer-Wolfart comparisons
   BACKEND_AUDIT.md               historical engineering acceptance record
-  backend/NOTICE.txt            external dependency and attribution details
+  DEPENDENCIES.txt               backend package and attribution details
   LICENSE                       project license
 
 The historical audit and saved receipts describe their original execution

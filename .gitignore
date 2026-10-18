@@ -1,3 +1,6 @@
+# Old local installations remain ignored after the PerfectForms extraction.
+# Current builds install into backend-install/.
+/backend-install/
 # Local binaries and configurations contain absolute installation paths.
 /backend/bin/
 /backend/config.json

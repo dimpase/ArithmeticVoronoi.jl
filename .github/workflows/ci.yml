@@ -38,14 +38,6 @@ jobs:
         run: |
           brew install cmake ninja pkgconf gmp eigen@3 boost nauty
           echo "CMAKE_PREFIX_PATH=$(brew --prefix eigen@3):$(brew --prefix)" >> "$GITHUB_ENV"
-      - name: Configure
-        run: cmake --preset release
-      - name: Build
-        run: cmake --build --preset release
-      - name: Native tests
-        run: ctest --preset release
-      - name: Install
-        run: cmake --install build
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1.13.2'
@@ -53,5 +45,18 @@ jobs:
         run: |
           julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
           python3 scripts/restore_fixtures.py
+          echo "PERFECT_FORMS_SOURCE=$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')" >> "$GITHUB_ENV"
+          echo "PERFECT_FORMS_BACKEND_CONFIG=$PWD/backend-install/config.json" >> "$GITHUB_ENV"
+      - name: Configure backend package
+        run: >-
+          cmake -S "$PERFECT_FORMS_SOURCE" -B build/perfect-forms -G Ninja
+          -DCMAKE_BUILD_TYPE=Release '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG'
+          -DCMAKE_INSTALL_PREFIX="$PWD/backend-install"
+      - name: Build
+        run: cmake --build build/perfect-forms --parallel 1
+      - name: Native tests
+        run: ctest --test-dir build/perfect-forms --output-on-failure
+      - name: Install
+        run: cmake --install build/perfect-forms
       - name: Julia tests
         run: julia --startup-file=no --project=. test/runtests.jl

@@ -1,41 +1,18 @@
 export BackendConfig, BackendError, default_backend, run_exporter, cache_key,
        enumerate_perfect_forms, load_checkpoint, write_enumeration, enumeration_data
 
-const BACKEND_COMMIT="cfcd79dbddf67a494a1c71b776174b190da5209a"
-const PACKAGE_ROOT=normpath(joinpath(@__DIR__,".."))
-struct BackendError <: Exception
-    kind::Symbol
-    message::String
-    run_directory::String
-end
-BackendError(kind,message)=BackendError(kind,message,"")
-Base.showerror(io::IO,e::BackendError)=print(io,e.kind,": ",e.message,isempty(e.run_directory) ? "" : " (diagnostics: $(e.run_directory))")
+import PerfectForms
+import PerfectForms: BackendConfig, BackendError, default_backend, run_exporter,
+                     enumerate_perfect_forms, BACKEND_COMMIT, file_sha, atomic_json
 
-file_sha(path)=bytes2hex(open(SHA.sha256,path))
-struct BackendConfig
-    executable::String
-    executable_sha256::String
-    commit::String
-end
-function BackendConfig(path::AbstractString;expected_sha256=nothing,commit=BACKEND_COMMIT)
-    isabspath(path) || throw(BackendError(:invalid_executable,"configure one absolute executable path"))
-    isfile(path) && !isnothing(Sys.which(path)) || throw(BackendError(:missing_executable,"missing or nonexecutable backend: $path"))
-    path=realpath(path);actual=file_sha(path)
-    isnothing(expected_sha256) || actual==expected_sha256 || throw(BackendError(:incompatible_backend,"executable hash differs from its configured build"))
-    BackendConfig(path,actual,commit)
-end
-function default_backend()
-    path=joinpath(PACKAGE_ROOT,"backend/config.json")
-    isfile(path) || throw(BackendError(:missing_executable,"build the exporter and create backend/config.json, or pass BackendConfig(absolute_path)"))
-    data=JSON3.read(read(path,String),Dict{String,Any})
-    BackendConfig(data["executable"];expected_sha256=data["executable_sha256"],commit=data["commit"])
-end
-function default_backend(P::ArithmeticVoronoiProblem)
-    P.discriminant in (12,13,40) || return default_backend()
-    path=joinpath(PACKAGE_ROOT,"backend/config_fields.json")
-    isfile(path) || throw(BackendError(:missing_executable,"build and configure the extended-field exporter"))
-    data=JSON3.read(read(path,String),Dict{String,Any})
-    BackendConfig(data["executable"];expected_sha256=data["executable_sha256"],commit=data["commit"])
+const PACKAGE_ROOT=normpath(joinpath(@__DIR__,".."))
+
+# Preserve the problem-based API; executable discovery and process control belong
+# to PerfectForms, which has no dependency on our arithmetic types.
+default_backend(::ArithmeticVoronoiProblem)=default_backend()
+function run_exporter(P::ArithmeticVoronoiProblem,B::BackendConfig;
+                      input_text=namelist(P),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),kwargs...)
+    run_exporter(input_text,B;work_dir,kwargs...)
 end
 
 fraction_string(q)=begin
@@ -58,187 +35,7 @@ function cache_key(P,B::BackendConfig)
                 executable_sha256=B.executable_sha256,options=backend_options(P))
     bytes2hex(sha256(JSON3.write(descriptor)))
 end
-function atomic_json(path,data)
-    mkpath(dirname(path));temporary,io=mktemp(dirname(path);cleanup=false)
-    try
-        JSON3.pretty(io,data);println(io);flush(io);close(io)
-        Base.Filesystem.rename(temporary,path)
-    catch
-        isopen(io) && close(io)
-        isfile(temporary) && rm(temporary)
-        rethrow()
-    end
-    path
-end
-
-function namelist(P;arithmetic="gmp")
-    arithmetic in ("gmp","flint","unsupported") || throw(ArgumentError("arithmetic name contains unsupported input characters"))
-    """
-    &TSPACE
-      TypeTspace = "$(P.degree==1 ? "Classic" : "RealQuad")"
-      ClassicDim = 2
-      RealImagDim = 2
-      RealImagSum = $(P.root_sum)
-      RealImagProd = $(P.root_product)
-      SuperMatMethod = "NotNeeded"
-      ListComm = "$(P.degree==1 ? "Trivial" : "Use_realimag")"
-      PtGroupMethod = "Trivial"
-      FileListSubspaces = "unset"
-    /
-    &DATA
-      arithmetic = "$arithmetic"
-      OnlyWellRounded = T
-      ComputeComplex = F
-      ComputeBoundary = F
-      ComputePreImage = F
-      CacheFile = "none"
-    /
-    """
-end
-
-function child_error(stderr)
-    allowed=Set(["unsupported_arithmetic","unsupported_operation","malformed_input","unwritable_output","backend_failure"])
-    for line in reverse(split(stderr,'\n'))
-        startswith(line,"AV_ERROR ") || continue
-        try
-            data=JSON3.read(line[10:end],Dict{String,Any})
-            if data["schema"]=="av_error_v1" && data["code"] in allowed
-                return Symbol(data["code"]),string(data["message"])
-            end
-        catch
-        end
-    end
-    :child_exit,"backend exited without a valid structured error record"
-end
-
-function resident_bytes(pid,ps)
-    text=read(pipeline(ignorestatus(`$ps -o rss= -p $pid`);stderr=devnull),String)
-    rss=tryparse(Int,strip(text))
-    isnothing(rss) ? nothing : 1024rss
-end
-
-function stop_backend(process)
-    process_running(process) || return
-    kill(process,Base.SIGTERM)
-    for _ in 1:20
-        process_exited(process) && return
-        sleep(.01)
-    end
-    process_running(process) && kill(process,Base.SIGKILL)
-end
-
-"""Run an executable with private files, an outer deadline and bounded memory.
-
-The default memory policy is a hard address-space limit on Linux and a sampled
-resident-memory watchdog on macOS. The resident policy can also be selected on
-Linux, including for ASan executables whose virtual shadow memory is large.
-"""
-function run_exporter(P,B::BackendConfig;work_dir=joinpath(PACKAGE_ROOT,"results/runs"),timeout=60.0,
-                      input_text=namelist(P),output_path=nothing,memory_limit=10*1024^3,
-                      memory_policy=:auto)
-    isfinite(timeout) && timeout>0 || throw(ArgumentError("positive finite timeout required"))
-    memory_limit isa Integer && 0<memory_limit<=typemax(Int) || throw(ArgumentError("positive memory limit in bytes required"))
-    memory_policy in (:auto,:address_space,:resident) || throw(ArgumentError("memory policy must be :auto, :address_space or :resident"))
-    work_dir=abspath(work_dir)
-    try mkpath(work_dir) catch err
-        throw(BackendError(:unwritable_output,sprint(showerror,err)))
-    end
-    folder=mktempdir(work_dir;prefix="request ",cleanup=false)
-    input=joinpath(folder,"input.nml");write(input,input_text)
-    token=bytes2hex(sha256(input_text*string(time_ns(),getpid())))
-    output=isnothing(output_path) ? joinpath(folder,"output.json") : abspath(output_path)
-    stdout_path=joinpath(folder,"stdout.log");stderr_path=joinpath(folder,"stderr.log")
-    report=Dict{String,Any}("status"=>"prepared","completed"=>false,"request_token"=>token,
-        "input_sha256"=>file_sha(input),"backend_commit"=>B.commit,"executable"=>B.executable,
-        "executable_sha256"=>B.executable_sha256,"timeout_seconds"=>timeout,"memory_limit_bytes"=>memory_limit,
-        "output"=>output,"started_utc"=>string(now(UTC)))
-    report_path=joinpath(folder,"process.json")
-    function fail(kind,message)
-        report["status"]=string(kind);report["error"]=message
-        atomic_json(report_path,report)
-        throw(BackendError(kind,message,folder))
-    end
-    isfile(B.executable) || fail(:missing_executable,"configured executable disappeared")
-    file_sha(B.executable)==B.executable_sha256 || fail(:incompatible_backend,"configured executable changed")
-    ispath(output) && fail(:stale_output,"output path already exists before child launch")
-    try
-        probe,probe_io=mktemp(dirname(output);cleanup=false);close(probe_io);rm(probe)
-    catch err
-        fail(:unwritable_output,sprint(showerror,err))
-    end
-    Sys.islinux() || Sys.isapple() || fail(:unsupported_platform,"backend process control supports Linux and macOS")
-    policy=memory_policy==:auto ? (Sys.islinux() ? :address_space : :resident) : memory_policy
-    argv=[B.executable,input,output,token]
-    ps=nothing
-    if policy==:address_space
-        Sys.islinux() || fail(:unsupported_platform,"address-space limiting requires Linux; use :resident on macOS")
-        limiter=Sys.which("prlimit")
-        isnothing(limiter) && fail(:unsupported_platform,"install util-linux for prlimit, or use memory_policy=:resident")
-        argv=[limiter,"--as=$memory_limit","--",argv...]
-    else
-        ps=Sys.which("ps")
-        isnothing(ps) && fail(:unsupported_platform,"resident-memory monitoring requires ps")
-    end
-    report["memory_policy"]=string(policy)
-    report["maximum_sampled_rss_bytes"]=0
-    report["argv"]=argv;atomic_json(report_path,report)
-    started=time_ns();failure=nothing;code=0;signal=0
-    try
-        open(stdout_path,"w") do stdout_io
-            open(stderr_path,"w") do stderr_io
-                process=run(pipeline(Cmd(Cmd(argv);dir=folder);stdout=stdout_io,stderr=stderr_io);wait=false)
-                try
-                    while process_running(process)
-                        if (time_ns()-started)/1e9>timeout
-                            failure=(:timeout,"outer deadline terminated the backend; no completion checkpoint published")
-                            break
-                        end
-                        if !isnothing(ps)
-                            rss=resident_bytes(getpid(process),ps)
-                            if isnothing(rss)
-                                process_running(process) || break
-                                failure=(:memory_monitor_error,"could not read backend resident memory; backend stopped")
-                                break
-                            end
-                            report["maximum_sampled_rss_bytes"]=max(report["maximum_sampled_rss_bytes"],rss)
-                            if rss>memory_limit
-                                failure=(:memory_limit,"resident-memory watchdog terminated the backend; no completion checkpoint published")
-                                break
-                            end
-                        end
-                        sleep(min(.02,timeout/10))
-                    end
-                finally
-                    stop_backend(process)
-                    wait(process)
-                end
-                code=process.exitcode;signal=process.termsignal
-            end
-        end
-    catch err
-        err isa BackendError && rethrow()
-        fail(:launch_error,sprint(showerror,err))
-    end
-    report["elapsed_seconds"]=(time_ns()-started)/1e9
-    report["exitcode"]=code;report["termination_signal"]=signal
-    isnothing(failure) || fail(failure...)
-    signal!=0 && fail(:terminated,"backend terminated by signal $signal")
-    if code!=0
-        kind,message=child_error(read(stderr_path,String));fail(kind,message)
-    end
-    isfile(output) || fail(:missing_output,"successful child exit without the requested output")
-    raw=read(output,String)
-    data=try JSON3.read(raw,Dict{String,Any}) catch err
-        fail(:truncated_output,sprint(showerror,err))
-    end
-    get(data,"request_token",nothing)==token || fail(:stale_output,"fresh output has the wrong request token")
-    get(data,"schema",nothing)=="av_polyhedral_export_v1" || fail(:incompatible_schema,"unsupported exporter schema")
-    get(data,"completed",false)===true || fail(:incomplete_output,"backend did not declare completed enumeration")
-    get(data,"backend_commit",nothing)==B.commit || fail(:incompatible_backend,"exported backend version does not match configuration")
-    report["status"]="exported_pending_math_validation";report["raw_output_sha256"]=bytes2hex(sha256(raw))
-    atomic_json(report_path,report)
-    (;data,raw,run_directory=folder,process_info=report)
-end
+namelist(P;arithmetic="gmp")=PerfectForms.perfect_form_request(P.discriminant;arithmetic)
 
 function load_checkpoint(P,B,path)
     checkpoint=try JSON3.read(read(path,String),Dict{String,Any}) catch err
@@ -273,7 +70,7 @@ function load_checkpoint(P,B,path)
     E
 end
 
-function enumerate_perfect_forms(P;backend=:polyhedral_common,config=nothing,
+function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:polyhedral_common,config=nothing,
         cache_dir=joinpath(PACKAGE_ROOT,"results/cache"),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),
         timeout=60.0,force=false)
     backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"native backend is not implemented; the mathematical records are backend-independent"))

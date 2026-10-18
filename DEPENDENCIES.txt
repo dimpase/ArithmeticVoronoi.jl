@@ -1,0 +1,20 @@
+ArithmeticVoronoi uses PerfectForms.jl for perfect-form enumeration:
+https://github.com/dimpase/PerfectForms.jl
+
+PerfectForms owns the exporter originally developed here, the CMake build,
+upstream revision pins and JSON process interface. It fetches Mathieu Dutour
+Sikiric's polyhedral_common as an external build dependency and requires an
+installed nauty/Traces library. Its backend/NOTICE.txt retains upstream
+attribution and reference license texts. ArithmeticVoronoi contains no C++
+source, upstream source checkout or backend executable in its tracked files.
+
+Our Julia arithmetic models, exact validation, two-cells, presentations and
+constructive words remain in ArithmeticVoronoi under the existing LICENSE.
+OSCAR supplies the exact arithmetic and GAP interface; GAP performs
+presentation simplification, independently of the PerfectForms exporter.
+
+BACKEND_AUDIT.md and upstream_reports/ preserve the earlier backend audit
+and issue submissions. The frozen mathematical archives retain the exporter
+and build recipes used for those computations as historical provenance;
+they include no upstream source tree or compiled executable. These immutable
+archives were not regenerated during the package extraction.

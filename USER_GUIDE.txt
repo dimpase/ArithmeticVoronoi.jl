@@ -33,7 +33,7 @@ inside your clone:
 On Gentoo the package is dev-vcs/git-lfs. LFS holds two frozen archives:
 the five-field dataset and the original D5/D8 regression fixtures.
 Ordinary Git stores their small pointer files. The backend source is an
-external dependency fetched separately by CMake below.
+external dependency managed by the separate PerfectForms package.
 If an archive is a short text file beginning with "version https://git-lfs",
 its payload has not been downloaded yet; run git lfs pull.
 
@@ -93,42 +93,32 @@ pin OSCAR 1.8.2, Hecke 0.39.22 and the remaining Julia dependencies.
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-For the exporter, install a C++20 compiler and standard library with std::format,
-CMake 3.24 or newer, Ninja, Git,
-pkg-config, GMP development files, Eigen and Boost.Serialization development
-files, and the nauty/Traces development headers and library. CMake requires
-an installed nauty/Traces. Python is used for optional native tests, not for building.
-The recorded release used GCC 16.2.0, CMake 4.3.4,
-GMP 6.3.0, Eigen 3.4.1 and Boost 1.90; other combinations are not yet tested.
-Initial Julia installation and backend configuration need network access.
-On macOS, use current Xcode Command Line Tools and the Homebrew installation
-commands in README.txt. Pass the Homebrew and eigen@3 prefixes to CMake as
-shown there; this supports both Apple Silicon and Intel installation layouts.
+PerfectForms is a separate Julia dependency providing the C++ exporter,
+CMake build, upstream pins, exact JSON protocol and process controls. It has
+no dependency on Oscar or GAP. ArithmeticVoronoi imports its backend types
+and preserves the problem-based run_exporter and enumeration API.
 
-  cmake --preset release
-  cmake --build --preset release
-  cmake --install build
-  ctest --preset release
+Follow README.txt's CMake -S/-B commands to build from the pinned PerfectForms
+package source and install into a writable prefix. Set
+PERFECT_FORMS_BACKEND_CONFIG to that prefix's absolute config.json path.
+The default does not discover legacy binaries under this repository's backend/.
+BackendConfig(absolute_executable_path) remains available for explicit builds.
+The frontend's Project.toml and Manifest.toml pin the package source revision.
 
-One install selects the same all-field exporter in both backend/config.json
-and backend/config_fields.json, with its absolute path and SHA256. Installed
-build provenance is in backend/backend-build.json. Reinstall after rebuilding
-or moving the checkout. These files, binaries and build directories are ignored.
+PerfectForms requires a C++20 compiler/standard library with std::format,
+CMake 3.24+, Ninja, Git, pkg-config, and GMP, Eigen 3, Boost.Serialization and
+nauty/Traces development files. System nauty is required. Detection uses
+pkg-config metadata and ordinary CMake header/library searches. For a
+nonstandard prefix set CMAKE_PREFIX_PATH, or Nauty_INCLUDE_DIR (traces.h),
+Nauty_CORE_INCLUDE_DIR (nauty.h), and Nauty_LIBRARY. README.txt includes
+Homebrew instructions for both Intel and Apple Silicon macOS.
 
-The release preset uses one job and -O1 to reduce compiler memory. For a hard
-10 GiB address-space limit, prefix the build command with Linux
-prlimit --as=10737418240. CMake verifies the recorded upstream/submodule commits
-and consumes the unmodified template headers. The default source cache is
-build/_deps/polyhedral_common-src. README.txt gives explicit -S/-B commands
-and options for an external build directory or an existing pinned checkout.
-
-CMake checks that the installed Traces interface compiles and links, and stops
-with an installation hint when it is missing or unusable. For a nonstandard
-installation, set CMAKE_PREFIX_PATH, or Nauty_INCLUDE_DIR, Nauty_CORE_INCLUDE_DIR
-and Nauty_LIBRARY. Discovery uses pkg-config metadata and standard CMake
-searches for each header and the library.
-Stock Traces works through the backend's exact group construction from
-generators. CTest checks all five fields and a rejected boundary request.
+Build with one job and -O1 to reduce compiler memory. On Linux a build can
+be bounded with prlimit --as=10737418240. CMake verifies all upstream source
+and submodule revisions and uses unmodified headers. Installed
+backend-build.json records the compiler, source pins, library paths and
+executable SHA256. Reinstall after rebuilding or relocating the executable.
+Changed executable hashes invalidate mathematical caches.
 
 Backend computations have an outer wall-clock deadline on both platforms.
 The default 10 GiB memory budget is a hard virtual-address-space limit via
@@ -140,22 +130,18 @@ For direct run_exporter calls, memory_policy=:resident selects the same
 watchdog on Linux, for example when using an ASan binary with large virtual
 shadow memory. Ordinary callers can leave memory_policy=:auto.
 
-For a separate Clang ASan/UBSan build and native checks:
+For Clang ASan/UBSan checks, use PerfectForms' sanitizer preset and native
+tests as documented in its README. To retain raw instrumented exports for
+ArithmeticVoronoi's independent exact checks, run its driver with
+--output-dir pointing to this checkout's results/sanitizer directory
+(or --fields with results/sanitizer_fields), then run
+scripts/validate_sanitizer.jl (or add --fields). The driver generates inputs
+without needing old computation directories. ASan requires a large virtual
+shadow address space; use a resident-memory watchdog at runtime.
 
-  cmake --preset sanitizer
-  cmake --build --preset sanitizer
-  ctest --preset sanitizer
-
-This does not replace the installed release executable. It instruments the
-exporter and instantiated C++ headers; linked dependency libraries retain
-their system instrumentation settings. ASan needs a large virtual shadow
-address space, so do not impose the address-space limit on sanitizer runs.
-
-Pin and license information is in backend/pins.json and backend/NOTICE.txt.
-Dependency sources are fetched into ignored build directories and are not
-vendored in this repository or its LFS archives. Our C++ exporter and CMake
-build files are retained here. The backend still needs its own
-license compatibility review before redistribution as a compiled executable.
+Our C++ exporter, CMake files, pins and dependency notices now live entirely
+in PerfectForms. See DEPENDENCIES.txt for attribution and historical dataset
+provenance. Saved receipts and frozen archives retain their original layout.
 
 Run a field and inspect its output
 ----------------------------------
@@ -275,7 +261,7 @@ Repository contents
 src/, scripts/ and test/ contain the implementation, commands and regressions.
 README.txt provides portable installation commands. PRESENTATION_JUSTIFICATION.md
 explains completeness; BACKEND_AUDIT.md records backend acceptance and scope.
-backend/ preserves our exporter, dependency pins and reference license notices.
+The separate PerfectForms package contains our exporter, its build and pins.
 results/ contains selected reports and the sealed five-field dataset archive.
 test/fixtures/ contains the compressed D5/D8 regression archive and checksum
 manifest. Both .tar.gz archives use Git LFS. Expanded fixtures and bundles,
@@ -286,5 +272,5 @@ Historical receipts describe the original execution environment, including
 paths that need not exist in a fresh clone. Consult this guide for portable
 commands. The separate Ford/HSR experiments are outside this repository.
 
-See LICENSE for the project license and backend/NOTICE.txt for external
-dependency licensing and attribution.
+See LICENSE for the project license and DEPENDENCIES.txt for external
+dependency attribution and links to the backend notices.

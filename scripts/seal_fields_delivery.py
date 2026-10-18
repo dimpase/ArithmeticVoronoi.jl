@@ -8,6 +8,7 @@ import hashlib
 import json
 import shutil
 import tarfile
+import subprocess
 
 p=Path(__file__).resolve().parents[1]
 r=p/'results';bundle=r/'dataset/v1'
@@ -49,13 +50,22 @@ for name in ['PRESENTATION_JUSTIFICATION.md','CONSTRUCTIVE_WORDS_STATUS.md','KW_
 for name in ['FIELDS_WORDS_DATA_REPORT.txt','fields_words_tests.json','fields_delivery_summary.json',
              'fields_dataset_complete_verification.json','fields_delivery_validation.log']:
     add(r/name,('documentation/' if name.endswith('.txt') else 'verification/')+name)
+# Source recipes follow the separately pinned Julia package. This historical
+# sealer still enforces its original validation and baseline-preservation gates;
+# moving the backend does not authorize regenerating the frozen v1 archive.
+backend_source=Path(subprocess.check_output(
+    ['julia','--startup-file=no','--project='+str(p),'-e',
+     'using PerfectForms; print(pkgdir(PerfectForms))'],text=True))
 backendrefs=[]
 for name in ['backend/export_perfect.cpp','backend/pins.json','backend/NOTICE.txt','backend/UPSTREAM_COPYING',
              'backend/PERMUTALIB_COPYING.LGPL','CMakeLists.txt','CMakePresets.json',
-             'scripts/run_sanitizer.py','scripts/validate_sanitizer.jl']:
-    backendrefs.append(add(p/name,'provenance/'+name))
-for source in sorted((p/'cmake').glob('*.cmake*')):
-    backendrefs.append(add(source,'provenance/cmake/'+source.name))
+             'scripts/run_sanitizer.py','Project.toml']:
+    backendrefs.append(add(backend_source/name,'provenance/perfect_forms/'+name))
+for source in sorted((backend_source/'cmake').glob('*.cmake*')):
+    backendrefs.append(add(source,'provenance/perfect_forms/cmake/'+source.name))
+for source in sorted((backend_source/'src').glob('*.jl')):
+    backendrefs.append(add(source,'provenance/perfect_forms/src/'+source.name))
+backendrefs.append(add(p/'scripts/validate_sanitizer.jl','provenance/scripts/validate_sanitizer.jl'))
 add(r/'build/AV_ExportPerfectOrbits.json','provenance/release_build.json')
 add(r/'build/AV_ExportPerfectOrbits_sanitizer.json','provenance/sanitizer_build.json')
 for source in (p/'test').glob('*.jl'): add(source,'software/test/'+source.name)

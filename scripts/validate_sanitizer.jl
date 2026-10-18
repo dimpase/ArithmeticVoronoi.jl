@@ -3,12 +3,14 @@ const ROOT=normpath(joinpath(@__DIR__,".."))
 const AV=ArithmeticVoronoi
 extended="--fields" in ARGS
 relative=extended ? "results/sanitizer_fields" : "results/sanitizer"
-path=joinpath(ROOT,relative,"summary.json")
+option=findfirst(==("--directory"),ARGS)
+directory=isnothing(option) ? joinpath(ROOT,relative) : abspath(ARGS[option+1])
+path=joinpath(directory,"summary.json")
 summary=JSON3.read(read(path,String),Dict{String,Any})
 @assert summary["status"]=="passed"
 examples=extended ? [("D$D",arithmetic_problem(D)) for D in (12,13,40)] : [("classical2",classical_problem()),("D5",arithmetic_problem(5)),("D8",arithmetic_problem(8))]
 for (name,P) in examples
-    output=joinpath(ROOT,relative,name,"output.json")
+    output=joinpath(directory,name,"output.json")
     seconds=@elapsed checked=validate_export(P,JSON3.read(read(output,String),Dict{String,Any}))
     release=enumerate_perfect_forms(P)
     matches=[findall(r->!isnothing(equivalence(P,r.form,s.form)),release.representatives) for s in checked.representatives]
