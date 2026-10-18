@@ -1,0 +1,195 @@
+{
+    "status": "passed",
+    "checks": {
+        "unsupported arithmetic": {
+            "kind": "unsupported_arithmetic",
+            "expected": "unsupported_arithmetic",
+            "message": "only gmp is compiled into this exporter",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request 5INFO4"
+        },
+        "nonzero exit": {
+            "kind": "child_exit",
+            "expected": "child_exit",
+            "message": "backend exited without a valid structured error record",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request un3e3J"
+        },
+        "malformed input": {
+            "kind": "malformed_input",
+            "expected": "malformed_input",
+            "message": "upstream TerminalException 1",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request AhAFsq"
+        },
+        "killed-run restart": {
+            "policy": "preserve partial diagnostics; restart enumeration from scratch; only fully validated final caches are reusable",
+            "status": "passed"
+        },
+        "wrong commuting options": {
+            "kind": "incompatible_options",
+            "expected": "incompatible_options",
+            "message": "cache options or commuting constraints differ",
+            "diagnostics": ""
+        },
+        "wrong field": {
+            "kind": "wrong_field",
+            "expected": "wrong_field",
+            "message": "cache belongs to a different number field",
+            "diagnostics": ""
+        },
+        "incompatible schema": {
+            "kind": "incompatible_schema",
+            "expected": "incompatible_schema",
+            "message": "unsupported cache version",
+            "diagnostics": ""
+        },
+        "missing cache envelope field": {
+            "kind": "incompatible_cache",
+            "expected": "incompatible_cache",
+            "message": "missing or malformed cache envelope fields",
+            "diagnostics": ""
+        },
+        "incomplete stabilizer": {
+            "kind": "arithmetic_validation",
+            "expected": "arithmetic_validation",
+            "message": "backend stabilizer is not the complete Hecke K-linear stabilizer",
+            "diagnostics": ""
+        },
+        "unwritable output": {
+            "kind": "unwritable_output",
+            "expected": "unwritable_output",
+            "message": "SystemError: mktemp: No such file or directory",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request o7PJhB"
+        },
+        "stale token": {
+            "kind": "stale_output",
+            "expected": "stale_output",
+            "message": "fresh output has the wrong request token",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request Rgv9pX"
+        },
+        "wrong order basis": {
+            "kind": "incompatible_problem",
+            "expected": "incompatible_problem",
+            "message": "order, basis or lattice data differ",
+            "diagnostics": ""
+        },
+        "path with spaces and mathematical repeat": {
+            "status": "passed",
+            "orbit_map": [
+                1,
+                2
+            ]
+        },
+        "truncated output": {
+            "kind": "truncated_output",
+            "expected": "truncated_output",
+            "message": "ArgumentError: invalid JSON at byte position 11 while parsing type JSON3.Object: UnexpectedEOF\n{\"schema\":\n",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request 6Gfc83"
+        },
+        "corrupt payload": {
+            "kind": "corrupt_cache",
+            "expected": "corrupt_cache",
+            "message": "export checksum mismatch",
+            "diagnostics": ""
+        },
+        "missing executable": {
+            "kind": "missing_executable",
+            "expected": "missing_executable",
+            "message": "missing or nonexecutable backend: /home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/test/../results/contract tests jfLlGi/missing executable",
+            "diagnostics": ""
+        },
+        "different backend build": {
+            "kind": "incompatible_backend",
+            "expected": "incompatible_backend",
+            "message": "cache comes from a different backend build",
+            "diagnostics": ""
+        },
+        "incomplete cache": {
+            "kind": "incomplete_cache",
+            "expected": "incomplete_cache",
+            "message": "cache was not atomically committed after validation",
+            "diagnostics": ""
+        },
+        "killed-run deadline": {
+            "kind": "timeout",
+            "expected": "timeout",
+            "message": "outer deadline terminated the backend; no completion checkpoint published",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request 1hwUza"
+        },
+        "unsupported complex request": {
+            "kind": "unsupported_operation",
+            "expected": "unsupported_operation",
+            "message": "exporter enumerates perfect forms and facet orbits only",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request 7eUnVm"
+        },
+        "incomplete output": {
+            "kind": "incomplete_output",
+            "expected": "incomplete_output",
+            "message": "backend did not declare completed enumeration",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request AgSSbL"
+        },
+        "missing output": {
+            "kind": "missing_output",
+            "expected": "missing_output",
+            "message": "successful child exit without the requested output",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request 7TfCcl"
+        },
+        "wrong subgroup": {
+            "kind": "wrong_subgroup",
+            "expected": "wrong_subgroup",
+            "message": "cache group/action constraints differ",
+            "diagnostics": ""
+        },
+        "arbitrary precision wire roundtrip": {
+            "status": "passed",
+            "decimal_digits": 81
+        },
+        "relative executable": {
+            "kind": "invalid_executable",
+            "expected": "invalid_executable",
+            "message": "configure one absolute executable path",
+            "diagnostics": ""
+        },
+        "signal termination": {
+            "kind": "terminated",
+            "expected": "terminated",
+            "message": "backend terminated by signal 15",
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/contract tests jfLlGi/request xS0IAr"
+        },
+        "incorrect minimum": {
+            "kind": "arithmetic_validation",
+            "expected": "arithmetic_validation",
+            "message": "backend minimum disagrees with exhaustive Hecke shortest vectors",
+            "diagnostics": ""
+        },
+        "false boundary assertion": {
+            "kind": "arithmetic_validation",
+            "expected": "arithmetic_validation",
+            "message": "this importer accepts perfect-form data only; invalid or unsupported boundary assertion",
+            "diagnostics": ""
+        },
+        "unresolved facet orbit": {
+            "kind": "arithmetic_validation",
+            "expected": "arithmetic_validation",
+            "message": "unresolved facet orbit: enumeration is not closed",
+            "diagnostics": ""
+        },
+        "wrong transporter": {
+            "kind": "arithmetic_validation",
+            "expected": "arithmetic_validation",
+            "message": "labelled transporter has wrong direction or congruence",
+            "diagnostics": ""
+        },
+        "changed executable rejected": {
+            "kind": "incompatible_backend",
+            "expected": "incompatible_backend",
+            "message": "executable hash differs from its configured build",
+            "diagnostics": ""
+        },
+        "truncated cache": {
+            "kind": "truncated_cache",
+            "expected": "truncated_cache",
+            "message": "ArgumentError: invalid JSON at byte position 8940 while parsing type String: UnexpectedEOF\n\\\",\\\"1/2\\\",\\\"2\\\"],[\\\"0\\\",\n",
+            "diagnostics": ""
+        }
+    },
+    "diagnostic_root": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/test/../results/contract tests jfLlGi"
+}

@@ -1,0 +1,40 @@
+When `ComputeBoundary = T`, `get_full_complex_enumeration_kernel` checks `are_product_zeros`, but a false result is only printed and does not prevent returning the complex.
+
+**This is a source-level control-flow finding. We have not observed an actual nonzero boundary product in the real-quadratic examples, and this is not a claim that their computed boundaries are wrong.**
+
+Inspected at `cfcd79dbddf67a494a1c71b776174b190da5209a`, currently `master`.
+
+### Location and consequence
+
+In [perfect_complex.h, lines 2245–2253](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/src_perfect/perfect_complex.h#L2245-L2253):
+
+```cpp
+  FullComplexEnumeration<T, Tint, Tgroup> fce = full_perfect_complex_enumeration(l_tot, LinSpa, pco, os);
+  if (pco.compute_boundary) {
+    bool test = are_product_zeros(fce, os);
+    os << "are_product_zeros, test=" << GAP_logical(test) << "\n";
+  } else {
+    os << "no boundary available\n";
+  }
+  return fce;
+```
+
+The checker itself [returns false when a product fails](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/src_perfect/perfect_complex.h#L1791-L1802). The result is not subsequently propagated by this caller. In the [CLI cache path](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/src_perfect/PERF_SerialPerfectComputation.cpp#L15-L31), a normally returned complex can then be written to the cache and used for queries.
+
+Consequently, a caller checking only exceptions/exit status could accept a complex even if this requested validation failed. The log line is useful, but should not be the only indication of failure.
+
+### Suggested fix
+
+After the existing check/logging, propagate failure, for example using the existing exception convention:
+
+```cpp
+if (!test) {
+  throw TerminalException{1};
+}
+```
+
+This should apply whenever the requested boundary check runs; putting the failure behind a debug-only build flag would leave ordinary callers with the same acceptance problem.
+
+### Suggested regression
+
+Add a controlled test in which the checker returns false (an injected checker or deliberately invalid boundary fixture), and verify that construction fails and no successful cache/output is published. Keep a valid-boundary case to check that successful computations retain their behaviour. This tests failure propagation without needing to assert a naturally occurring arithmetic bug.

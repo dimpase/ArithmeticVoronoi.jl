@@ -1,0 +1,121 @@
+{
+  "source_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+  "official": {
+    "F": {
+      "argv": [
+        "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/PERF_SerialPerfectComputation",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/compute_complex_F/input.nml"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.11560643097618595,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "orbit_counts_text": "return [2,4,5,4,1,0];",
+      "executable_sha256": "b9cea76e9a2f54f092a38e0d68869fc5a622069b51442f59904bd780aba23c2b"
+    },
+    "T": {
+      "argv": [
+        "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/PERF_SerialPerfectComputation",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/compute_complex_T/input.nml"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.11654134700074792,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "orbit_counts_text": "return [2,4,5,4,1,0];",
+      "executable_sha256": "b9cea76e9a2f54f092a38e0d68869fc5a622069b51442f59904bd780aba23c2b"
+    }
+  },
+  "gap": {
+    "ordinary_success": {
+      "argv": [
+        "/usr/bin/gap",
+        "-q",
+        "-b",
+        "-r",
+        "-A",
+        "-T",
+        "-o",
+        "64m",
+        "-K",
+        "2g",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/ordinary_success/probe.g"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.4669173800502904,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "wrapper_returned_value": true,
+      "intended_backend_exitcode": 0,
+      "backend_called": true
+    },
+    "path_with_spaces": {
+      "argv": [
+        "/usr/bin/gap",
+        "-q",
+        "-b",
+        "-r",
+        "-A",
+        "-T",
+        "-o",
+        "64m",
+        "-K",
+        "2g",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/path_with_spaces/probe.g"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.4664186420268379,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "wrapper_returned_value": false,
+      "intended_backend_exitcode": 0,
+      "backend_called": false
+    },
+    "nonzero_with_output": {
+      "argv": [
+        "/usr/bin/gap",
+        "-q",
+        "-b",
+        "-r",
+        "-A",
+        "-T",
+        "-o",
+        "64m",
+        "-K",
+        "2g",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/nonzero_with_output/probe.g"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.5164893309702165,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "wrapper_returned_value": true,
+      "intended_backend_exitcode": 7,
+      "backend_called": true
+    },
+    "nonzero_without_output": {
+      "argv": [
+        "/usr/bin/gap",
+        "-q",
+        "-b",
+        "-r",
+        "-A",
+        "-T",
+        "-o",
+        "64m",
+        "-K",
+        "2g",
+        "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn/nonzero_without_output/probe.g"
+      ],
+      "exitcode": 0,
+      "elapsed_seconds": 0.5168600770412013,
+      "virtual_memory_limit_bytes": 10737418240,
+      "deadline_seconds": 45,
+      "wrapper_returned_value": false,
+      "intended_backend_exitcode": 7,
+      "backend_called": true
+    }
+  },
+  "boundary_finding": "source inspection only; no actual invalid boundary claimed",
+  "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/upstream_reports/reproduction_nivcfrnn"
+}

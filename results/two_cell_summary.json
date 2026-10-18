@@ -1,0 +1,350 @@
+{
+    "oscar_version": "1.8.2",
+    "examples": [
+        {
+            "local_ridge_counts": [
+                75,
+                15
+            ],
+            "inverted_edges": 0,
+            "source_hash": "af3f07554458747abd0721612ecd3ebd7032d73489d49a6cd42a35a4c4df5394",
+            "oriented_loops": 180,
+            "SL_simplified_relators": 6,
+            "presentation_directory": "results/two_cells/D5",
+            "minus_identity_residuals": 9,
+            "global_two_cell_reduction": "not performed; redundant exhaustive local coverage",
+            "SL_raw_relators": 1564,
+            "proof": "PRESENTATION_JUSTIFICATION.md",
+            "scalar_word_search": {
+                "word": [
+                    -4,
+                    14,
+                    15,
+                    19
+                ],
+                "method": "exact separating-facet cone descent",
+                "visited": 2,
+                "discovered": 2,
+                "steps": [
+                    {
+                        "source": 1,
+                        "target": 1,
+                        "facet": 19,
+                        "before": "15",
+                        "after": "10",
+                        "actual_frame": [
+                            [
+                                [
+                                    "0",
+                                    "-1"
+                                ],
+                                [
+                                    "0",
+                                    "0"
+                                ]
+                            ],
+                            [
+                                [
+                                    "0",
+                                    "0"
+                                ],
+                                [
+                                    "0",
+                                    "-1"
+                                ]
+                            ]
+                        ],
+                        "word": [
+                            14,
+                            15,
+                            19
+                        ]
+                    }
+                ],
+                "residual_stabilizer_word": [
+                    4
+                ],
+                "seconds": 0.170483543
+            },
+            "source_enumeration_cache_key": "a81709875b91d7e93c984d9eac9fa963d5fd9f9892220d6bffc619a36e7d7518",
+            "GL_raw_generators": 20,
+            "locally_reduced_ridge_counts": [
+                11,
+                4
+            ],
+            "GL_raw_relators": 390,
+            "SL_raw_generators": 77,
+            "global_unoriented_edges": 4,
+            "SL_simplified_generators": 2,
+            "discriminant": 5,
+            "stage_seconds": {
+                "SL_Tietze_and_maps": 0.811471232,
+                "ridge_context": 3.563010745,
+                "validated_enumeration_load": 40.239306884,
+                "loops_and_coverage": 8.075156813,
+                "GL_assembly_and_validation": 2.225933649,
+                "SL_extraction_and_validation": 3.232956321,
+                "GL_Tietze_and_maps": 0.259617191
+            },
+            "loop_cache_hits": 180,
+            "nonidentity_residuals": 156,
+            "loop_length_counts": {
+                "3": 82,
+                "4": 72,
+                "6": 26
+            },
+            "global_two_cell_orbits": null,
+            "GL_simplified_generators": 3,
+            "GL_simplified_relators": 10,
+            "status": "certified_GL_and_SL",
+            "scalar_unit_word": [
+                -4,
+                14,
+                15,
+                19
+            ]
+        },
+        {
+            "local_ridge_counts": [
+                15,
+                76
+            ],
+            "inverted_edges": 1,
+            "source_hash": "5642e27a60e37dab0427cf82f52d051e765ea8bfe2e49b3dde5835914739237c",
+            "oriented_loops": 182,
+            "SL_simplified_relators": 6,
+            "presentation_directory": "results/two_cells/D8",
+            "minus_identity_residuals": 16,
+            "global_two_cell_reduction": "not performed; redundant exhaustive local coverage",
+            "SL_raw_relators": 1168,
+            "proof": "PRESENTATION_JUSTIFICATION.md",
+            "scalar_word_search": {
+                "word": [
+                    -3,
+                    -1,
+                    -4,
+                    -1,
+                    -1,
+                    16,
+                    6,
+                    5,
+                    -17,
+                    5,
+                    -17,
+                    -6,
+                    -16,
+                    2
+                ],
+                "method": "exact separating-facet cone descent",
+                "visited": 5,
+                "discovered": 5,
+                "steps": [
+                    {
+                        "source": 1,
+                        "target": 2,
+                        "facet": 1,
+                        "before": "18",
+                        "after": "16",
+                        "actual_frame": [
+                            [
+                                [
+                                    "-1",
+                                    "0"
+                                ],
+                                [
+                                    "0",
+                                    "0"
+                                ]
+                            ],
+                            [
+                                [
+                                    "-1",
+                                    "1"
+                                ],
+                                [
+                                    "1",
+                                    "0"
+                                ]
+                            ]
+                        ],
+                        "word": [
+                            -6,
+                            -16,
+                            2
+                        ]
+                    },
+                    {
+                        "source": 2,
+                        "target": 2,
+                        "facet": 4,
+                        "before": "16",
+                        "after": "12",
+                        "actual_frame": [
+                            [
+                                [
+                                    "2",
+                                    "1"
+                                ],
+                                [
+                                    "3",
+                                    "2"
+                                ]
+                            ],
+                            [
+                                [
+                                    "1",
+                                    "-1"
+                                ],
+                                [
+                                    "0",
+                                    "0"
+                                ]
+                            ]
+                        ],
+                        "word": [
+                            -17,
+                            -6,
+                            -16,
+                            2
+                        ]
+                    },
+                    {
+                        "source": 2,
+                        "target": 2,
+                        "facet": 15,
+                        "before": "12",
+                        "after": "8",
+                        "actual_frame": [
+                            [
+                                [
+                                    "-3",
+                                    "-2"
+                                ],
+                                [
+                                    "-3",
+                                    "-2"
+                                ]
+                            ],
+                            [
+                                [
+                                    "-1",
+                                    "-1"
+                                ],
+                                [
+                                    "-2",
+                                    "-1"
+                                ]
+                            ]
+                        ],
+                        "word": [
+                            -17,
+                            5,
+                            -17,
+                            -6,
+                            -16,
+                            2
+                        ]
+                    },
+                    {
+                        "source": 2,
+                        "target": 1,
+                        "facet": 24,
+                        "before": "8",
+                        "after": "6",
+                        "actual_frame": [
+                            [
+                                [
+                                    "0",
+                                    "0"
+                                ],
+                                [
+                                    "-3",
+                                    "-2"
+                                ]
+                            ],
+                            [
+                                [
+                                    "-1",
+                                    "0"
+                                ],
+                                [
+                                    "0",
+                                    "0"
+                                ]
+                            ]
+                        ],
+                        "word": [
+                            -4,
+                            -1,
+                            -1,
+                            16,
+                            6,
+                            5,
+                            -17,
+                            5,
+                            -17,
+                            -6,
+                            -16,
+                            2
+                        ]
+                    }
+                ],
+                "residual_stabilizer_word": [
+                    1,
+                    3
+                ],
+                "seconds": 0.000697905
+            },
+            "source_enumeration_cache_key": "557e0aa0ab65c05a2c92083edc2321e615bdcfb4bf26181d608817d6767d0d3e",
+            "GL_raw_generators": 17,
+            "locally_reduced_ridge_counts": [
+                4,
+                11
+            ],
+            "GL_raw_relators": 291,
+            "SL_raw_generators": 65,
+            "global_unoriented_edges": 4,
+            "SL_simplified_generators": 2,
+            "discriminant": 8,
+            "stage_seconds": {
+                "SL_Tietze_and_maps": 0.167612614,
+                "ridge_context": 1.769422685,
+                "validated_enumeration_load": 0.484749355,
+                "loops_and_coverage": 5.090137418,
+                "GL_assembly_and_validation": 0.174489082,
+                "SL_extraction_and_validation": 0.129759665,
+                "GL_Tietze_and_maps": 0.524361903
+            },
+            "loop_cache_hits": 182,
+            "nonidentity_residuals": 172,
+            "loop_length_counts": {
+                "3": 92,
+                "4": 14,
+                "5": 76
+            },
+            "global_two_cell_orbits": null,
+            "GL_simplified_generators": 3,
+            "GL_simplified_relators": 11,
+            "status": "certified_GL_and_SL",
+            "scalar_unit_word": [
+                -3,
+                -1,
+                -4,
+                -1,
+                -1,
+                16,
+                6,
+                5,
+                -17,
+                5,
+                -17,
+                -6,
+                -16,
+                2
+            ]
+        }
+    ],
+    "started_utc": "2026-10-17T20:34:25.303",
+    "schema": "arithmetic_voronoi_two_cell_summary_v1",
+    "julia_version": "1.13.2"
+}

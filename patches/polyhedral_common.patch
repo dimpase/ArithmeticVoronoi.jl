@@ -1,0 +1,23 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 236113f8..3d198b93 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -298,7 +298,7 @@ ExternalProject_Add(
+   NautyDirectPackage
+   PREFIX "${CMAKE_BINARY_DIR}/external"
+   GIT_REPOSITORY https://github.com/MathieuDutSik/nauty
+-  GIT_TAG traces-grpsize-factors
++  GIT_TAG cb9dc822f9d1aa3a02b1dcb7a18dd9609d838b1e
+   UPDATE_DISCONNECTED TRUE
+   CONFIGURE_COMMAND ./configure --prefix=${NAUTY_INSTALL_DIR}
+   BUILD_IN_SOURCE 1
+@@ -1041,3 +1041,9 @@ foreach(target IN LISTS ROBUST_PROGRAMS)
+     polyhedral_robust_support
+   )
+ endforeach()
++
++# Local, separately maintained exporter: no full-complex construction.
++set(AV_EXPORTER_SOURCE "" CACHE FILEPATH "ArithmeticVoronoi exact exporter source")
++if(AV_EXPORTER_SOURCE)
++  add_polyhedral_binary(AV_ExportPerfectOrbits "${AV_EXPORTER_SOURCE}" polyhedral_perfect_support)
++endif()

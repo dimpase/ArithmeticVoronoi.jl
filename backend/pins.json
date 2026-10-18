@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/MathieuDutSik/polyhedral_common",
+  "commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+  "nauty_repository": "https://github.com/MathieuDutSik/nauty",
+  "nauty_commit": "cb9dc822f9d1aa3a02b1dcb7a18dd9609d838b1e",
+  "submodules": {
+    "basic_common_cpp": "efd0795a3ee8a75998406ccf1ed97ac12253798e",
+    "basic_common_cpp/array-hash": "06f7c454ef18f16ab2af0073733a5639d95d537e",
+    "basic_common_cpp/hopscotch-map": "2bdc14c19e2fdfd000dc8649fa1b60f9d2810ce7",
+    "basic_common_cpp/robin-hood-hashing": "7697343363af4cc3f42cab17be49e6af9ab181e2",
+    "basic_common_cpp/robin-map": "91362aab8f2c63ef90bf7c21fb2c3283ded5ae48",
+    "basic_common_cpp/sparse-map": "475bcc60bd07708e97f25232c5bb51e12427a887",
+    "permutalib": "4a03db92a22994b4993d00b2378093b962900015"
+  }
+}

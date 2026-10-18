@@ -1,0 +1,31 @@
+This project uses polyhedral_common by Mathieu Dutour Sikiric as an external,
+pinned build dependency. No upstream source archive or backend executable is
+distributed in this repository or its data archives. configure_backend.py
+fetches the upstream repository and submodules into a separate checkout;
+backend/pins.json records their exact revisions.
+
+Repository: https://github.com/MathieuDutSik/polyhedral_common
+Pinned commit: cfcd79dbddf67a494a1c71b776174b190da5209a
+The upstream GPL version 2 text is retained as UPSTREAM_COPYING for reference.
+Upstream copyright notices remain in the external source checkout. The local
+C++ exporter compiles upstream headers when built; making those sources an
+external dependency does not settle the backend's license-version or linked
+dependency compatibility questions. No relicensing of upstream code is claimed.
+
+Its permutalib dependency is pinned in pins.json; its supplied LGPL text is
+retained as PERMUTALIB_COPYING.LGPL for reference. The other pinned source
+dependencies and their notices remain in the external upstream checkout.
+The selected nauty fork/commit is also recorded in pins.json.
+
+export_perfect.cpp is the local exporter, not an upstream supported interface.
+patches/polyhedral_common.patch is a local CMake integration and dependency pin.
+No code patches have been submitted. Following the audit, the user authorized
+three issue reports; their URLs and exact bodies are in ../upstream_reports/.
+The Julia adapter invokes this separate executable through typed exact JSON.
+No code was copied from SLnCohomology, HAP, or the Magma implementation.
+
+The sealed mathematical dataset includes our exporter and build recipe as
+historical provenance, but no upstream source tree or compiled backend.
+The original audit's source-preservation archive and archival helper may
+remain as ignored local files; they are not fetched by Git LFS or published
+from this repository. BACKEND_AUDIT.md records that earlier audit layout.

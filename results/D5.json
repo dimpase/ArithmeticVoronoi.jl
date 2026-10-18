@@ -1,0 +1,2840 @@
+{
+    "schema": "arithmetic_voronoi_v1",
+    "problem": {
+        "discriminant": 5,
+        "degree": 2,
+        "rank": 2,
+        "polynomial_coefficients": [
+            -1,
+            -1,
+            1
+        ],
+        "order": "maximal",
+        "order_basis": [
+            "1",
+            "w"
+        ],
+        "lattice": "free O^2",
+        "coordinate_order": [
+            "e1",
+            "w*e1",
+            "e2",
+            "w*e2"
+        ],
+        "multiplication": [
+            [
+                "0",
+                "1",
+                "0",
+                "0"
+            ],
+            [
+                "1",
+                "1",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "1"
+            ],
+            [
+                "0",
+                "0",
+                "1",
+                "1"
+            ]
+        ],
+        "form_basis": [
+            [
+                [
+                    "2",
+                    "1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "1",
+                    "3",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "1",
+                    "3",
+                    "0",
+                    "0"
+                ],
+                [
+                    "3",
+                    "4",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "0",
+                    "2",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "3"
+                ],
+                [
+                    "2",
+                    "1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "1",
+                    "3",
+                    "0",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "3"
+                ],
+                [
+                    "0",
+                    "0",
+                    "3",
+                    "4"
+                ],
+                [
+                    "1",
+                    "3",
+                    "0",
+                    "0"
+                ],
+                [
+                    "3",
+                    "4",
+                    "0",
+                    "0"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "2",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "3"
+                ]
+            ],
+            [
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "3"
+                ],
+                [
+                    "0",
+                    "0",
+                    "3",
+                    "4"
+                ]
+            ]
+        ],
+        "group": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+        "action": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)"
+    },
+    "completion_status": "complete",
+    "normalization": "minimum squared trace length one; one common rational scale",
+    "transporter_convention": "H=transpose(g)*F_target*g; g maps neighbour minimal vectors to target minimal vectors",
+    "word_convention": "matrix products in written order; negative stabilizer index denotes inverse",
+    "forms": [
+        {
+            "id": 1,
+            "form_coefficients": [
+                [
+                    [
+                        "2/5",
+                        "1/5"
+                    ],
+                    [
+                        "-1/10",
+                        "1/5"
+                    ]
+                ],
+                [
+                    [
+                        "-1/10",
+                        "1/5"
+                    ],
+                    [
+                        "2/5",
+                        "1/5"
+                    ]
+                ]
+            ],
+            "trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "0",
+                    "1/2"
+                ],
+                [
+                    "1",
+                    "2",
+                    "1/2",
+                    "1/2"
+                ],
+                [
+                    "0",
+                    "1/2",
+                    "1",
+                    "1"
+                ],
+                [
+                    "1/2",
+                    "1/2",
+                    "1",
+                    "2"
+                ]
+            ],
+            "minimum": "1",
+            "minimal_vectors": [
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "-1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "1",
+                    "-1",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "1",
+                    "-1",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "-1",
+                    "2",
+                    "-1"
+                ],
+                [
+                    "1",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "2",
+                    "-1",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "2",
+                    "-1",
+                    "2",
+                    "-1"
+                ]
+            ],
+            "minimal_vector_convention": "up to sign, first nonzero coordinate positive; signed actions retained",
+            "evaluation_rays": [
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "2",
+                    "1"
+                ],
+                [
+                    "3",
+                    "-1",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "3",
+                    "-1",
+                    "6",
+                    "-2",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "3",
+                    "-1",
+                    "2",
+                    "-4",
+                    "2",
+                    "1"
+                ],
+                [
+                    "3",
+                    "-1",
+                    "8",
+                    "-6",
+                    "7",
+                    "-4"
+                ],
+                [
+                    "2",
+                    "1",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "2",
+                    "1",
+                    "2",
+                    "-4",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "7",
+                    "-4",
+                    "8",
+                    "-6",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "7",
+                    "-4",
+                    "14",
+                    "-8",
+                    "7",
+                    "-4"
+                ]
+            ],
+            "stabilizer_order": "20",
+            "stabilizer_generators": [
+                [
+                    [
+                        [
+                            "0",
+                            "0"
+                        ],
+                        [
+                            "1",
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "-1",
+                            "0"
+                        ],
+                        [
+                            "1",
+                            "-1"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1",
+                            "0"
+                        ],
+                        [
+                            "0",
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "-1",
+                            "1"
+                        ],
+                        [
+                            "1",
+                            "0"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "1",
+                            "0"
+                        ],
+                        [
+                            "0",
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "1",
+                            "-1"
+                        ],
+                        [
+                            "-1",
+                            "0"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1",
+                            "0"
+                        ],
+                        [
+                            "0",
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "0",
+                            "0"
+                        ],
+                        [
+                            "-1",
+                            "0"
+                        ]
+                    ]
+                ]
+            ],
+            "facets": [
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        4,
+                        5,
+                        6,
+                        8,
+                        10
+                    ],
+                    "normal": [
+                        "6",
+                        "-2",
+                        "-4",
+                        "3",
+                        "2",
+                        "-4"
+                    ],
+                    "neighbour_orbit": 5,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        1,
+                        4,
+                        8,
+                        9,
+                        2,
+                        5,
+                        6,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3,
+                        4,
+                        6,
+                        7,
+                        10
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-1",
+                        "-3",
+                        "2",
+                        "6"
+                    ],
+                    "neighbour_orbit": 4,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        5,
+                        6,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "6",
+                        "8",
+                        "1",
+                        "3",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 4,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        9,
+                        8,
+                        4,
+                        1,
+                        5,
+                        2,
+                        10,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        3,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "1",
+                        "3",
+                        "6",
+                        "8"
+                    ],
+                    "neighbour_orbit": 4,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        9,
+                        5,
+                        10,
+                        2,
+                        8,
+                        3,
+                        4,
+                        7,
+                        6,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        4,
+                        5,
+                        7,
+                        8,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "2",
+                        "-4",
+                        "-4",
+                        "3",
+                        "6",
+                        "-2"
+                    ],
+                    "neighbour_orbit": 5,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "2",
+                        "6",
+                        "-1",
+                        "-3",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 4,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        1,
+                        4,
+                        8,
+                        9,
+                        2,
+                        5,
+                        6,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        4,
+                        6,
+                        7,
+                        8
+                    ],
+                    "normal": [
+                        "2",
+                        "-4",
+                        "-2",
+                        "-1",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 5,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "-1",
+                                "1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        10,
+                        4,
+                        6,
+                        7,
+                        2,
+                        9,
+                        8,
+                        5,
+                        1,
+                        3
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3,
+                        6,
+                        7,
+                        8
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "2",
+                        "1",
+                        "2",
+                        "6"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        9,
+                        5,
+                        10,
+                        2,
+                        8,
+                        3,
+                        4,
+                        7,
+                        6,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        5,
+                        6,
+                        8
+                    ],
+                    "normal": [
+                        "4",
+                        "2",
+                        "1",
+                        "3",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "-1"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -2,
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        10,
+                        4,
+                        9,
+                        2,
+                        7,
+                        6,
+                        5,
+                        8,
+                        3,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3,
+                        5,
+                        6,
+                        8,
+                        9
+                    ],
+                    "normal": [
+                        "2",
+                        "6",
+                        "5",
+                        "5",
+                        "2",
+                        "6"
+                    ],
+                    "neighbour_orbit": 4,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        6,
+                        5,
+                        4,
+                        3,
+                        8,
+                        7,
+                        10,
+                        9
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        3,
+                        4,
+                        5,
+                        7,
+                        9
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-2",
+                        "-1",
+                        "2",
+                        "-4"
+                    ],
+                    "neighbour_orbit": 5,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        9,
+                        8,
+                        4,
+                        1,
+                        5,
+                        2,
+                        10,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        4,
+                        5,
+                        7,
+                        8
+                    ],
+                    "normal": [
+                        "2",
+                        "-4",
+                        "-3",
+                        "1",
+                        "2",
+                        "-4"
+                    ],
+                    "neighbour_orbit": 3,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        5,
+                        9
+                    ],
+                    "normal": [
+                        "2",
+                        "6",
+                        "2",
+                        "1",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        9,
+                        8,
+                        4,
+                        1,
+                        5,
+                        2,
+                        10,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        3,
+                        5,
+                        7,
+                        8,
+                        9
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "1",
+                        "3",
+                        "4",
+                        "2"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        6,
+                        5,
+                        4,
+                        3,
+                        8,
+                        7,
+                        10,
+                        9
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        7
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-1",
+                        "-3",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -2,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        6,
+                        8,
+                        10,
+                        7,
+                        5,
+                        1,
+                        4,
+                        2,
+                        9,
+                        3
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        5,
+                        7,
+                        8
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "2",
+                        "1",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 5,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "1"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        9,
+                        5,
+                        10,
+                        2,
+                        8,
+                        3,
+                        4,
+                        7,
+                        6,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        3,
+                        4,
+                        7,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-2",
+                        "-1",
+                        "4",
+                        "2"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        4,
+                        5,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "4",
+                        "2",
+                        "-3",
+                        "1",
+                        "2",
+                        "-4"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "-1"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        9,
+                        8,
+                        4,
+                        1,
+                        5,
+                        2,
+                        10,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3,
+                        6,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "2",
+                        "6",
+                        "2",
+                        "1",
+                        "2",
+                        "6"
+                    ],
+                    "neighbour_orbit": 6,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        5,
+                        6,
+                        8,
+                        9,
+                        10
+                    ],
+                    "normal": [
+                        "4",
+                        "2",
+                        "0",
+                        "5",
+                        "4",
+                        "2"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        6,
+                        5,
+                        4,
+                        3,
+                        8,
+                        7,
+                        10,
+                        9
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        4,
+                        6,
+                        10
+                    ],
+                    "normal": [
+                        "4",
+                        "2",
+                        "-2",
+                        "-1",
+                        "0",
+                        "0"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "-1",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -2
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        3,
+                        7,
+                        1,
+                        4,
+                        8,
+                        9,
+                        2,
+                        5,
+                        6,
+                        10
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        4,
+                        6,
+                        7,
+                        8,
+                        10
+                    ],
+                    "normal": [
+                        "2",
+                        "-4",
+                        "-3",
+                        "1",
+                        "4",
+                        "2"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "form_coefficients": [
+                [
+                    [
+                        "2/5",
+                        "1/5"
+                    ],
+                    [
+                        "-3/10",
+                        "1/10"
+                    ]
+                ],
+                [
+                    [
+                        "-3/10",
+                        "1/10"
+                    ],
+                    [
+                        "4/5",
+                        "2/5"
+                    ]
+                ]
+            ],
+            "trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "-1/2",
+                    "0"
+                ],
+                [
+                    "1",
+                    "2",
+                    "0",
+                    "-1/2"
+                ],
+                [
+                    "-1/2",
+                    "0",
+                    "2",
+                    "2"
+                ],
+                [
+                    "0",
+                    "-1/2",
+                    "2",
+                    "4"
+                ]
+            ],
+            "minimum": "1",
+            "minimal_vectors": [
+                [
+                    "1",
+                    "-1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "1",
+                    "-1",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "1",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "2",
+                    "-1",
+                    "1",
+                    "-1"
+                ],
+                [
+                    "2",
+                    "-1",
+                    "2",
+                    "-1"
+                ],
+                [
+                    "3",
+                    "-2",
+                    "2",
+                    "-1"
+                ]
+            ],
+            "minimal_vector_convention": "up to sign, first nonzero coordinate positive; signed actions retained",
+            "evaluation_rays": [
+                [
+                    "3",
+                    "-1",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "3",
+                    "-1",
+                    "6",
+                    "-2",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "2",
+                    "1",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "7",
+                    "-4",
+                    "8",
+                    "-6",
+                    "3",
+                    "-1"
+                ],
+                [
+                    "7",
+                    "-4",
+                    "14",
+                    "-8",
+                    "7",
+                    "-4"
+                ],
+                [
+                    "18",
+                    "-11",
+                    "22",
+                    "-14",
+                    "7",
+                    "-4"
+                ]
+            ],
+            "stabilizer_order": "12",
+            "stabilizer_generators": [
+                [
+                    [
+                        [
+                            "2",
+                            "-1"
+                        ],
+                        [
+                            "-2",
+                            "2"
+                        ]
+                    ],
+                    [
+                        [
+                            "1",
+                            "-1"
+                        ],
+                        [
+                            "-1",
+                            "1"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "1",
+                            "0"
+                        ],
+                        [
+                            "-2",
+                            "1"
+                        ]
+                    ],
+                    [
+                        [
+                            "0",
+                            "0"
+                        ],
+                        [
+                            "-1",
+                            "0"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1",
+                            "0"
+                        ],
+                        [
+                            "2",
+                            "-1"
+                        ]
+                    ],
+                    [
+                        [
+                            "0",
+                            "0"
+                        ],
+                        [
+                            "1",
+                            "0"
+                        ]
+                    ]
+                ],
+                [
+                    [
+                        [
+                            "-1",
+                            "0"
+                        ],
+                        [
+                            "0",
+                            "0"
+                        ]
+                    ],
+                    [
+                        [
+                            "0",
+                            "0"
+                        ],
+                        [
+                            "-1",
+                            "0"
+                        ]
+                    ]
+                ]
+            ],
+            "facets": [
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "2",
+                        "1",
+                        "-4",
+                        "-2"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        6
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-2",
+                        "-1",
+                        "2",
+                        "-4"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-2"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        5,
+                        4,
+                        2,
+                        3,
+                        6,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        3,
+                        5,
+                        6
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "-3",
+                        "-4",
+                        "6",
+                        "8"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "1",
+                                "0"
+                            ],
+                            [
+                                "0",
+                                "0"
+                            ]
+                        ],
+                        [
+                            [
+                                "0",
+                                "0"
+                            ],
+                            [
+                                "1",
+                                "0"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        3,
+                        4,
+                        5,
+                        6
+                    ],
+                    "normal": [
+                        "0",
+                        "0",
+                        "3",
+                        "4",
+                        "2",
+                        "6"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-2"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        5,
+                        4,
+                        2,
+                        3,
+                        6,
+                        1
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                    ],
+                    "normal": [
+                        "2",
+                        "-4",
+                        "-4",
+                        "3",
+                        "6",
+                        "-2"
+                    ],
+                    "neighbour_orbit": 2,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-2",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-2"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        6,
+                        3,
+                        4,
+                        2,
+                        1,
+                        5
+                    ]
+                },
+                {
+                    "minimal_vector_indices": [
+                        1,
+                        2,
+                        4,
+                        5,
+                        6
+                    ],
+                    "normal": [
+                        "2",
+                        "6",
+                        "1",
+                        "-2",
+                        "-4",
+                        "-2"
+                    ],
+                    "neighbour_orbit": 1,
+                    "to_orbit_representative": [
+                        [
+                            [
+                                "-2",
+                                "1"
+                            ],
+                            [
+                                "2",
+                                "-2"
+                            ]
+                        ],
+                        [
+                            [
+                                "-1",
+                                "1"
+                            ],
+                            [
+                                "1",
+                                "-1"
+                            ]
+                        ]
+                    ],
+                    "stabilizer_word": [
+                        -1,
+                        -1
+                    ],
+                    "induced_minimal_vector_permutation": [
+                        6,
+                        3,
+                        4,
+                        2,
+                        1,
+                        5
+                    ]
+                }
+            ]
+        }
+    ],
+    "neighbours": [
+        {
+            "source": 1,
+            "source_facet": [
+                3,
+                4,
+                7,
+                9,
+                10
+            ],
+            "target": 2,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "-1/2",
+                    "0"
+                ],
+                [
+                    "1",
+                    "2",
+                    "0",
+                    "-1/2"
+                ],
+                [
+                    "-1/2",
+                    "0",
+                    "2",
+                    "2"
+                ],
+                [
+                    "0",
+                    "-1/2",
+                    "2",
+                    "4"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "1",
+                        "0"
+                    ],
+                    [
+                        "0",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "1",
+                        "0"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ]
+        },
+        {
+            "source": 1,
+            "source_facet": [
+                4,
+                6,
+                7,
+                8,
+                10
+            ],
+            "target": 2,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "0",
+                    "-1/2",
+                    "1/2"
+                ],
+                [
+                    "0",
+                    "1",
+                    "1/2",
+                    "0"
+                ],
+                [
+                    "-1/2",
+                    "1/2",
+                    "2",
+                    "2"
+                ],
+                [
+                    "1/2",
+                    "0",
+                    "2",
+                    "4"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "1",
+                        "-1"
+                    ],
+                    [
+                        "0",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "1",
+                        "0"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                4,
+                5,
+                1,
+                2,
+                6
+            ]
+        },
+        {
+            "source": 1,
+            "source_facet": [
+                2,
+                4,
+                5,
+                7,
+                8
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "0",
+                    "-1/2",
+                    "1/2"
+                ],
+                [
+                    "0",
+                    "1",
+                    "1/2",
+                    "0"
+                ],
+                [
+                    "-1/2",
+                    "1/2",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1/2",
+                    "0",
+                    "0",
+                    "1"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "-2",
+                        "1"
+                    ],
+                    [
+                        "1",
+                        "-1"
+                    ]
+                ],
+                [
+                    [
+                        "-2",
+                        "1"
+                    ],
+                    [
+                        "2",
+                        "-1"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                6,
+                -3,
+                -9,
+                -10,
+                1
+            ]
+        },
+        {
+            "source": 1,
+            "source_facet": [
+                1,
+                3,
+                4,
+                6,
+                7,
+                10
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "-1/2",
+                    "-1/2"
+                ],
+                [
+                    "1",
+                    "2",
+                    "-1/2",
+                    "-1"
+                ],
+                [
+                    "-1/2",
+                    "-1/2",
+                    "2",
+                    "3"
+                ],
+                [
+                    "-1/2",
+                    "-1",
+                    "3",
+                    "5"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "-1",
+                        "1"
+                    ],
+                    [
+                        "1",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "-1",
+                        "1"
+                    ],
+                    [
+                        "0",
+                        "-1"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                5,
+                -10,
+                -8,
+                -2,
+                -4,
+                -6
+            ]
+        },
+        {
+            "source": 1,
+            "source_facet": [
+                4,
+                5,
+                7,
+                8,
+                9,
+                10
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "0",
+                    "-1/2",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1",
+                    "1",
+                    "1/2"
+                ],
+                [
+                    "-1/2",
+                    "1",
+                    "2",
+                    "1"
+                ],
+                [
+                    "1",
+                    "1/2",
+                    "1",
+                    "3"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "-1",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "-1",
+                        "1"
+                    ],
+                    [
+                        "1",
+                        "0"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                -5,
+                -8,
+                -1,
+                -3,
+                -6,
+                -9
+            ]
+        },
+        {
+            "source": 1,
+            "source_facet": [
+                1,
+                3,
+                6,
+                9,
+                10
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "2",
+                    "3",
+                    "1/2",
+                    "1"
+                ],
+                [
+                    "3",
+                    "5",
+                    "1",
+                    "3/2"
+                ],
+                [
+                    "1/2",
+                    "1",
+                    "2",
+                    "3"
+                ],
+                [
+                    "1",
+                    "3/2",
+                    "3",
+                    "5"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "0",
+                        "-1"
+                    ],
+                    [
+                        "0",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "0",
+                        "-1"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                2,
+                7,
+                8,
+                5,
+                4
+            ]
+        },
+        {
+            "source": 2,
+            "source_facet": [
+                1,
+                2,
+                3,
+                5,
+                6
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "-3/2",
+                    "-3/2"
+                ],
+                [
+                    "1",
+                    "2",
+                    "-3/2",
+                    "-3"
+                ],
+                [
+                    "-3/2",
+                    "-3/2",
+                    "4",
+                    "5"
+                ],
+                [
+                    "-3/2",
+                    "-3",
+                    "5",
+                    "9"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "0",
+                        "-1"
+                    ]
+                ],
+                [
+                    [
+                        "1",
+                        "0"
+                    ],
+                    [
+                        "-1",
+                        "0"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                1,
+                7,
+                2,
+                3,
+                4
+            ]
+        },
+        {
+            "source": 2,
+            "source_facet": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "target": 1,
+            "neighbour_trace_gram": [
+                [
+                    "1",
+                    "1",
+                    "0",
+                    "1/2"
+                ],
+                [
+                    "1",
+                    "2",
+                    "1/2",
+                    "1/2"
+                ],
+                [
+                    "0",
+                    "1/2",
+                    "1",
+                    "1"
+                ],
+                [
+                    "1/2",
+                    "1/2",
+                    "1",
+                    "2"
+                ]
+            ],
+            "transporter": [
+                [
+                    [
+                        "1",
+                        "0"
+                    ],
+                    [
+                        "0",
+                        "0"
+                    ]
+                ],
+                [
+                    [
+                        "0",
+                        "0"
+                    ],
+                    [
+                        "1",
+                        "0"
+                    ]
+                ]
+            ],
+            "signed_target_facet_map": [
+                3,
+                4,
+                7,
+                9,
+                10
+            ]
+        }
+    ],
+    "pending_facets": [
+    ],
+    "provenance": {
+        "stabilizers": "generated closure equals independent Hecke K-linear automorphism order; central -I retained",
+        "global_argument": "connectedness of the arithmetic perfect-form neighbour graph; all facet orbits exhausted under the specified K-linear GL group",
+        "presentation_status": "not constructed; no ordered two-cell attaching loops yet",
+        "validation_seconds": 7.63575458,
+        "executable_sha256": "36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c",
+        "group_constraints": "GL(2,O) acting K-linearly on the free lattice O^2; retain -I",
+        "neighbours": "exact common face, outward ray, endpoint minima and full minimum-set transport; reverse incidences checked",
+        "action_convention": "columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)",
+        "minimum_and_minimal_vectors": "exhaustive Hecke shortest vectors; exact squared trace lengths",
+        "closure": [
+            {
+                "facet_orbits": 6,
+                "representative": 1,
+                "unresolved_facets": 0,
+                "facets": 22
+            },
+            {
+                "facet_orbits": 2,
+                "representative": 2,
+                "unresolved_facets": 0,
+                "facets": 6
+            }
+        ],
+        "backend_seconds": 0.063392713,
+        "backend_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+        "cache_key": "a81709875b91d7e93c984d9eac9fa963d5fd9f9892220d6bffc619a36e7d7518",
+        "run_directory": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/runs/request CAha7U",
+        "schema": "arithmetic_voronoi_v1",
+        "from_cache": false,
+        "facets": "exact OSCAR/polymake cone facets; every facet covered by one stabilizer orbit"
+    }
+}

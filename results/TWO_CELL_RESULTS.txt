@@ -1,0 +1,75 @@
+Two-cell and arithmetic group presentation results, 2026-10-17
+==============================================================
+
+Completed: exact two-cells, GL presentations, central scalar quotient,
+index-four SL extraction, and Tietze simplification for D5 and D8.
+All groups are K-linear on the maximal-order lattice O^2. Both retain -I.
+GL includes the full scalar-unit group. No semilinear/projective quotient.
+
+Field      ridges    local orbits   loops    GL raw / small     SL raw / small
+D5      [75, 15]   [11, 4]      180    20/390 -> 3/10    77/1564 -> 2/6
+D8      [15, 76]   [4, 11]      182    17/291 -> 3/11    65/1168 -> 2/6
+
+Presentation sizes are generator count / relator count.
+Global unoriented edge orbits: four in each field.
+Unresolved coverage entries: zero in each field.
+Global two-cell orbit minimization was not performed. The exhaustive local
+ridge loops are deliberately redundant and cover every required orbit.
+D8 has one inverted edge: reversing matrices have square I and order two;
+its full setwise stabilizer has order four (the Klein four group).
+D5 has no edge inversions.
+
+Measured stages (seconds within one native Julia process):
+  D5:
+    Initial uncached loop generation + coverage: 8.280474
+    SL_Tietze_and_maps: 0.811471
+    ridge_context: 3.563011
+    validated_enumeration_load: 40.239307
+    loops_and_coverage: 8.075157
+    GL_assembly_and_validation: 2.225934
+    SL_extraction_and_validation: 3.232956
+    GL_Tietze_and_maps: 0.259617
+    Loop cache hits in the fresh verification run: 180
+    Nonidentity residuals: 156; residual -I: 9
+    Fundamental-scalar reduction visited 2 cones.
+  D8:
+    Initial uncached loop generation + coverage: 5.544967
+    SL_Tietze_and_maps: 0.167613
+    ridge_context: 1.769423
+    validated_enumeration_load: 0.484749
+    loops_and_coverage: 5.090137
+    GL_assembly_and_validation: 0.174489
+    SL_extraction_and_validation: 0.129760
+    GL_Tietze_and_maps: 0.524362
+    Loop cache hits in the fresh verification run: 182
+    Nonidentity residuals: 172; residual -I: 16
+    Fundamental-scalar reduction visited 5 cones.
+
+The fresh verification run replays completed loop caches; it does not measure
+uncached loop generation. D5 is first in that process and includes first-use
+compilation. Package import/process startup is excluded from stage timings.
+The saved initial-coverage timings came from the earlier development process.
+These timings do not measure thread scaling. The algorithms run sequentially.
+
+Read these files:
+  ../PRESENTATION_JUSTIFICATION.md: completeness and GL-to-SL proof.
+  two_cells/D5/FIRST_TWO_CELL.txt and first_two_cell.json: first checkpoint.
+  two_cells/D5/coverage.json and loops/: full exact coverage and cycles.
+  two_cells/D5/PRESENTATIONS.txt: explicit small matrices and all relators.
+  two_cells/D5/{GL,SL}_presentation.json: raw generators, relators, provenance.
+  two_cells/D5/{GL,SL}_simplified.json: both Tietze generator maps.
+  Corresponding D8 paths contain the second case.
+  two_cell_summary.json: machine-readable counts, timings and status.
+  two_cell_tests.txt and two_cell_test_summary.json: regression results.
+  two_cells/baseline/preservation_check.json: unchanged M2/backend hashes.
+
+Reproduce from the repository root:
+  julia --startup-file=no --project=experiments/arithmetic_voronoi \
+    experiments/arithmetic_voronoi/scripts/run_two_cells.jl
+  julia --startup-file=no --project=experiments/arithmetic_voronoi \
+    experiments/arithmetic_voronoi/test/runtests.jl
+
+Final verification: 1055 passing assertions (231 baseline + 824 new).
+The first extended run caught a mistaken D8 reversal-order assertion;
+the corrected full run passes. Its original diagnostic is preserved
+in two_cells/baseline/first_extended_test_failure.txt.

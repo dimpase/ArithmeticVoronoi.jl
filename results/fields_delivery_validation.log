@@ -1,0 +1,89 @@
+Test Summary:                                       | Pass  Total   Time
+maximal-order trace model and exact K-linear action |   97     97  57.2s
+Test Summary:                                                   | Pass  Total  Time
+Hecke short vectors use lattice coordinates and squared lengths |    6      6  0.9s
+Exact coordinate, constrained-isometry, stabilizer and short-vector model tests passed.
+Test Summary:                                                  | Pass  Total   Time
+external boundary, failure behaviour and exact cache contracts |  128    128  11.9s
+Engineering and mathematical rejection contracts passed; diagnostics retained at /home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/test/../results/contract tests jfLlGi
+D5 ridge 1/90: cycle length 4
+D5 ridge 1/90: cycle length 4
+D5 ridge 2/90: cycle length 4
+Test Summary:                                                 | Pass  Total   Time
+exact two-cells, group-action presentations and SL extraction |  824    824  28.2s
+D5: field_and_unit_verification
+D5: perfect_enumeration_and_validation
+D5: ridges
+D5: two_cells_and_coverage
+D5: GL_assembly
+D5: SL_extraction
+D5: PSL_quotient
+D5: GL_simplification
+D5: SL_simplification
+D5: PSL_simplification
+D5: abelianizations
+D5 completed: Dict{String, Any}("inverted_edges" => 0, "oriented_loops" => 180, "local_directed_facet_orbits" => 8, "local_ridges" => [75, 15], "perfect_form_orbits" => 2, "stabilizer_orders" => BigInt[20, 12], "global_two_cell_reduction" => "not performed; exhaustive redundant local coverage", "global_unoriented_edges" => 4, "locally_reduced_ridges" => Any[11, 4], "global_two_cell_orbits" => nothing); seconds 10.004994202
+D8: field_and_unit_verification
+D8: perfect_enumeration_and_validation
+D8: ridges
+D8: two_cells_and_coverage
+D8: GL_assembly
+D8: SL_extraction
+D8: PSL_quotient
+D8: GL_simplification
+D8: SL_simplification
+D8: PSL_simplification
+D8: abelianizations
+D8 completed: Dict{String, Any}("inverted_edges" => 1, "oriented_loops" => 182, "local_directed_facet_orbits" => 7, "local_ridges" => [15, 76], "perfect_form_orbits" => 2, "stabilizer_orders" => BigInt[12, 16], "global_two_cell_reduction" => "not performed; exhaustive redundant local coverage", "global_unoriented_edges" => 4, "locally_reduced_ridges" => Any[4, 11], "global_two_cell_orbits" => nothing); seconds 3.72292181
+D12: field_and_unit_verification
+D12: perfect_enumeration_and_validation
+D12: ridges
+D12: two_cells_and_coverage
+D12: GL_assembly
+D12: SL_extraction
+D12: PSL_quotient
+D12: GL_simplification
+D12: SL_simplification
+D12: PSL_simplification
+D12: abelianizations
+D12 completed: Dict{String, Any}("inverted_edges" => 3, "oriented_loops" => 228, "local_directed_facet_orbits" => 15, "local_ridges" => [51, 48, 15], "perfect_form_orbits" => 3, "stabilizer_orders" => BigInt[4, 24, 12], "global_two_cell_reduction" => "not performed; exhaustive redundant local coverage", "global_unoriented_edges" => 9, "locally_reduced_ridges" => Any[26, 5, 4], "global_two_cell_orbits" => nothing); seconds 7.64935256
+D13: field_and_unit_verification
+D13: perfect_enumeration_and_validation
+D13: ridges
+D13: two_cells_and_coverage
+D13: GL_assembly
+D13: SL_extraction
+D13: PSL_quotient
+D13: GL_simplification
+D13: SL_simplification
+D13: PSL_simplification
+D13: abelianizations
+D13 completed: Dict{String, Any}("inverted_edges" => 0, "oriented_loops" => 554, "local_directed_facet_orbits" => 46, "local_ridges" => [38, 15, 15, 38, 63, 15, 63, 15, 15], "perfect_form_orbits" => 9, "stabilizer_orders" => BigInt[4, 4, 4, 4, 12, 4, 12, 12, 12], "global_two_cell_reduction" => "not performed; exhaustive redundant local coverage", "global_unoriented_edges" => 23, "locally_reduced_ridges" => Any[21, 9, 9, 21, 13, 9, 13, 4, 4], "global_two_cell_orbits" => nothing); seconds 12.531151581
+D40: field_and_unit_verification
+D40: perfect_enumeration_and_validation
+D40: ridges
+D40: two_cells_and_coverage
+D40: GL_assembly
+D40: SL_extraction
+D40: PSL_quotient
+D40: GL_simplification
+D40: SL_simplification
+D40: PSL_simplification
+D40: abelianizations
+D40 completed: Dict{String, Any}("inverted_edges" => 12, "oriented_loops" => 2618, "local_directed_facet_orbits" => 372, "local_ridges" => [15, 15, 15, 106, 19, 19, 34, 53, 15, 34, 53, 36, 15, 36, 15, 15, 15, 15, 49, 19, 15, 49, 15, 19, 61, 15, 61, 15, 15, 15, 15, 15, 15, 15, 44, 15, 27, 27, 15, 15, 15, 15, 15, 27, 15, 44, 27, 15, 15, 15, 15, 15], "perfect_form_orbits" => 52, "stabilizer_orders" => BigInt[12, 4, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2, 4, 2, 4, 2, 4, 4, 4, 4, 4, 2, 4, 4, 2, 4, 2, 2, 2, 2, 4, 4, 2, 4, 2, 2, 2, 4, 2, 12, 2, 2, 4, 4, 4, 4, 4, 2, 2, 12, 12], "global_two_cell_reduction" => "not performed; exhaustive redundant local coverage", "global_unoriented_edges" => 192, "locally_reduced_ridges" => Any[4, 9, 15, 56, 19, 19, 34, 53, 15, 34, 53, 20, 15, 20, 15, 9, 15, 9, 26, 11, 9, 26, 15, 11, 32, 15, 32, 15, 15, 15, 15, 9, 9, 15, 24, 15, 27, 27, 9, 15, 4, 15, 15, 15, 9, 24, 15, 9, 15, 15, 4, 4], "global_two_cell_orbits" => nothing); seconds 80.507324503
+D5: Kirchheimer-Wolfart maps verified in both directions.
+D8: Kirchheimer-Wolfart maps verified in both directions.
+D12: Kirchheimer-Wolfart maps verified in both directions.
+D13: Kirchheimer-Wolfart maps verified in both directions.
+Test Summary:                                                    | Pass  Total   Time
+fields, constructive words, projective signs and literature maps | 2751   2751  16.6s
+D12: sanitizer output independently validated and equivalent to release
+D13: sanitizer output independently validated and equivalent to release
+D40: sanitizer output independently validated and equivalent to release
+Dataset written to /home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/dataset/v1 (4088 hashed artifacts).
+Verify D5 (complete)
+Verify D8 (complete)
+Verify D12 (complete)
+Verify D13 (complete)
+Verify D40 (complete)
+Raw geometric completeness and fresh Tietze isomorphisms replayed; faithfulness invokes PRESENTATION_JUSTIFICATION.md, not matrix identities alone.

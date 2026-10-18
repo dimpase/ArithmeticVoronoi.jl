@@ -1,0 +1,45 @@
+{
+    "examples": {
+        "5": {
+            "distinct_inputs": 16,
+            "certified_word_examples": 42,
+            "fresh_and_replay": true,
+            "status": "passed",
+            "raw_and_simplified_alphabets": true,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/fields/D5/word_tests_z0GXsC"
+        },
+        "13": {
+            "distinct_inputs": 16,
+            "certified_word_examples": 40,
+            "fresh_and_replay": true,
+            "status": "passed",
+            "raw_and_simplified_alphabets": true,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/fields/D13/word_tests_eit3Oa"
+        },
+        "40": {
+            "distinct_inputs": 16,
+            "certified_word_examples": 42,
+            "fresh_and_replay": true,
+            "status": "passed",
+            "raw_and_simplified_alphabets": true,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/fields/D40/word_tests_t86SH4"
+        },
+        "8": {
+            "distinct_inputs": 16,
+            "certified_word_examples": 42,
+            "fresh_and_replay": true,
+            "status": "passed",
+            "raw_and_simplified_alphabets": true,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/fields/D8/word_tests_DMGKSE"
+        },
+        "12": {
+            "distinct_inputs": 16,
+            "certified_word_examples": 40,
+            "fresh_and_replay": true,
+            "status": "passed",
+            "raw_and_simplified_alphabets": true,
+            "diagnostics": "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/fields/D12/word_tests_ZGcuwO"
+        }
+    },
+    "status": "passed"
+}

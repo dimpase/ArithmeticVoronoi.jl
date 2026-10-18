@@ -1,0 +1,57 @@
+{
+  "repository": "MathieuDutSik/polyhedral_common",
+  "base_commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
+  "requested_reports": [
+    {
+      "title": "PERF_SerialPerfectComputation ignores ComputeComplex=F",
+      "body_file": "01-compute-complex.md",
+      "body_sha256": "8a08d23a4f5508710405da13f2cde6c481fefc8b16f0b7d1f7dca03f8c2391fc",
+      "characters": 2876
+    },
+    {
+      "title": "Propagate failed boundary-product validation instead of returning the complex",
+      "body_file": "02-boundary-failure.md",
+      "body_sha256": "690edb91b061b0bd65646fcdaa561702a93ac29abdf04e7338bba62276a5fadf",
+      "characters": 2480
+    },
+    {
+      "title": "PERFCOMP_general_query: handle paths with spaces and nonzero child exits",
+      "body_file": "03-gap-process.md",
+      "body_sha256": "62c38dee18e247b8850ca9bd95b25852a993d99aec1ee89960f6b118a71b57c2",
+      "characters": 5297
+    }
+  ],
+  "submissions": [
+    {
+      "number": 13,
+      "html_url": "https://github.com/MathieuDutSik/polyhedral_common/issues/13",
+      "title": "PERF_SerialPerfectComputation ignores ComputeComplex=F",
+      "state": "open",
+      "author": "dimpase",
+      "created_at": "2026-10-17T18:16:42Z"
+    },
+    {
+      "number": 14,
+      "html_url": "https://github.com/MathieuDutSik/polyhedral_common/issues/14",
+      "title": "Propagate failed boundary-product validation instead of returning the complex",
+      "state": "open",
+      "author": "dimpase",
+      "created_at": "2026-10-17T18:16:45Z"
+    },
+    {
+      "number": 15,
+      "html_url": "https://github.com/MathieuDutSik/polyhedral_common/issues/15",
+      "title": "PERFCOMP_general_query: handle paths with spaces and nonzero child exits",
+      "state": "open",
+      "author": "dimpase",
+      "created_at": "2026-10-17T18:16:49Z"
+    }
+  ],
+  "status": "submitted_and_verified",
+  "verified_utc": "2026-10-17T18:17:45.877043+00:00",
+  "verified_body_sha256": {
+    "13": "8a08d23a4f5508710405da13f2cde6c481fefc8b16f0b7d1f7dca03f8c2391fc",
+    "14": "690edb91b061b0bd65646fcdaa561702a93ac29abdf04e7338bba62276a5fadf",
+    "15": "62c38dee18e247b8850ca9bd95b25852a993d99aec1ee89960f6b118a71b57c2"
+  }
+}

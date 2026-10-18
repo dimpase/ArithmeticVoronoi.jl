@@ -1,0 +1,33 @@
+{
+    "schema": "av_dataset_verification_v1",
+    "status": "passed",
+    "level": "complete",
+    "examples": [
+        {
+            "discriminant": 5,
+            "status": "passed",
+            "level": "complete"
+        },
+        {
+            "discriminant": 8,
+            "status": "passed",
+            "level": "complete"
+        },
+        {
+            "discriminant": 12,
+            "status": "passed",
+            "level": "complete"
+        },
+        {
+            "discriminant": 13,
+            "status": "passed",
+            "level": "complete"
+        },
+        {
+            "discriminant": 40,
+            "status": "passed",
+            "level": "complete"
+        }
+    ],
+    "limitation": "Raw geometric completeness and fresh Tietze isomorphisms replayed; faithfulness invokes PRESENTATION_JUSTIFICATION.md, not matrix identities alone."
+}

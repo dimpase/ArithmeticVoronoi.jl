@@ -1,0 +1,237 @@
+{
+  "status": "passed",
+  "passing_assertions": 3806,
+  "baseline_assertions": 1055,
+  "extended_assertions": 2751,
+  "word_examples": 206,
+  "complete_dataset_replay": {
+    "schema": "av_dataset_verification_v1",
+    "status": "passed",
+    "level": "complete",
+    "examples": [
+      {
+        "discriminant": 5,
+        "status": "passed",
+        "level": "complete"
+      },
+      {
+        "discriminant": 8,
+        "status": "passed",
+        "level": "complete"
+      },
+      {
+        "discriminant": 12,
+        "status": "passed",
+        "level": "complete"
+      },
+      {
+        "discriminant": 13,
+        "status": "passed",
+        "level": "complete"
+      },
+      {
+        "discriminant": 40,
+        "status": "passed",
+        "level": "complete"
+      }
+    ],
+    "limitation": "Raw geometric completeness and fresh Tietze isomorphisms replayed; faithfulness invokes PRESENTATION_JUSTIFICATION.md, not matrix identities alone."
+  },
+  "sanitizers": {
+    "cases": {
+      "D13": {
+        "returncode": 0,
+        "raw_export_sha256": "fb0f85f08733bef46480b00373e7cdb10c0a3e5443e53440058a8a951ff0afdc",
+        "maximum_sampled_rss_bytes": 498765824,
+        "deadline_seconds": 60,
+        "sanitizer_options": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+        "orbit_map_to_release": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "success": true,
+        "input_sha256": "c2ae33a140f333a0bbff2c4b61c762cf4b186ef2a86660c5a767f2657f976a9e",
+        "sanitizer_clean": true,
+        "elapsed_seconds": 1.944005372992251,
+        "watchdog_failure": null,
+        "argv": [
+          "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D13/input.nml",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D13/output.json",
+          "047b8aa9210ad73d3a72fd9d374c60074395cf0122db419e144e28862d61b821"
+        ],
+        "executable_sha256": "f38a37521371586f91b66b0ba64ddae39d099fdbec182ef04d9184c7ba23ec47",
+        "math_validation_seconds": 0.120187403,
+        "expected_returncode": 0,
+        "rss_ceiling_bytes": 10737418240
+      },
+      "D40": {
+        "returncode": 0,
+        "raw_export_sha256": "ec53787a472362970cb3dfb884019ba10d58634b0a00cb2bd3fc34382ec1597a",
+        "maximum_sampled_rss_bytes": 692559872,
+        "deadline_seconds": 60,
+        "sanitizer_options": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+        "orbit_map_to_release": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52
+        ],
+        "success": true,
+        "input_sha256": "cc02d627a6223ccd086c48bf9ba80862efd93b2c420e3a424aafe7ee180b5632",
+        "sanitizer_clean": true,
+        "elapsed_seconds": 11.099492138018832,
+        "watchdog_failure": null,
+        "argv": [
+          "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D40/input.nml",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D40/output.json",
+          "ce5179bcb3a2a557afa559a8e55bca8fb31959ea7d5fdf3e201c4a2e9901b5ac"
+        ],
+        "executable_sha256": "f38a37521371586f91b66b0ba64ddae39d099fdbec182ef04d9184c7ba23ec47",
+        "math_validation_seconds": 1.871302811,
+        "expected_returncode": 0,
+        "rss_ceiling_bytes": 10737418240
+      },
+      "D12": {
+        "returncode": 0,
+        "raw_export_sha256": "42838dbe92de801ead2194309ca45ae0cb752045610a0fe85b83f4a86a144939",
+        "maximum_sampled_rss_bytes": 212086784,
+        "deadline_seconds": 60,
+        "sanitizer_options": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "math_validation": "passed all exact invariants and matched release orbits K-linearly",
+        "orbit_map_to_release": [
+          1,
+          2,
+          3
+        ],
+        "success": true,
+        "input_sha256": "f52370b7d43088e904b956d998e0d99ec38766dd134c42af14aab6380fe93289",
+        "sanitizer_clean": true,
+        "elapsed_seconds": 0.7371907269698568,
+        "watchdog_failure": null,
+        "argv": [
+          "/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D12/input.nml",
+          "/home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/results/sanitizer_fields/D12/output.json",
+          "48622dae8187c1b304986734905325269c29645863552db0c14f66d88af719f5"
+        ],
+        "executable_sha256": "f38a37521371586f91b66b0ba64ddae39d099fdbec182ef04d9184c7ba23ec47",
+        "math_validation_seconds": 0.0466211,
+        "expected_returncode": 0,
+        "rss_ceiling_bytes": 10737418240
+      }
+    },
+    "independent_math_validation": "passed",
+    "status": "passed",
+    "coverage": "new supported-input guard and instantiated GMP exporter path for D12,D13,D40; previous audit retained"
+  },
+  "portable_verification": {
+    "status": "passed",
+    "levels": [
+      "algebraic",
+      "complete"
+    ],
+    "field_discriminants": [
+      5,
+      8,
+      12,
+      13,
+      40
+    ],
+    "receipt": "../fields_portable_verification.json",
+    "receipt_sha256": "39ad7daaaea01fd2fdc982ffe9c25e96a4b021d556e36ade012ba56c6481ebb6",
+    "loaded_software": "v1/software/src/ArithmeticVoronoi.jl"
+  },
+  "archive": {
+    "archive": "arithmetic_groups_dataset_v1.tar.gz",
+    "sha256": "fd6170e82af7e36a4892b39878502c9411ce58491d027cee53bf2afa30d9d248",
+    "bytes": 9043795,
+    "artifacts": 4118,
+    "dataset_manifest_sha256": "40e06df1be81096f83428eede93ef6f52734df1aa385a52e8eada064f5f07caa",
+    "publication_status": "local candidate, no DOI, no submission or contact",
+    "portable_verification": {
+      "status": "passed",
+      "levels": [
+        "algebraic",
+        "complete"
+      ],
+      "field_discriminants": [
+        5,
+        8,
+        12,
+        13,
+        40
+      ],
+      "receipt": "../fields_portable_verification.json",
+      "receipt_sha256": "39ad7daaaea01fd2fdc982ffe9c25e96a4b021d556e36ade012ba56c6481ebb6",
+      "loaded_software": "v1/software/src/ArithmeticVoronoi.jl"
+    }
+  }
+}

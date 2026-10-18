@@ -1,0 +1,13 @@
+Test Summary:                                       | Pass  Total   Time
+maximal-order trace model and exact K-linear action |   97     97  55.9s
+Test Summary:                                                   | Pass  Total  Time
+Hecke short vectors use lattice coordinates and squared lengths |    6      6  1.4s
+Exact coordinate, constrained-isometry, stabilizer and short-vector model tests passed.
+Test Summary:                                                  | Pass  Total   Time
+external boundary, failure behaviour and exact cache contracts |  128    128  11.6s
+Engineering and mathematical rejection contracts passed; diagnostics retained at /home/dima/work/hilbert-ford/experiments/arithmetic_voronoi/test/../results/contract tests W06D72
+D5 ridge 1/90: cycle length 4
+D5 ridge 1/90: cycle length 4
+D5 ridge 2/90: cycle length 4
+Test Summary:                                                 | Pass  Total   Time
+exact two-cells, group-action presentations and SL extraction |  824    824  28.3s

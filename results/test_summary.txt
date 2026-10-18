@@ -1,0 +1,15 @@
+Executed 2026-10-17, native Julia 1.13.2, from /home/dima/work/hilbert-ford:
+julia --startup-file=no --project=experiments/arithmetic_voronoi experiments/arithmetic_voronoi/test/runtests.jl
+
+Test Summary:                                       | Pass  Total     Time
+maximal-order trace model and exact K-linear action |   97     97  1m08.3s
+Test Summary:                                                   | Pass  Total  Time
+Hecke short vectors use lattice coordinates and squared lengths |    6      6  1.0s
+Exact coordinate, constrained-isometry, stabilizer and short-vector model tests passed.
+Test Summary:                                                  | Pass  Total   Time
+external boundary, failure behaviour and exact cache contracts |  128    128  13.5s
+
+Exit status: 0. Total: 231 passing assertions.
+Diagnostic directory: results/contract tests o5lPJ9/
+Structured rejection evidence: results/contracts_summary.json
+Sanitizer build/run and independent mathematical validation: results/sanitizer/summary.json
