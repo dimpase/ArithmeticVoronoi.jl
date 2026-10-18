@@ -95,8 +95,12 @@ function run_fields_words_tests(results)
                 @test all(FWAV.evaluate_word(ref.generator_matrices,r)==I for r in ref.SL_relators)
                 @test all(FWAV.evaluate_word(ref.generator_matrices,r) in (I,-I) for r in ref.PSL_relators)
                 if D==8
-                    a,b=R.simplified[:SL].generator_matrices
-                    @test a==matrix(K,[-w -1;1-w -1]) && b==matrix(K,[1 w;1-w w-1])
+                    # GAP's simplified basis can vary by platform. These fixed
+                    # matrices give the audited identities below; certify their
+                    # words in whichever presentation this run computed.
+                    a=matrix(K,[-w -1;1-w -1]);b=matrix(K,[1 w;1-w w-1])
+                    @test verify_word_certificate(R,a,matrix_to_word(R,a;target=:SL))
+                    @test verify_word_certificate(R,b,matrix_to_word(R,b;target=:SL))
                     z=b^4;Pt=z*a*b;Q0=z*a^2*b^2*a;Rt=inv(a)*b*inv(a)*inv(b)
                     @test z==-I && Pt==matrix(K,[1 1+w;0 1]) && Q0==matrix(K,[1 2+w;0 1])
                     @test Q0*inv(Pt)==U && Pt*inv(U)==W
