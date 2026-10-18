@@ -179,8 +179,8 @@ run.json for per-stage timings and cache use; saved warm timings are not
 cold end-to-end benchmarks.
 
 .github/workflows/ci.yml builds the exporter and runs native and Julia tests
-on Linux and macOS. Local validation was performed on Linux; a macOS runner
-is needed to establish the macOS build and runtime results.
+on Linux and macOS. Current logs and platform results are available at:
+https://github.com/dimpase/arithmetic_voronoi/actions/workflows/ci.yml
 
 If an archive is a short Git LFS pointer file, run git lfs pull. A
 missing_executable error means the backend has not been installed here;

@@ -84,8 +84,9 @@ continues to match. See DATASET_SCHEMA.md for the verification scope.
 Install for new computations
 -----------------------------
 
-The local validation platform is Linux with Julia 1.13.2. The build and runtime
-also target macOS; .github/workflows/ci.yml includes a macOS job for verification.
+The local validation platform is Linux with Julia 1.13.2. Continuous integration
+checks the build and runtime on Linux and macOS; see the current platform logs:
+https://github.com/dimpase/arithmetic_voronoi/actions/workflows/ci.yml
 Project.toml and Manifest.toml
 pin OSCAR 1.8.2, Hecke 0.39.22 and the remaining Julia dependencies.
 

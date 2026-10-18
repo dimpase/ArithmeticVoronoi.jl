@@ -16,11 +16,22 @@ find_path(Nauty_CORE_INCLUDE_DIR NAMES nauty.h
 find_library(Nauty_LIBRARY NAMES nauty
   HINTS ${PC_Nauty_LIBRARY_DIRS} ENV NAUTYDIR PATH_SUFFIXES lib lib64)
 set(Nauty_VERSION "${PC_Nauty_VERSION}")
+set(_nauty_cxx_definitions)
 if(Nauty_CORE_INCLUDE_DIR)
   file(STRINGS "${Nauty_CORE_INCLUDE_DIR}/nauty.h" _nauty_version_line
     REGEX "^[ \t]*#[ \t]*define[ \t]+NAUTYVERSION[ \t]+\"[0-9]+\\.[0-9]+")
   if(_nauty_version_line)
     string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" Nauty_VERSION "${_nauty_version_line}")
+  endif()
+  # Some installed headers expose C11 keywords directly to C++ consumers.
+  # Select compatibility definitions from the headers, independent of platform.
+  file(STRINGS "${Nauty_CORE_INCLUDE_DIR}/nauty.h" _nauty_c11_lines
+    REGEX "^[ \t]*#[ \t]*define[ \t]+(TLS_ATTR[ \t]+_Thread_local|NORET_ATTR[ \t]+_Noreturn)")
+  if(_nauty_c11_lines MATCHES "TLS_ATTR[ \t]+_Thread_local")
+    list(APPEND _nauty_cxx_definitions "_Thread_local=thread_local")
+  endif()
+  if(_nauty_c11_lines MATCHES "NORET_ATTR[ \t]+_Noreturn")
+    list(APPEND _nauty_cxx_definitions "_Noreturn=__attribute__((noreturn))")
   endif()
 endif()
 # The public headers may occupy separate directories. Preserve the complete
@@ -42,12 +53,15 @@ if(Nauty_INCLUDE_DIR AND Nauty_CORE_INCLUDE_DIR AND Nauty_LIBRARY)
   cmake_push_check_state(RESET)
   set(CMAKE_REQUIRED_INCLUDES "${Nauty_INCLUDE_DIRS}")
   set(CMAKE_REQUIRED_DEFINITIONS "${PC_Nauty_CFLAGS_OTHER}")
+  foreach(_definition IN LISTS _nauty_cxx_definitions)
+    list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${_definition}")
+  endforeach()
   set(CMAKE_REQUIRED_LIBRARIES "${_nauty_libraries}")
   set(CMAKE_REQUIRED_LINK_OPTIONS "${PC_Nauty_LDFLAGS_OTHER}")
   # Recheck after changing an explicit library or include-directory override.
   file(SHA256 "${Nauty_INCLUDE_DIR}/traces.h" _nauty_header_hash)
   file(SHA256 "${Nauty_CORE_INCLUDE_DIR}/nauty.h" _nauty_core_hash)
-  string(SHA256 _nauty_probe_key "${Nauty_INCLUDE_DIRS};${PC_Nauty_CFLAGS_OTHER};${PC_Nauty_LDFLAGS_OTHER};${_nauty_libraries};${Nauty_VERSION};${_nauty_header_hash};${_nauty_core_hash}")
+  string(SHA256 _nauty_probe_key "${Nauty_INCLUDE_DIRS};${CMAKE_REQUIRED_DEFINITIONS};${PC_Nauty_LDFLAGS_OTHER};${_nauty_libraries};${Nauty_VERSION};${_nauty_header_hash};${_nauty_core_hash}")
   if(NOT _nauty_probe_key STREQUAL Nauty_PROBE_KEY)
     unset(Nauty_TRACES_LINKS CACHE)
     set(Nauty_PROBE_KEY "${_nauty_probe_key}" CACHE INTERNAL "Nauty probe inputs" FORCE)
@@ -78,4 +92,7 @@ if(Nauty_FOUND AND NOT TARGET Nauty::Nauty)
     INTERFACE_COMPILE_OPTIONS "${PC_Nauty_CFLAGS_OTHER}"
     INTERFACE_LINK_LIBRARIES "${_nauty_libraries}"
     INTERFACE_LINK_OPTIONS "${PC_Nauty_LDFLAGS_OTHER}")
+  foreach(_definition IN LISTS _nauty_cxx_definitions)
+    target_compile_definitions(Nauty::Nauty INTERFACE "$<$<COMPILE_LANGUAGE:CXX>:${_definition}>")
+  endforeach()
 endif()
