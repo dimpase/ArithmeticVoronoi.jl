@@ -111,10 +111,34 @@ function child_error(stderr)
     :child_exit,"backend exited without a valid structured error record"
 end
 
-"""Run one explicit executable with argument vectors, private files and an outer deadline."""
+function resident_bytes(pid,ps)
+    text=read(pipeline(ignorestatus(`$ps -o rss= -p $pid`);stderr=devnull),String)
+    rss=tryparse(Int,strip(text))
+    isnothing(rss) ? nothing : 1024rss
+end
+
+function stop_backend(process)
+    process_running(process) || return
+    kill(process,Base.SIGTERM)
+    for _ in 1:20
+        process_exited(process) && return
+        sleep(.01)
+    end
+    process_running(process) && kill(process,Base.SIGKILL)
+end
+
+"""Run an executable with private files, an outer deadline and bounded memory.
+
+The default memory policy is a hard address-space limit on Linux and a sampled
+resident-memory watchdog on macOS. The resident policy can also be selected on
+Linux, including for ASan executables whose virtual shadow memory is large.
+"""
 function run_exporter(P,B::BackendConfig;work_dir=joinpath(PACKAGE_ROOT,"results/runs"),timeout=60.0,
-                      input_text=namelist(P),output_path=nothing,memory_limit=10*1024^3)
+                      input_text=namelist(P),output_path=nothing,memory_limit=10*1024^3,
+                      memory_policy=:auto)
     isfinite(timeout) && timeout>0 || throw(ArgumentError("positive finite timeout required"))
+    memory_limit isa Integer && 0<memory_limit<=typemax(Int) || throw(ArgumentError("positive memory limit in bytes required"))
+    memory_policy in (:auto,:address_space,:resident) || throw(ArgumentError("memory policy must be :auto, :address_space or :resident"))
     work_dir=abspath(work_dir)
     try mkpath(work_dir) catch err
         throw(BackendError(:unwritable_output,sprint(showerror,err)))
@@ -142,28 +166,53 @@ function run_exporter(P,B::BackendConfig;work_dir=joinpath(PACKAGE_ROOT,"results
     catch err
         fail(:unwritable_output,sprint(showerror,err))
     end
-    limiter=Sys.which("prlimit")
-    isnothing(limiter) && fail(:unsupported_platform,"the initial Linux adapter requires prlimit for bounded memory")
-    argv=[limiter,"--as=$memory_limit","--",B.executable,input,output,token]
+    Sys.islinux() || Sys.isapple() || fail(:unsupported_platform,"backend process control supports Linux and macOS")
+    policy=memory_policy==:auto ? (Sys.islinux() ? :address_space : :resident) : memory_policy
+    argv=[B.executable,input,output,token]
+    ps=nothing
+    if policy==:address_space
+        Sys.islinux() || fail(:unsupported_platform,"address-space limiting requires Linux; use :resident on macOS")
+        limiter=Sys.which("prlimit")
+        isnothing(limiter) && fail(:unsupported_platform,"install util-linux for prlimit, or use memory_policy=:resident")
+        argv=[limiter,"--as=$memory_limit","--",argv...]
+    else
+        ps=Sys.which("ps")
+        isnothing(ps) && fail(:unsupported_platform,"resident-memory monitoring requires ps")
+    end
+    report["memory_policy"]=string(policy)
+    report["maximum_sampled_rss_bytes"]=0
     report["argv"]=argv;atomic_json(report_path,report)
-    started=time_ns();limited=false;code=0;signal=0
+    started=time_ns();failure=nothing;code=0;signal=0
     try
         open(stdout_path,"w") do stdout_io
             open(stderr_path,"w") do stderr_io
                 process=run(pipeline(Cmd(Cmd(argv);dir=folder);stdout=stdout_io,stderr=stderr_io);wait=false)
-                while process_running(process)
-                    if (time_ns()-started)/1e9>timeout
-                        limited=true;kill(process,Base.SIGTERM)
-                        for _ in 1:20
-                            process_exited(process) && break
-                            sleep(.01)
+                try
+                    while process_running(process)
+                        if (time_ns()-started)/1e9>timeout
+                            failure=(:timeout,"outer deadline terminated the backend; no completion checkpoint published")
+                            break
                         end
-                        process_running(process) && kill(process,Base.SIGKILL)
-                        break
+                        if !isnothing(ps)
+                            rss=resident_bytes(getpid(process),ps)
+                            if isnothing(rss)
+                                process_running(process) || break
+                                failure=(:memory_monitor_error,"could not read backend resident memory; backend stopped")
+                                break
+                            end
+                            report["maximum_sampled_rss_bytes"]=max(report["maximum_sampled_rss_bytes"],rss)
+                            if rss>memory_limit
+                                failure=(:memory_limit,"resident-memory watchdog terminated the backend; no completion checkpoint published")
+                                break
+                            end
+                        end
+                        sleep(min(.02,timeout/10))
                     end
-                    sleep(min(.02,timeout/10))
+                finally
+                    stop_backend(process)
+                    wait(process)
                 end
-                wait(process);code=process.exitcode;signal=process.termsignal
+                code=process.exitcode;signal=process.termsignal
             end
         end
     catch err
@@ -172,7 +221,7 @@ function run_exporter(P,B::BackendConfig;work_dir=joinpath(PACKAGE_ROOT,"results
     end
     report["elapsed_seconds"]=(time_ns()-started)/1e9
     report["exitcode"]=code;report["termination_signal"]=signal
-    limited && fail(:timeout,"outer deadline terminated the backend; no completion checkpoint published")
+    isnothing(failure) || fail(failure...)
     signal!=0 && fail(:terminated,"backend terminated by signal $signal")
     if code!=0
         kind,message=child_error(read(stderr_path,String));fail(kind,message)

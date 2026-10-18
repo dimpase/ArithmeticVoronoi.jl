@@ -60,7 +60,22 @@ end
         run_exporter(P,B;work_dir=CONTRACT_ROOT,input_text=replace(CONTRACT_AV.namelist(P),"ComputeBoundary = F"=>"ComputeBoundary = T"))
     end
     expect_backend_error("unwritable output",:unwritable_output) do
-        run_exporter(P,B;work_dir=CONTRACT_ROOT,output_path="/proc/arithmetic-voronoi-output.json")
+        blocked=joinpath(CONTRACT_ROOT,"not a directory");write(blocked,"file")
+        run_exporter(P,B;work_dir=CONTRACT_ROOT,output_path=joinpath(blocked,"output.json"))
+    end
+    @test_throws ArgumentError run_exporter(P,B;memory_limit=0)
+    @test_throws ArgumentError run_exporter(P,B;memory_policy=:invalid)
+    @test CONTRACT_AV.resident_bytes(getpid(),Sys.which("ps"))>0
+    resident=run_exporter(P,B;work_dir=CONTRACT_ROOT,memory_policy=:resident)
+    @test resident.process_info["memory_policy"]=="resident"
+    @test resident.data["completed"]===true
+    expect_backend_error("resident memory ceiling",:memory_limit) do
+        bad=fake_backend("resident","payload=bytearray(32*1024*1024)\ntime.sleep(10)")
+        run_exporter(P,bad;work_dir=CONTRACT_ROOT,memory_policy=:resident,memory_limit=16*1024^2)
+    end
+    expect_backend_error("resident watchdog deadline",:timeout) do
+        bad=fake_backend("resident_timeout","time.sleep(10)")
+        run_exporter(P,bad;work_dir=CONTRACT_ROOT,memory_policy=:resident,timeout=.1)
     end
     expect_backend_error("nonzero exit",:child_exit) do
         bad=fake_backend("exit7","print('deliberate nonzero child exit',file=sys.stderr)\nsys.exit(7)")

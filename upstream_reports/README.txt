@@ -21,22 +21,21 @@ The numbered .md files are the exact issue bodies. requests/ contains the
 submitted JSON payloads; posted/ contains readbacks from GitHub. The submission
 manifest verifies matching text, title, author and open status.
 
-From the repository root, with AV_BACKEND_DIR set to the external cache used
-in README.txt, reproduce the CLI and GAP failures sequentially:
+From the repository root, after the CMake configuration in README.txt,
+reproduce the CLI and GAP failures sequentially:
 
 These optional audit probes also require a standalone GAP executable on PATH
 (or --gap passed to reproduce.py). This is separate from the GAP dependency
 installed by the Julia project for ordinary computations.
 
-  python3 scripts/build_backend.py --target PERF_SerialPerfectComputation \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build"
+  cmake --build build --target PERF_SerialPerfectComputation --parallel 1
   python3 upstream_reports/reproduce.py \
-    --source "$AV_BACKEND_DIR/source" \
-    --binary "$AV_BACKEND_DIR/build/bin/PERF_SerialPerfectComputation"
+    --source build/_deps/polyhedral_common-src \
+    --binary build/bin/PERF_SerialPerfectComputation
 
 The standalone GAP script embedded in #15 was also executed successfully:
 
-  python3 upstream_reports/reproduce_gap.py "$AV_BACKEND_DIR/source"
+  python3 upstream_reports/reproduce_gap.py build/_deps/polyhedral_common-src
 
 reproduction_summary.json identifies the accepted fresh logs/input directories.
 Earlier development failures remain as diagnostics and are not the submitted

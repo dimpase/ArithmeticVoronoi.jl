@@ -1,0 +1,57 @@
+name: Build and test
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    env:
+      JULIA_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pkg-config libgmp-dev libeigen3-dev libboost-serialization-dev libnauty2-dev
+      - name: Install macOS build dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja pkgconf gmp eigen@3 boost nauty
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix eigen@3):$(brew --prefix)" >> "$GITHUB_ENV"
+      - name: Configure
+        run: cmake --preset release
+      - name: Build
+        run: cmake --build --preset release
+      - name: Native tests
+        run: ctest --preset release
+      - name: Install
+        run: cmake --install build
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1.13.2'
+      - name: Install Julia dependencies and fixtures
+        run: |
+          julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+          python3 scripts/restore_fixtures.py
+      - name: Julia tests
+        run: julia --startup-file=no --project=. test/runtests.jl

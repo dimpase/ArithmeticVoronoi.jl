@@ -1,7 +1,7 @@
 This project uses polyhedral_common by Mathieu Dutour Sikiric as an external,
 pinned build dependency. No upstream source archive or backend executable is
-distributed in this repository or its data archives. configure_backend.py
-fetches the upstream repository and submodules into a separate checkout;
+distributed in this repository or its data archives. CMake FetchContent
+fetches the upstream repository and submodules into the build directory;
 backend/pins.json records their exact revisions.
 
 Repository: https://github.com/MathieuDutSik/polyhedral_common
@@ -15,10 +15,11 @@ dependency compatibility questions. No relicensing of upstream code is claimed.
 Its permutalib dependency is pinned in pins.json; its supplied LGPL text is
 retained as PERMUTALIB_COPYING.LGPL for reference. The other pinned source
 dependencies and their notices remain in the external upstream checkout.
-The selected nauty fork/commit is also recorded in pins.json.
+The backend also requires an installed nauty/Traces library and headers.
+Its library path and version are recorded in local build provenance.
 
 export_perfect.cpp is the local exporter, not an upstream supported interface.
-patches/polyhedral_common.patch is a local CMake integration and dependency pin.
+CMakeLists.txt and cmake/ build this exporter from unmodified upstream headers.
 No code patches have been submitted. Following the audit, the user authorized
 three issue reports; their URLs and exact bodies are in ../upstream_reports/.
 The Julia adapter invokes this separate executable through typed exact JSON.

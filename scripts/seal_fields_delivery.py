@@ -51,10 +51,11 @@ for name in ['FIELDS_WORDS_DATA_REPORT.txt','fields_words_tests.json','fields_de
     add(r/name,('documentation/' if name.endswith('.txt') else 'verification/')+name)
 backendrefs=[]
 for name in ['backend/export_perfect.cpp','backend/pins.json','backend/NOTICE.txt','backend/UPSTREAM_COPYING',
-             'backend/PERMUTALIB_COPYING.LGPL','patches/polyhedral_common.patch',
-             'scripts/build_backend.py','scripts/configure_backend.py',
+             'backend/PERMUTALIB_COPYING.LGPL','CMakeLists.txt','CMakePresets.json',
              'scripts/run_sanitizer.py','scripts/validate_sanitizer.jl']:
     backendrefs.append(add(p/name,'provenance/'+name))
+for source in sorted((p/'cmake').glob('*.cmake*')):
+    backendrefs.append(add(source,'provenance/cmake/'+source.name))
 add(r/'build/AV_ExportPerfectOrbits.json','provenance/release_build.json')
 add(r/'build/AV_ExportPerfectOrbits_sanitizer.json','provenance/sanitizer_build.json')
 for source in (p/'test').glob('*.jl'): add(source,'software/test/'+source.name)

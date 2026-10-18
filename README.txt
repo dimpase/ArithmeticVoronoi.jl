@@ -21,9 +21,29 @@ and Hecke 0.39.22. The instantiate commands below download missing packages
 into your Julia depot without changing your default Julia environment.
 
 For new perfect-form enumeration, the external backend additionally needs
-Linux, a C++20 compiler, CMake, Ninja, Make, pkg-config, prlimit (from util-linux),
-and development files for GMP, Eigen and Boost.Serialization. Install these
-with your distribution's package manager. Initial setup needs network access.
+Linux or macOS, a C++20 compiler and standard library (including std::format),
+CMake 3.24 or newer, Ninja, pkg-config, and development
+files for GMP, Eigen, Boost.Serialization and nauty/Traces. Install nauty's
+development headers and library before configuring the backend.
+Install these with your distribution's package manager. Initial setup needs
+network access. Python is not required to build or install the exporter.
+Linux computations also use prlimit from util-linux. macOS computations use
+the system ps command to monitor resident memory.
+
+On macOS, install current Xcode Command Line Tools and the Homebrew packages:
+
+  xcode-select --install
+  brew install cmake ninja pkgconf gmp eigen@3 boost nauty git-lfs python
+
+Configure with Homebrew's prefixes so CMake finds Eigen 3, including its
+versioned installation, on both Apple Silicon and Intel Macs:
+
+  cmake --preset release \
+    -DCMAKE_PREFIX_PATH="$(brew --prefix eigen@3);$(brew --prefix)"
+
+Continue with the build/install commands below. CMake reports a clear error
+if the selected C++ standard library lacks std::format. See the package lists:
+https://formulae.brew.sh/formula/nauty and https://formulae.brew.sh/formula/eigen@3
 
 Get the checkout and data
 -------------------------
@@ -71,29 +91,43 @@ Install this checkout's pinned Julia dependencies:
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-Choose a writable cache outside the checkout, then configure and build the
-external backend. Run this block in one shell; you may set AV_BACKEND_DIR to
-another absolute path. Use the same value for all three Python commands.
+Configure, build and install the native exporter with CMake:
 
-  AV_BACKEND_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/arithmetic-voronoi/backend"
-  python3 scripts/configure_backend.py \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build"
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-default
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-fields
+  cmake --preset release
+  cmake --build --preset release
+  cmake --install build
 
-The configure script fetches the exact upstream and submodule revisions from
-backend/pins.json and applies our CMake integration patch. The build uses one
-job and a 10 GiB virtual-memory ceiling. The second install command reuses
-the compiled target and configures the additional fields.
+The release preset uses Ninja, one build job and -O1 to limit compiler memory.
+It installs into this checkout's backend/ directory. For a hard 10 GiB build
+memory ceiling on Linux, use prlimit --as=10737418240 before the build command.
+No administrator access is needed. The equivalent configuration without presets is:
 
-These commands create backend/bin/ and backend/config*.json for YOUR checkout.
-Both configurations are needed to run all five fields and the full test suite.
-They contain local executable paths and hashes and are ignored by Git.
-Reconfigure and rebuild after relocating the checkout; do not copy another
-installation's configuration or executable. Logs are written to results/build/.
-Upstream sources remain in the external cache, outside this repository.
+  cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG' -DCMAKE_INSTALL_PREFIX="$PWD/backend"
+  cmake --build build --parallel 1
+  cmake --install build
+
+CMake fetches and verifies the exact upstream and submodule revisions in
+backend/pins.json. Sources live in build/_deps/ and remain unmodified; the
+upstream standalone build is not configured. No dependency source is tracked
+in this repository. The native build and all generated files are ignored.
+
+CMake requires an installed nauty/Traces and checks that its Traces interface
+compiles and links. Configuration stops with an installation hint if it is
+missing or unusable. For a nonstandard installation, set CMAKE_PREFIX_PATH,
+or set Nauty_INCLUDE_DIR and Nauty_LIBRARY explicitly. Stock Traces uses the
+backend's exact group construction from generators.
+
+One install creates backend/bin/AV_ExportPerfectOrbits, both backend/config.json
+and backend/config_fields.json, and backend/backend-build.json. Both selectors
+use the same executable, supporting all five fields. They record absolute
+paths and executable hashes. Reinstall after rebuilding or relocating the
+checkout; changed executables invalidate computation caches.
+
+An external build directory works too: replace build in the explicit commands
+with a writable directory of your choice. For an existing clean pinned source
+checkout, set -DFETCHCONTENT_SOURCE_DIR_POLYHEDRAL_COMMON=/absolute/source/path
+at configuration. Its commit and submodule revisions are still checked.
 
 Run a computation
 ------------------
@@ -128,8 +162,9 @@ data and can be run for any of the five fields without restoring these fixtures.
 Tests and reproducibility
 --------------------------
 
-After installing both backend configurations, run:
+Check the native exporter, then run the Julia regressions:
 
+  ctest --preset release
   python3 scripts/restore_fixtures.py
   julia --startup-file=no --project=. test/runtests.jl
 
@@ -139,9 +174,13 @@ small tracked summary reports. First use includes Julia compilation. See
 run.json for per-stage timings and cache use; saved warm timings are not
 cold end-to-end benchmarks.
 
+.github/workflows/ci.yml builds the exporter and runs native and Julia tests
+on Linux and macOS. Local validation was performed on Linux; a macOS runner
+is needed to establish the macOS build and runtime results.
+
 If an archive is a short Git LFS pointer file, run git lfs pull. A
-missing_executable error means the relevant backend configuration has not
-been built here. Changed executables invalidate their caches. For a separate
+missing_executable error means the backend has not been installed here;
+run cmake --install build after a successful build. For a separate
 D8 computation, use run_field_pipeline(8; directory="results/my_D8",
 reuse_baseline=false) after using ArithmeticVoronoi in Julia. See
 USER_GUIDE.txt for the full API and resource-limit behaviour.

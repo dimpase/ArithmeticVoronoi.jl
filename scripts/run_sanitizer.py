@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import resource
 import subprocess
+import sys
 import time
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -17,6 +18,25 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 def no_core():
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+
+def resident_bytes(pid):
+    if sys.platform.startswith('linux'):
+        try:
+            values = [int(line.split()[1]) * 1024
+                      for line in Path(f'/proc/{pid}/status').read_text().splitlines()
+                      if line.startswith(('VmRSS:', 'VmHWM:'))]
+            return max(values, default=0)
+        except FileNotFoundError:
+            return 0
+    result = subprocess.run(['ps', '-o', 'rss=', '-p', str(pid)],
+                            capture_output=True, text=True, check=False)
+    text = result.stdout.strip()
+    if text:
+        return int(text) * 1024
+    if result.returncode not in (0, 1):
+        raise RuntimeError('Could not sample resident memory with ps: ' + result.stderr)
+    return 0  # The process may have exited between poll() and ps.
 
 
 def run_case(binary, name, input_text, expected_code, root):
@@ -39,12 +59,7 @@ def run_case(binary, name, input_text, expected_code, root):
         process = subprocess.Popen(argv, cwd=folder, stdout=stdout, stderr=stderr,
                                    env=env, preexec_fn=no_core)
         while process.poll() is None:
-            try:
-                for line in Path(f'/proc/{process.pid}/status').read_text().splitlines():
-                    if line.startswith(('VmRSS:', 'VmHWM:')):
-                        maximum_rss = max(maximum_rss, int(line.split()[1]) * 1024)
-            except FileNotFoundError:
-                pass
+            maximum_rss = max(maximum_rss, resident_bytes(process.pid))
             if maximum_rss > 10 * 1024**3:
                 reason = '10 GiB RSS ceiling'
             elif time.monotonic() - started > 60:
@@ -61,6 +76,7 @@ def run_case(binary, name, input_text, expected_code, root):
                 input_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                 returncode=code, expected_returncode=expected_code, elapsed_seconds=time.monotonic()-started,
                 maximum_sampled_rss_bytes=maximum_rss, rss_ceiling_bytes=10*1024**3,
+                rss_measurement='linux_proc_status' if sys.platform.startswith('linux') else 'ps_rss_kib',
                 deadline_seconds=60, watchdog_failure=reason, sanitizer_clean=clean,
                 sanitizer_options={k: env[k] for k in ['ASAN_OPTIONS','UBSAN_OPTIONS']},
                 success=code == expected_code and clean and reason is None,
@@ -77,7 +93,7 @@ def run_case(binary, name, input_text, expected_code, root):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--binary', type=Path,
-                        default=Path('/tmp/hilbert-ford/arithmetic_voronoi_backend/build/bin/AV_ExportPerfectOrbits_sanitizer'))
+                        default=PROJECT / 'build-sanitizer/bin/AV_ExportPerfectOrbits')
     parser.add_argument('--fields', action='store_true', help='only the newly admitted D12,D13,D40 inputs; keep the original audit separate')
     args = parser.parse_args()
     binary = args.binary.resolve()

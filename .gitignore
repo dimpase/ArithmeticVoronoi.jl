@@ -2,6 +2,11 @@
 /backend/bin/
 /backend/config.json
 /backend/config_fields.json
+/backend/backend-build.json
+/backend/sanitizer/
+/build/
+/build-*/
+/CMakeUserPresets.json
 # Historical local source preservation is not part of the distribution.
 /backend/pinned_sources.tar.gz
 /backend/pinned_sources.sha256

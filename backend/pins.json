@@ -1,8 +1,6 @@
 {
   "repository": "https://github.com/MathieuDutSik/polyhedral_common",
   "commit": "cfcd79dbddf67a494a1c71b776174b190da5209a",
-  "nauty_repository": "https://github.com/MathieuDutSik/nauty",
-  "nauty_commit": "cb9dc822f9d1aa3a02b1dcb7a18dd9609d838b1e",
   "submodules": {
     "basic_common_cpp": "efd0795a3ee8a75998406ccf1ed97ac12253798e",
     "basic_common_cpp/array-hash": "06f7c454ef18f16ab2af0073733a5639d95d537e",

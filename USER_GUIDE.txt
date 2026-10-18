@@ -33,7 +33,7 @@ inside your clone:
 On Gentoo the package is dev-vcs/git-lfs. LFS holds two frozen archives:
 the five-field dataset and the original D5/D8 regression fixtures.
 Ordinary Git stores their small pointer files. The backend source is an
-external dependency fetched separately by the configuration script below.
+external dependency fetched separately by CMake below.
 If an archive is a short text file beginning with "version https://git-lfs",
 its payload has not been downloaded yet; run git lfs pull.
 
@@ -84,40 +84,74 @@ continues to match. See DATASET_SCHEMA.md for the verification scope.
 Install for new computations
 -----------------------------
 
-The tested platform is Linux with Julia 1.13.2. Project.toml and Manifest.toml
+The local validation platform is Linux with Julia 1.13.2. The build and runtime
+also target macOS; .github/workflows/ci.yml includes a macOS job for verification.
+Project.toml and Manifest.toml
 pin OSCAR 1.8.2, Hecke 0.39.22 and the remaining Julia dependencies.
 
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-For the exporter, install a C++20 compiler, CMake, Ninja, Make, Git, Python 3,
-pkg-config, GMP development files, Eigen, Boost.Serialization development
-files, and Linux prlimit. The recorded release used GCC 16.2.0, CMake 4.3.4,
+For the exporter, install a C++20 compiler and standard library with std::format,
+CMake 3.24 or newer, Ninja, Git,
+pkg-config, GMP development files, Eigen and Boost.Serialization development
+files, and the nauty/Traces development headers and library. CMake requires
+an installed nauty/Traces. Python is used for optional native tests, not for building.
+The recorded release used GCC 16.2.0, CMake 4.3.4,
 GMP 6.3.0, Eigen 3.4.1 and Boost 1.90; other combinations are not yet tested.
 Initial Julia installation and backend configuration need network access.
+On macOS, use current Xcode Command Line Tools and the Homebrew installation
+commands in README.txt. Pass the Homebrew and eigen@3 prefixes to CMake as
+shown there; this supports both Apple Silicon and Intel installation layouts.
 
-  AV_BACKEND_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/arithmetic-voronoi/backend"
-  python3 scripts/configure_backend.py \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build"
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-default
-  python3 scripts/build_backend.py --target AV_ExportPerfectOrbits \
-    --source "$AV_BACKEND_DIR/source" --build "$AV_BACKEND_DIR/build" --configure-fields
+  cmake --preset release
+  cmake --build --preset release
+  cmake --install build
+  ctest --preset release
 
-The two install commands select configurations for D5/D8 and D12/D13/D40,
-respectively. Both use the current exporter source, which supports all five
-fields; the second command can reuse the compiled target. Generated binaries
-and backend/config*.json are local installation files and are ignored by Git.
+One install selects the same all-field exporter in both backend/config.json
+and backend/config_fields.json, with its absolute path and SHA256. Installed
+build provenance is in backend/backend-build.json. Reinstall after rebuilding
+or moving the checkout. These files, binaries and build directories are ignored.
 
-The commands use a persistent cache outside the checkout. You may change
-AV_BACKEND_DIR to another absolute path; use the same --source and --build
-paths for configuration and both installations. The scripts verify the
-recorded upstream/submodule commits and local patch.
-They build with one job and a 10 GiB virtual-memory ceiling. Pin and license
-information is in backend/pins.json and backend/NOTICE.txt. Upstream sources
-and their submodules are fetched into the separate source directory, not
-vendored in this repository or its LFS archives. Our C++ exporter and small
-CMake integration patch are retained here. The backend still needs its own
+The release preset uses one job and -O1 to reduce compiler memory. For a hard
+10 GiB address-space limit, prefix the build command with Linux
+prlimit --as=10737418240. CMake verifies the recorded upstream/submodule commits
+and consumes the unmodified template headers. The default source cache is
+build/_deps/polyhedral_common-src. README.txt gives explicit -S/-B commands
+and options for an external build directory or an existing pinned checkout.
+
+CMake checks that the installed Traces interface compiles and links, and stops
+with an installation hint when it is missing or unusable. For a nonstandard
+installation, set CMAKE_PREFIX_PATH, or Nauty_INCLUDE_DIR and Nauty_LIBRARY.
+Stock Traces works through the backend's exact group construction from
+generators. CTest checks all five fields and a rejected boundary request.
+
+Backend computations have an outer wall-clock deadline on both platforms.
+The default 10 GiB memory budget is a hard virtual-address-space limit via
+prlimit on Linux. On macOS it is a resident-memory watchdog using ps, sampled
+approximately every 20 ms; it can overshoot between samples. A request records
+its actual policy and sampled peak in process.json. Both deadline and watchdog
+failures terminate the backend without publishing a completion checkpoint.
+For direct run_exporter calls, memory_policy=:resident selects the same
+watchdog on Linux, for example when using an ASan binary with large virtual
+shadow memory. Ordinary callers can leave memory_policy=:auto.
+
+For a separate Clang ASan/UBSan build and native checks:
+
+  cmake --preset sanitizer
+  cmake --build --preset sanitizer
+  ctest --preset sanitizer
+
+This does not replace the installed release executable. It instruments the
+exporter and instantiated C++ headers; linked dependency libraries retain
+their system instrumentation settings. ASan needs a large virtual shadow
+address space, so do not impose the address-space limit on sanitizer runs.
+
+Pin and license information is in backend/pins.json and backend/NOTICE.txt.
+Dependency sources are fetched into ignored build directories and are not
+vendored in this repository or its LFS archives. Our C++ exporter and CMake
+build files are retained here. The backend still needs its own
 license compatibility review before redistribution as a compiled executable.
 
 Run a field and inspect its output
@@ -207,7 +241,7 @@ transcription discrepancy; no error in the published paper is asserted.
 Tests, timings and common problems
 -----------------------------------
 
-With both backend configurations installed and baseline fixtures restored:
+With the backend installed and baseline fixtures restored:
 
   julia --startup-file=no --project=. test/runtests.jl
 
@@ -222,7 +256,7 @@ Julia/OSCAR startup and may include compilation and cache replay. D40 is much
 larger (52 perfect-form orbits, 2618 oriented loops); its saved warm pipeline
 timing is not a cold end-to-end benchmark. See the report for stage context.
 
-If you see missing_executable, run both build/install commands above. If a
+If you see missing_executable, build and install the exporter as above. If a
 binary was moved or changed, regenerate its configuration; do not edit hashes
 to force acceptance of an old cache. Incompatible cached geometry or words
 must be recomputed in a new output directory. For D5/D8, reuse_baseline=false

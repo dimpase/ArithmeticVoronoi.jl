@@ -1,0 +1,45 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {"major": 3, "minor": 24, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "Serial release build",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O1 -DNDEBUG",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/backend"
+      }
+    },
+    {
+      "name": "sanitizer",
+      "displayName": "Clang ASan/UBSan build",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build-sanitizer",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "AV_ENABLE_SANITIZERS": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/backend/sanitizer"
+      }
+    }
+  ],
+  "buildPresets": [
+    {"name": "release", "configurePreset": "release", "jobs": 1},
+    {"name": "sanitizer", "configurePreset": "sanitizer", "jobs": 1}
+  ],
+  "testPresets": [
+    {"name": "release", "configurePreset": "release", "execution": {"jobs": 1}, "output": {"outputOnFailure": true}},
+    {
+      "name": "sanitizer",
+      "configurePreset": "sanitizer",
+      "execution": {"jobs": 1},
+      "output": {"outputOnFailure": true},
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      }
+    }
+  ]
+}
