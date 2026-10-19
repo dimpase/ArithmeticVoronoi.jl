@@ -5,7 +5,9 @@ This Julia package computes presentations and verified matrix words for
 GL(2,O), SL(2,O), and PSL(2,O), where O is the maximal order of one of five
 real quadratic fields. It uses OSCAR/Hecke for exact arithmetic and a pinned
 polyhedral_common C++ exporter for perfect-form enumeration. Magma is not
-required. This is a research package with the completed cases listed below.
+required. The complete presentation and word pipeline has the scope listed
+below. For perfect-form enumeration over broader inputs, use PerfectForms
+directly; its field and dimension interface has no list of permitted examples.
 
  D    Field             Integral generator w       Class number
  5    Q(sqrt(5))        w^2-w-1=0                       1

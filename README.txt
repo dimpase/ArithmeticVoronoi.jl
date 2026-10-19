@@ -3,9 +3,14 @@ ArithmeticVoronoi
 
 Exact arithmetic Voronoi computations through OSCAR: perfect forms,
 GL(2,O), SL(2,O) and PSL(2,O) presentations, and verified matrix-to-word
-reduction. Supported real quadratic field discriminants are 5, 8, 12, 13
-and 40. In each case O is the maximal order and the lattice is O^2.
+reduction. The complete presentation and word pipeline currently supports
+real quadratic field discriminants 5, 8, 12, 13 and 40. In each case O is
+the maximal order and the lattice is O^2.
 GL and SL retain -I; PSL is the separate quotient SL/{I,-I}.
+
+For perfect-form enumeration in other fields, dimensions or T-spaces, use
+PerfectForms directly: https://github.com/dimpase/PerfectForms.jl
+Its interface passes general upstream T-space descriptions to the enumerator.
 
 After cloning, run the commands from the repository root, beside Project.toml.
 No previous workspace, backend binary, configuration or computation cache is

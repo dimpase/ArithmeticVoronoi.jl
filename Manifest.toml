@@ -2,7 +2,7 @@
 
 julia_version = "1.13.2"
 manifest_format = "2.1"
-project_hash = "90c5458d2c39bc8a4b6ddd5d4eaef402aa918271"
+project_hash = "1b3cc4caf9ff47ae94b6c4289bd195d027235c63"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -688,8 +688,8 @@ version = "2.8.8"
 
 [[deps.PerfectForms]]
 deps = ["Dates", "JSON3", "SHA"]
-git-tree-sha1 = "4c4fc2954cc67f8b6af9e5f382dd3c01b0abc2dd"
-repo-rev = "fee8e48d51b968205b82a0f223066ae2af5a2903"
+git-tree-sha1 = "c69dbeb6fa910152a5114afd5148952a310c0ff0"
+repo-rev = "a318c6bec90b1b114f55b22e19a89c1d412a5e63"
 repo-url = "https://github.com/dimpase/PerfectForms.jl.git"
 uuid = "fb262a76-a2c1-4c0f-a19a-9a44622bb182"
 version = "0.1.0"

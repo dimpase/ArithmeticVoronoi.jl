@@ -12,7 +12,7 @@ PerfectForms = "fb262a76-a2c1-4c0f-a19a-9a44622bb182"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [sources]
-PerfectForms = {rev = "fee8e48d51b968205b82a0f223066ae2af5a2903", url = "https://github.com/dimpase/PerfectForms.jl.git"}
+PerfectForms = {rev = "a318c6bec90b1b114f55b22e19a89c1d412a5e63", url = "https://github.com/dimpase/PerfectForms.jl.git"}
 
 [compat]
 Hecke = "=0.39.22"
