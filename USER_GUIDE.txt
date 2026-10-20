@@ -23,66 +23,6 @@ units; GL and SL retain -I. PSL is the separate quotient SL/{I,-I}.
 Run the commands below from the repository root, containing Project.toml.
 README.txt provides the complete quick start for a fresh checkout.
 
-Get the saved archives
------------------------
-
-Install Git LFS before cloning, or install it now and run these commands
-inside your clone:
-
-  git lfs install --local
-  git lfs pull
-
-On Gentoo the package is dev-vcs/git-lfs. LFS holds two frozen archives:
-the five-field dataset and the original D5/D8 regression fixtures.
-Ordinary Git stores their small pointer files. The backend source is an
-external dependency managed by the separate PerfectForms package.
-If an archive is a short text file beginning with "version https://git-lfs",
-its payload has not been downloaded yet; run git lfs pull.
-
-Restore the regression fixtures when you want to run D5/D8 or the test suite:
-
-  python3 scripts/restore_fixtures.py
-
-The script checks the archive and every file hash, and refuses to overwrite
-different existing data. Use --check for verification without extraction.
-It requires Python 3.12 or newer. Restored files under results/two_cells/ are
-ignored by Git. New runs, caches and expanded datasets are also ignored;
-only deliberately selected, versioned archives belong in LFS.
-
-Read the completed results first
---------------------------------
-
-results/FIELDS_WORDS_DATA_REPORT.txt gives the counts, abelianizations and
-recorded timings. The supplied archive contains all five fields, explicit
-generator matrices and relators, maps, geometric certificates, word examples,
-and a copy of the software that verified that particular dataset.
-
-Verify its checksum before unpacking (Python 3, standard library only):
-
-  python3 -c 'import hashlib,json,pathlib; p=pathlib.Path("results/dataset"); m=json.loads((p/"archive_manifest.json").read_text()); assert hashlib.sha256((p/m["archive"]).read_bytes()).hexdigest()==m["sha256"]; print("archive checksum OK")'
-  tar -xzf results/dataset/arithmetic_groups_dataset_v1.tar.gz -C results/dataset
-
-The extracted directory is results/dataset/arithmetic_groups_dataset_v1.
-For each D, open fields/D12/PRESENTATIONS.txt, for example. Its JSON companions
-GL_simplified.json, SL_simplified.json and PSL_simplified.json include the
-generator matrices and both Tietze generator maps. These files can be read
-without Julia or a C++ build. dataset.json indexes the files and their hashes.
-The expanded data occupy about 228 MB; the compressed archive is about 9 MB.
-
-To verify the saved data with the bundled, historically pinned software:
-
-  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-    -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-    results/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
-    results/dataset/arithmetic_groups_dataset_v1
-
-Add --complete to the last command to replay the full geometric construction
-and fresh Tietze isomorphisms. The default algebraic check verifies exact
-matrices, relations, maps, invariants and supplied word paths. Neither check
-needs a C++ executable. Keep the extracted bundle unchanged so its manifest
-continues to match. See DATASET_SCHEMA.md for the verification scope.
-
 Install for new computations
 -----------------------------
 
@@ -106,6 +46,13 @@ PERFECT_FORMS_BACKEND_CONFIG to that prefix's absolute config.json path.
 The default does not discover legacy binaries under this repository's backend/.
 BackendConfig(absolute_executable_path) remains available for explicit builds.
 The frontend's Project.toml and Manifest.toml pin the package source revision.
+
+An existing PerfectForms installation can be reused. For example, in the shell:
+
+  export PERFECT_FORMS_BACKEND_CONFIG="$HOME/work/tmp/PerfectForms.jl/backend/config.json"
+
+Use the config.json file, not its directory. For an already running Julia
+session, set ENV["PERFECT_FORMS_BACKEND_CONFIG"] to the same absolute file path.
 
 PerfectForms requires a C++20 compiler/standard library with std::format,
 CMake 3.24+, Ninja, Git, pkg-config, and GMP, Eigen 3, Boost.Serialization and
@@ -174,13 +121,44 @@ baseline; a mismatch is an error. For a separate computation in any supported
 field, use:
 
   using ArithmeticVoronoi
-  R = run_field_pipeline(8; directory="results/my_D8", reuse_baseline=false)
+  R = run_field_pipeline(8; directory="results/my_D8", reuse_baseline=false);
 
 Repeated runs revalidate compatible enumeration caches and replay completed
 ridge cycles. An interrupted backend enumeration restarts its queue; incomplete
 word paths are diagnostic checkpoints and also restart. Each completed stage
 is recorded independently. A new presentation run leaves constructive-word
-validation and the literature comparison pending until those are requested.
+validation and the literature comparison pending; those are separate
+computations. Matrix-to-word calls return their own certificates.
+
+Interactive OSCAR groups
+-------------------------
+
+Start Julia in the project and compute a result without archived fixtures:
+
+  julia --startup-file=no --project=.
+
+At the Julia prompt:
+
+  using ArithmeticVoronoi, Oscar
+  R = run_field_pipeline(12; directory="results/my_D12", reuse_baseline=false);
+  S = R.simplified[:SL];
+  F = free_group(length(S.generator_matrices));
+  G, toG = quo(F, [F(r) for r in S.relators]);
+  gens(G)
+  relators(G)
+
+G is an OSCAR FPGroup, with generator i mapped to S.generator_matrices[i].
+Select :GL or :PSL instead of :SL for the other groups. PSL's matrices are
+SL lifts, so its relations hold modulo +/-I. Compute an abelian quotient:
+
+  A, toA = maximal_abelian_quotient(FinGenAbGroup, G);
+  elementary_divisors(A)   # [2, 6] for SL and D12
+  order(A)                # 12
+
+Use R.gl, R.sl and R.psl for raw presentation records. A signed integer word
+in S's generators becomes an element of G via toG(F(word)). The maps from
+quo and maximal_abelian_quotient let you keep working with the resulting
+group elements, rather than only inspecting serialized presentation data.
 
 Matrix to generator word
 -------------------------
@@ -192,10 +170,10 @@ Run the complete example (D12 by default; another discriminant is optional):
 It creates its own results/word_example/D12 directory. The essential API is:
 
   using ArithmeticVoronoi, Oscar
-  R = run_field_pipeline(12; directory="results/my_D12", reuse_baseline=false)
-  P = R.enumeration.problem
-  g = matrix(P.field, [1 P.generator; 0 1])
-  c = matrix_to_word(R, g; target=:SL, cache_path="results/tau_w.json")
+  R = run_field_pipeline(12; directory="results/my_D12", reuse_baseline=false);
+  P = R.enumeration.problem;
+  g = matrix(P.field, [1 P.generator; 0 1]);
+  c = matrix_to_word(R, g; target=:SL, cache_path="results/tau_w.json");
   c["word"]
   verify_word_certificate(R, g, c)   # true, or an explicit validation error
 
@@ -231,6 +209,68 @@ The directory must contain matching KWeng.tex and KWger.tex. These external
 transcriptions are not redistributed here. There is no reference comparison
 for D40. See KW_COMPARISON.md for the faithfulness argument and the D8
 transcription discrepancy; no error in the published paper is asserted.
+
+Optional saved archives
+------------------------
+
+Install Git LFS before cloning, or install it now and run these commands
+inside your clone:
+
+  git lfs install --local
+  git lfs pull
+
+On Gentoo the package is dev-vcs/git-lfs. LFS holds two frozen archives:
+the five-field dataset and the original D5/D8 regression fixtures.
+Ordinary Git stores their small pointer files. The backend source is an
+external dependency managed by the separate PerfectForms package.
+If an archive is a short text file beginning with "version https://git-lfs",
+its payload has not been downloaded yet; run git lfs pull.
+
+Fresh computations in all five fields work with reuse_baseline=false and do
+not require these archives. To restore the fixtures for replaying archived
+D5/D8 geometry or running the test suite:
+
+  python3 scripts/restore_fixtures.py
+
+The script checks the archive and every file hash, and refuses to overwrite
+different existing data. Use --check for verification without extraction.
+It requires Python 3.12 or newer. Restored files under results/two_cells/ are
+ignored by Git. New runs, caches and expanded datasets are also ignored;
+only deliberately selected, versioned archives belong in LFS.
+
+Read and verify archived results
+---------------------------------
+
+results/FIELDS_WORDS_DATA_REPORT.txt gives the counts, abelianizations and
+recorded timings. The supplied archive contains all five fields, explicit
+generator matrices and relators, maps, geometric certificates, word examples,
+and a copy of the software that verified that particular dataset.
+
+Verify its checksum before unpacking (Python 3, standard library only):
+
+  python3 -c 'import hashlib,json,pathlib; p=pathlib.Path("results/dataset"); m=json.loads((p/"archive_manifest.json").read_text()); assert hashlib.sha256((p/m["archive"]).read_bytes()).hexdigest()==m["sha256"]; print("archive checksum OK")'
+  tar -xzf results/dataset/arithmetic_groups_dataset_v1.tar.gz -C results/dataset
+
+The extracted directory is results/dataset/arithmetic_groups_dataset_v1.
+For each D, open fields/D12/PRESENTATIONS.txt, for example. Its JSON companions
+GL_simplified.json, SL_simplified.json and PSL_simplified.json include the
+generator matrices and both Tietze generator maps. These files can be read
+without Julia or a C++ build. dataset.json indexes the files and their hashes.
+The expanded data occupy about 228 MB; the compressed archive is about 9 MB.
+
+To verify the saved data with the bundled, historically pinned software:
+
+  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
+    -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
+    results/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
+    results/dataset/arithmetic_groups_dataset_v1
+
+Add --complete to the last command to replay the full geometric construction
+and fresh Tietze isomorphisms. The default algebraic check verifies exact
+matrices, relations, maps, invariants and supplied word paths. Neither check
+needs a C++ executable. Keep the extracted bundle unchanged so its manifest
+continues to match. See DATASET_SCHEMA.md for the verification scope.
 
 Tests, timings and common problems
 -----------------------------------

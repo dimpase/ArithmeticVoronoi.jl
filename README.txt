@@ -1,190 +1,234 @@
 ArithmeticVoronoi
 =================
 
-Exact arithmetic Voronoi computations through OSCAR: perfect forms,
-GL(2,O), SL(2,O) and PSL(2,O) presentations, and verified matrix-to-word
-reduction. The complete presentation and word pipeline currently supports
-real quadratic field discriminants 5, 8, 12, 13 and 40. In each case O is
-the maximal order and the lattice is O^2.
+Compute presentations and matrix-to-word reductions for GL(2,O), SL(2,O)
+and PSL(2,O) in Julia, using OSCAR and the PerfectForms C++ backend. O is the
+maximal order of a real quadratic field, acting on the free lattice O^2.
+The complete group pipeline supports field discriminants 5, 8, 12, 13 and 40.
 GL and SL retain -I; PSL is the separate quotient SL/{I,-I}.
 
-For perfect-form enumeration in other fields, dimensions or T-spaces, use
-PerfectForms directly: https://github.com/dimpase/PerfectForms.jl
-Its interface passes general upstream T-space descriptions to the enumerator.
-
-After cloning, run the commands from the repository root, beside Project.toml.
-No previous workspace, backend binary, configuration or computation cache is
-required. Magma is not a dependency.
-
-Requirements
--------------
-
-For the saved data: Git, Git LFS, Python 3.12 or newer, and tar.
-For verification and computations: Julia 1.13 (tested with 1.13.2).
-Project.toml and Manifest.toml pin the Julia packages, including OSCAR 1.8.2
-and Hecke 0.39.22. The instantiate commands below download missing packages
-into your Julia depot without changing your default Julia environment.
-
-For new perfect-form enumeration, the external backend additionally needs
-Linux or macOS, a C++20 compiler and standard library (including std::format),
-CMake 3.24 or newer, Ninja, pkg-config, and development
-files for GMP, Eigen, Boost.Serialization and nauty/Traces. Install nauty's
-development headers and library before configuring the backend.
-Install these with your distribution's package manager. Initial setup needs
-network access. Python is not required to build or install the exporter.
-Linux computations also use prlimit from util-linux. macOS computations use
-the system ps command to monitor resident memory.
-
-The exporter is provided by the separate PerfectForms Julia package:
-https://github.com/dimpase/PerfectForms.jl
-Its README gives dependency installation and CMake options, including macOS
-Homebrew prefixes and generic system-nauty detection.
-
-Get the checkout and data
--------------------------
-
-  git clone https://github.com/dimpase/arithmetic_voronoi.git
-  cd arithmetic_voronoi
-  git lfs install --local
-  git lfs pull
-
-If you already have a checkout, start with the last two commands in its root.
-The two LFS archives hold the five-field dataset and D5/D8 regression fixtures.
-They contain no upstream source snapshot or compiled backend.
-
-Read and verify the saved results
----------------------------------
-
-No C++ build is needed for this section. Verify and unpack the dataset:
-
-  python3 -c 'import hashlib,json,pathlib; p=pathlib.Path("results/dataset"); m=json.loads((p/"archive_manifest.json").read_text()); assert hashlib.sha256((p/m["archive"]).read_bytes()).hexdigest()==m["sha256"]; print("archive checksum OK")'
-  tar -xzf results/dataset/arithmetic_groups_dataset_v1.tar.gz -C results/dataset
-
-Open results/dataset/arithmetic_groups_dataset_v1/fields/D12/PRESENTATIONS.txt
-for a readable presentation. Replace D12 by D5, D8, D13 or D40 for another
-field. The adjacent JSON files contain exact matrices, relations and maps.
-results/FIELDS_WORDS_DATA_REPORT.txt summarizes all five completed cases.
-
-Install the bundled checker's dependencies and verify the data:
-
-  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-    -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-  julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-    results/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
-    results/dataset/arithmetic_groups_dataset_v1
-
-Add --complete to the last command to replay the geometric coverage and fresh
-Tietze isomorphisms too. The default check verifies exact arithmetic, matrix
-relations, maps, invariants and word certificates. Both modes work without
-a backend executable. Keep the extracted bundle unchanged for its hash checks.
-
-Install for new computations
+Start a new group computation
 -----------------------------
 
-Install this checkout's pinned Julia dependencies:
+These instructions compute presentations from perfect forms and ridge cycles.
+Saved datasets, Git LFS and Python are optional; they are used only in the
+archive and regression-test sections below. Julia 1.13 is required (tested
+with 1.13.2). Magma is not a dependency.
+
+1. Enter the checkout and install its Julia dependencies
+
+For a new checkout, skip downloading the optional saved-data archives:
+
+  GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/dimpase/arithmetic_voronoi.git
+  cd arithmetic_voronoi
+
+For an existing checkout, cd to its root instead. Run all following shell
+commands beside Project.toml:
 
   julia --startup-file=no --project=. \
     -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 
-Locate the pinned PerfectForms dependency and build it with ordinary CMake:
+Project.toml and Manifest.toml select the tested OSCAR, Hecke and PerfectForms
+versions. This installs into your Julia depot and leaves your default Julia
+environment unchanged. The first import and first computation compile Julia
+code and can pause for several minutes before any stage output appears.
+
+2. Select the installed PerfectForms backend
+
+If you have already built and installed PerfectForms at
+~/work/tmp/PerfectForms.jl/backend, reuse that installation:
+
+  export PERFECT_FORMS_BACKEND_CONFIG="$HOME/work/tmp/PerfectForms.jl/backend/config.json"
+
+Adjust the path for your installation. It must be the absolute path to the
+installed config.json FILE. If you need a new backend, follow "Build a backend"
+below, then return here. No separate Oscar, Hecke or GAP installation is needed
+beyond Pkg.instantiate().
+
+3. Start Julia and compute the presentations
+
+In the shell:
+
+  julia --startup-file=no --project=.
+
+At the Julia prompt:
+
+  using ArithmeticVoronoi, Oscar
+  default_backend().executable
+
+  R = run_field_pipeline(12; directory="results/my_D12", reuse_baseline=false);
+
+This computes GL(2,O), SL(2,O) and PSL(2,O) for O = Z[sqrt(3)]. It enumerates
+and validates perfect forms, computes the two-cells, constructs all three
+presentations and simplifies them with certified generator maps. Stage names
+are printed as it runs. The trailing semicolon avoids printing the large
+result object.
+
+If Julia was already running when you set the shell variable, set it in that
+Julia session too, before the computation:
+
+  ENV["PERFECT_FORMS_BACKEND_CONFIG"] =
+      expanduser("~/work/tmp/PerfectForms.jl/backend/config.json")
+
+D is the field discriminant: 5, 8, 12, 13 and 40 correspond to Q(sqrt(5)),
+Q(sqrt(2)), Q(sqrt(3)), Q(sqrt(13)) and Q(sqrt(10)). Change 12 and the output
+directory together for a different field. D40 is a substantially larger run.
+
+reuse_baseline=false computes ridge data in your run directory without using
+the archived D5/D8 fixtures. Completed compatible data in that directory and
+validated perfect-form caches can still be reused on subsequent runs.
+
+Work with a group in OSCAR
+--------------------------
+
+Continue in the same Julia session. Select the simplified SL presentation,
+inspect its exact matrices and relators, and construct the OSCAR group:
+
+  S = R.simplified[:SL];
+  S.generator_matrices
+  S.relators
+
+  F = free_group(length(S.generator_matrices));
+  G, toG = quo(F, [F(r) for r in S.relators]);
+  gens(G)
+  relators(G)
+
+G is now an OSCAR FPGroup representing SL(2,O). Generator i corresponds to
+S.generator_matrices[i]. Each relator is a vector of signed, one-based generator
+indices: [1,-2,1] means g1 * inv(g2) * g1 and [] is the identity.
+
+For example, compute the abelianization and its quotient map:
+
+  A, toA = maximal_abelian_quotient(FinGenAbGroup, G);
+  elementary_divisors(A)   # D12: [2, 6], so C2 x C6
+  order(A)                # 12
+
+G itself is infinite. A is its finite abelian quotient in this example.
+To work with GL or PSL instead, select R.simplified[:GL] or R.simplified[:PSL]
+and repeat the construction of F and G. The PSL matrices are determinant-one
+lifts: its relators hold modulo +/-I. The raw presentations are available as
+R.gl, R.sl and R.psl, with generator_matrices and relators fields.
+
+Convert a matrix into a group element
+-------------------------------------
+
+Using the SL group G, toG and S constructed above:
+
+  P = R.enumeration.problem;
+  g = matrix(P.field, [1 P.generator; 0 1]);
+  c = matrix_to_word(R, g; target=:SL);
+  word = Int.(c["word"])
+  x = toG(F(word))
+
+x is the element of G represented by the input matrix g. P.generator is the
+integral field generator w (sqrt(3) for D12). Evaluate its image in the
+abelianization, or replay the exact matrix and reduction certificate:
+
+  toA(x)
+  map_word(x, S.generator_matrices; init=identity_matrix(P.field, 2)) == g
+  verify_word_certificate(R, g, c)   # true
+
+The word and generator matrices must come from the same run and alphabet.
+The default alphabet is simplified; set simplified=false for a raw one.
+target=:GL accepts integral matrices with unit determinant. target=:SL and
+:PSL require determinant-one matrices; PSL represents the matrix modulo +/-I.
+The returned words are verified, but need not be shortest or canonical.
+
+Run from the shell
+-------------------
+
+With the same backend environment variable set, these scripts run complete
+computations without an interactive session:
+
+  julia --startup-file=no --project=. scripts/run_fields.jl 12
+  julia --startup-file=no --project=. scripts/word_example.jl 12
+
+run_fields.jl writes to results/fields/D12/; multiple arguments such as
+5 8 12 13 are accepted, and no arguments selects 12 13 40. Archived fixtures
+are optional even for D5/D8. They are reused only if available and compatible.
+word_example.jl uses results/word_example/D12/, computes its own ridge data,
+converts [1 w; 0 1] to an SL word, and replays its certificate.
+
+Each pipeline run writes field.json, enumeration.json, GL_raw.json,
+SL_raw.json, PSL_raw.json, the corresponding *_simplified.json files, and
+run.json with stages, timings and cache use. A separate run with
+reuse_baseline=false stores its geometric certificates under two_cells/.
+In Julia, inspect R.run["presentations"] for the presentation sizes and
+abelianizations, and R.run["geometry"] for the geometric counts.
+
+Build a backend (if you do not already have one)
+------------------------------------------------
+
+PerfectForms provides the exporter and its CMake build. This needs Linux or
+macOS, Git, a C++20 compiler and standard library with std::format, CMake 3.24+,
+Make or Ninja, pkg-config, and development files for GMP, Eigen 3,
+Boost.Serialization and nauty/Traces. Linux runtime limits use prlimit from
+util-linux; macOS uses the system ps command. Initial setup needs network
+access. See https://github.com/dimpase/PerfectForms.jl for dependency details.
+
+On macOS install current Xcode Command Line Tools and run:
+
+  brew install cmake ninja pkgconf gmp eigen@3 boost nauty
+  export CMAKE_PREFIX_PATH="$(brew --prefix eigen@3):$(brew --prefix)"
+
+After the Julia dependency installation in step 1, run from this repository's
+root. These commands also work when Julia's package source is read-only:
 
   perfect_forms_source="$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')"
-  cmake -S "$perfect_forms_source" -B build/perfect-forms -G Ninja \
+  cmake -S "$perfect_forms_source" -B build/perfect-forms \
     -DCMAKE_BUILD_TYPE=Release '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG' \
     -DCMAKE_INSTALL_PREFIX="$PWD/backend-install"
   cmake --build build/perfect-forms --parallel 1
-  ctest --test-dir build/perfect-forms --output-on-failure
-  cmake --install build/perfect-forms
+  cmake --install build/perfect-forms --prefix "$PWD/backend-install"
   export PERFECT_FORMS_BACKEND_CONFIG="$PWD/backend-install/config.json"
 
-The build directory and install prefix can be any writable directories; the
-Julia dependency's source directory need not be writable. CMake fetches and
-verifies PerfectForms' exact upstream and submodule pins. An installed
-nauty/Traces is required, using pkg-config metadata and standard CMake
-searches. No source tree or binary is bundled in ArithmeticVoronoi.
+CMake fetches and verifies the pinned upstream sources and recursive submodules.
+The first configure and build can take several minutes. Build serially to limit
+compiler memory; on Linux, optionally prefix the build command with
+prlimit --as=10737418240 for a hard 10 GiB address-space ceiling.
 
-On macOS install current Xcode Command Line Tools, then, with Homebrew:
+One exporter supports all five fields. config.json records its absolute
+executable path and SHA256; backend-build.json records build provenance.
+Reinstall after rebuilding or moving the installation. Set the configuration
+variable in each new shell, or in ENV inside the Julia session.
 
-  brew install cmake ninja pkgconf gmp eigen@3 boost nauty git-lfs python
+For perfect-form enumeration in other fields, dimensions or T-spaces, use
+PerfectForms directly. ArithmeticVoronoi's complete group pipeline currently
+supports the five discriminants listed above.
 
-Add -DCMAKE_PREFIX_PATH="$(brew --prefix eigen@3);$(brew --prefix)" to the
-configure command above. These prefixes work on Apple Silicon and Intel Macs.
+Optional saved results and regression fixtures
+-----------------------------------------------
 
-Build serially to limit compiler memory. On Linux, prefix the build command
-with prlimit --as=10737418240 for a hard 10 GiB address-space ceiling.
-One exporter supports all five fields. backend-install/config.json selects
-its absolute path and SHA256; backend-install/backend-build.json records
-its compiler, upstream pins and system-nauty provenance. Set the environment
-variable in each new shell, or pass BackendConfig with an absolute executable
-path. Reinstall after changing or moving a binary; its SHA controls cache use.
+Download the two frozen data archives with Git LFS when you want to inspect
+or verify that delivery:
 
-PerfectForms owns our C++ code, CMake build, raw JSON protocol and process
-controls. ArithmeticVoronoi owns the arithmetic models, exact validation,
-mathematical caches, two-cells, presentations and constructive words.
+  git lfs install --local
+  git lfs pull
 
-Run a computation
-------------------
+results/FIELDS_WORDS_DATA_REPORT.txt summarizes the saved five-field dataset.
+USER_GUIDE.txt's archive section gives checksum, extraction and verification
+commands; no backend is required to verify those saved results.
 
-Compute perfect forms, complete ridge coverage and GL/SL/PSL presentations:
+The regression suite uses the original D5/D8 fixtures. With Python 3.12+ and
+the LFS archives available, restore the fixtures, then run the tests:
 
-  julia --startup-file=no --project=. scripts/run_fields.jl 12
-
-Use multiple arguments, e.g. 12 13 40; no arguments selects those three fields.
-D is a field discriminant: D8 means Q(sqrt(2)), D12 means Q(sqrt(3)), and
-D40 means Q(sqrt(10)). Stages, timings, presentations and certificates appear
-under results/fields/D12/. D12 has three perfect-form orbits and 228 oriented
-ridge loops; its simplified SL presentation has two generators and six relators.
-
-For a complete matrix-to-word example, including exact certificate replay:
-
-  julia --startup-file=no --project=. scripts/word_example.jl 12
-
-This uses its own results/word_example/D12/ directory and converts
-[1 w; 0 1] to a word in the simplified SL generators. Words are signed,
-one-based generator indices, multiplied in written order.
-
-For D5/D8 runs that reuse the original regression geometry, restore it first:
-
-  python3 scripts/restore_fixtures.py
-  julia --startup-file=no --project=. scripts/run_fields.jl 5 8
-
-The restoration script verifies all file hashes and refuses to overwrite
-different existing files. The word example instead computes its own ridge
-data and can be run for any of the five fields without restoring these fixtures.
-The pipeline reuses restored fixtures only when their exact source enumeration
-matches; otherwise it computes and validates fresh two-cell certificates.
-
-Tests and reproducibility
---------------------------
-
-Check the native exporter, then run the Julia regressions:
-
-  ctest --test-dir build/perfect-forms --output-on-failure
   python3 scripts/restore_fixtures.py
   julia --startup-file=no --project=. test/runtests.jl
 
-The original delivery passed 3806 assertions; its receipts and dataset remain
-versioned. Fresh runs create ignored caches and scratch data and may update
-small tracked summary reports. First use includes Julia compilation. See
-run.json for per-stage timings and cache use; saved warm timings are not
-cold end-to-end benchmarks.
+The restoration script checks hashes and refuses to overwrite different
+existing files. Native backend tests can also be run with:
 
-.github/workflows/ci.yml builds the exporter and runs native and Julia tests
-on Linux and macOS. Current logs and platform results are available at:
+  ctest --test-dir build/perfect-forms --output-on-failure
+
+First-use timings include Julia compilation. Saved warm timings are not cold
+end-to-end benchmarks. Tests create ignored scratch data and may update small
+tracked summary reports. CI builds and tests on Linux and macOS:
 https://github.com/dimpase/arithmetic_voronoi/actions/workflows/ci.yml
-
-If an archive is a short Git LFS pointer file, run git lfs pull. A
-missing_executable error means the backend has not been installed here;
-run cmake --install build/perfect-forms after a successful build, and set
-PERFECT_FORMS_BACKEND_CONFIG as above. For a separate
-D8 computation, use run_field_pipeline(8; directory="results/my_D8",
-reuse_baseline=false) after using ArithmeticVoronoi in Julia. See
-USER_GUIDE.txt for the full API and resource-limit behaviour.
 
 Further reading
 ----------------
 
-  USER_GUIDE.txt                 API examples, output files and troubleshooting
+  USER_GUIDE.txt                 API details, archives and troubleshooting
   PRESENTATION_JUSTIFICATION.md  completeness and group-action conventions
   CONSTRUCTIVE_WORDS_STATUS.md   word reduction, termination and certificates
   DATASET_SCHEMA.md             exact encodings and verification levels
@@ -193,5 +237,5 @@ Further reading
   DEPENDENCIES.txt               backend package and attribution details
   LICENSE                       project license
 
-The historical audit and saved receipts describe their original execution
-environment; use this README and USER_GUIDE.txt for installation commands.
+Historical receipts describe their original execution environment; use this
+README and USER_GUIDE.txt for current installation and computation commands.
