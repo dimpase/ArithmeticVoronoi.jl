@@ -4,8 +4,8 @@
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).
 It loads the two existing Voronoi entry points at package startup, adds a
 provider-registration interface, and includes a GAP test and tutorial
-documentation. Loading these definitions does not run Magma. The patch has
-not been submitted upstream.
+documentation. Loading these definitions does not run Magma. It is submitted
+upstream as [draft HAP PR #167](https://github.com/gap-packages/hap/pull/167).
 
 In a HAP checkout, apply it with:
 
