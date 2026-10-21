@@ -252,25 +252,26 @@ HAP is a **GAP package**, available from Julia through **GAP.jl**. OSCAR
 already includes GAP.jl, so use the GAP instance inside OSCAR:
 
 ```julia
-using Oscar
+using ArithmeticVoronoi, Oscar
 import Oscar: GAP
 
-@assert GAP.Packages.load("hap")
-resolution = GAP.Globals.ResolutionSL2QuadraticIntegers(-7, 2);
+K = hap_voronoi_complex(-7; group=:SL, resolution_length=2, progress=true);
+resolution = GAP.Globals.FreeGResolution(K, 2);
 chain = GAP.Globals.TensorWithIntegers(resolution);
 sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(chain, 1))))  # [0, 4]: Z × C4
 ```
 
-HAP's quadratic input is a **squarefree radicand**. Thus its Gaussian case
-uses `-1`, where ArithmeticVoronoi uses discriminant `-4`. The resolution
-above uses a complex stored in HAP and needs no Magma. HAP is not a required
-component of the native presentation algorithm.
+This constructs a new complex in Julia and needs no Magma or stored data.
+`hap_voronoi_complex` takes a field **discriminant**, like our other Julia
+interfaces. HAP's own quadratic constructors take **squarefree radicands**:
+their Gaussian case uses `-1`, where our Julia interface uses `-4`.
+HAP is not a required component of the native presentation algorithm.
 
 The [HAP and Schönnenbeck guide](docs/hap_and_vmh.md) explains the package
-layers, installation if HAP is missing, and a tested path from a **fresh**
-Magma Voronoi computation to a HAP resolution inside Julia. It also describes
-the additional data needed before our native pipeline could export such
-resolutions itself.
+layers, native higher homology, an optional Julia provider for HAP's own
+Voronoi entry points, and independent comparisons with fresh Magma complexes.
+Native complexes support quadratic GL₂ and imaginary-quadratic SL₂; cup
+products require additional contracting-homotopy data.
 
 Current comparisons are:
 
@@ -281,6 +282,7 @@ Current comparisons are:
 | Five imaginary SL/PSL pairs | Abelianizations agree with HAP's stored complexes |
 | Five imaginary GL/SL/PSL triples | Abelianizations agree with Page's Magma code; all exported matrix relations checked in OSCAR |
 | D = 5 and −7 | Fresh Schönnenbeck complexes imported into HAP; GL first homology agrees with our abelianizations |
+| Native complexes, D = 5 and −7 | Cell counts and GL H₂ agree with the independent VMH results; H₃ also checked for −7 |
 
 For the real and imaginary results, complete tables and timing methodology
 are in [the real survey](docs/native_survey.md) and

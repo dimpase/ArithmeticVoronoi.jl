@@ -55,6 +55,6 @@ Saved archives and Python are optional.
   exact comparisons with the C++ enumerator.
 - [Five imaginary quadratic fields](docs/imaginary_quadratic.md): full
   presentations and comparisons with Yasaki, HAP and Aurel Page's Magma code.
-- [HAP from Julia and Schönnenbeck's software](docs/hap_and_vmh.md).
+- [Native higher homology with HAP and Schönnenbeck comparisons](docs/hap_and_vmh.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).

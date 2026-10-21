@@ -248,5 +248,6 @@ include("FieldPipeline.jl")
 include("Words.jl")
 include("Literature.jl")
 include("Dataset.jl")
+include("HAP.jl")
 
 end

@@ -13,6 +13,14 @@ constructive words remain in ArithmeticVoronoi under the existing LICENSE.
 OSCAR supplies the exact arithmetic and GAP interface; GAP performs
 presentation simplification, independently of the PerfectForms exporter.
 
+Higher homology optionally uses the GAP package HAP:
+https://gap-packages.github.io/hap/
+src/HAP.jl constructs the arithmetic cell complexes natively and gap/ supplies
+their HAP interface. patches/hap/ contains a proposed optional-provider patch
+against a pinned HAP revision; HAP itself is not vendored or modified on
+installation. The cell-complex algorithm is described by S. Schoennenbeck,
+"Resolutions for unit groups of orders", https://arxiv.org/abs/1609.08835.
+
 BACKEND_AUDIT.md and upstream_reports/ preserve the earlier backend audit
 and issue submissions. The frozen mathematical archives retain the exporter
 and build recipes used for those computations as historical provenance;

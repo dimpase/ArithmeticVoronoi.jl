@@ -9,7 +9,7 @@ Magma or build a C++ backend.
 
 | Layer | Role | How it is selected |
 | --- | --- | --- |
-| ArithmeticVoronoi | Native perfect forms, presentations and matrix words | `using ArithmeticVoronoi` |
+| ArithmeticVoronoi | Native perfect forms, presentations, matrix words and full cell complexes | `using ArithmeticVoronoi` |
 | OSCAR | Julia interface to algebra systems, including GAP and Hecke | `using Oscar` |
 | GAP.jl | Calls GAP functions and handles GAP objects in Julia | `import Oscar: GAP` |
 | HAP | Resolutions, homology and related constructions in GAP | `GAP.Packages.load("hap")` |
@@ -21,7 +21,69 @@ with Julia's package manager and use `using GAP` directly. See the
 [GAP.jl introduction](https://github.com/oscar-system/GAP.jl) and
 [package-management documentation](https://oscar-system.github.io/GAP.jl/stable/packages/).
 
-## Use HAP without Magma
+## Compute a new complex in Julia, then its homology in HAP
+
+From the repository root, start `julia --startup-file=no --project=.`:
+
+```julia
+using ArithmeticVoronoi, Oscar
+import Oscar: GAP
+
+# Fresh GL(2,O) computation for Q(sqrt(-7)); input is a field discriminant.
+K = hap_voronoi_complex(-7; resolution_length=4, progress=true);
+R = GAP.Globals.FreeGResolution(K, 4);
+C = GAP.Globals.TensorWithIntegers(R);
+[sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,n)))) for n in 1:3]
+# [[2,2,2], [2,12], [2,2,2,2,12]]
+```
+
+This starts with native perfect-form enumeration. It constructs all bounded
+Ryshkov cells, finite stabilizers, their orientation actions, and signed
+boundary incidences. It uses neither Magma nor HAP's stored arithmetic
+complexes. Julia checks the equivariant boundary equation `d²=0` exactly.
+HAP then resolves the finite cell stabilizers to the requested degree.
+`resolution_length=n+1` suffices for computing Hₙ.
+
+Supported groups are **GL₂ over real and imaginary quadratic maximal orders**
+and **SL₂ over imaginary quadratic maximal orders**, on the free lattice O².
+Use `group=:SL` for the latter. Central −I is retained. This interface does
+not currently supply real-quadratic SL, projective quotients, rank 3 or
+nonfree lattices.
+
+To reuse a perfect-form enumeration or inspect the native cells:
+
+```julia
+E = enumerate_perfect_forms(arithmetic_problem(-7); backend=:native);
+V = voronoi_complex(E; group=:GL);
+length.(V.cells)                  # [1,2,1], starting in dimension zero
+validate_voronoi_complex(V)       # true
+K = hap_complex(V; resolution_length=4);
+```
+
+Each HAP object owns its data, so constructing another complex does not
+overwrite the first. The returned non-free resolution and the standard
+`FreeGResolution` path have no contracting homotopy. Additive homology and
+cohomology work; HAP's integral cup-product routine needs additional data.
+
+### Use HAP's Voronoi entry points with the Julia provider
+
+```julia
+enable_hap_julia_backend(; progress=true)
+K = GAP.evalstr("VoronoiComplexGL(2,-7 : backend := \"julia\")");
+S = GAP.evalstr("VoronoiComplexSL(2,-7 : backend := \"julia\")");
+```
+
+These HAP calls take **squarefree radicands**: `-1` means Q(i), whose
+discriminant in `hap_voronoi_complex` is `-4`. Unsupported Julia requests
+raise an error; they do not launch Magma as a fallback. The callback runs
+inside the existing Julia/GAP.jl process, with no subprocess or intermediate
+file. Existing calls without `backend := "julia"` retain HAP's behavior.
+
+The [HAP patch](../patches/hap/README.md) introduces a general optional
+provider interface. `enable_hap_julia_backend()` also loads a compatibility
+wrapper for unpatched HAP, so no installed package files need editing.
+
+## Use complexes already stored in HAP
 
 From the repository root, start `julia --startup-file=no --project=.` and run:
 
@@ -126,6 +188,14 @@ records revisions, complex hashes, versions and results:
 This checks the fresh export/import path and H₁. It does not certify an
 isomorphism between the presentations or check higher homology.
 
+The subsequent native integration tests in [test/hap.jl](../test/hap.jl)
+also reproduce the independent VMH cell counts and GL H₂:
+`[2,12]` for −7 and `[2,2,2,2]` for 5. For −7, GL H₃ is
+`[2,2,2,2,12]`. Native SL H₁ and H₂ for −7 agree with HAP's stored
+resolution. GL and SL H₁ also agree with the presentation results for
+−3, −4, −15 and −23. These checks concern the cell complex and its homology;
+they do not supply a contracting homotopy or a cohomology ring.
+
 ### Reproduce a fresh real quadratic example
 
 From the ArithmeticVoronoi checkout root, clone the tested VMH revision to
@@ -204,20 +274,27 @@ abelianization and the HAP H₁ now give `[2,2,2]`. Here `d` is a radicand and
 this check used full GL. Its `projective` presentation option concerns the
 quotient by −I; do not identify that with quotienting GL by all scalar units.
 
-## What this means for the native Julia backend
+## Native complex construction
 
-HAP is already callable from our Julia environment; there is no need to port
-it to Julia or add a new language bridge. The missing part of a native
-higher-homology workflow is the mathematical complex data.
-For H₁ alone, the native presentation already suffices: its abelianization
-is H₁, as computed by `maximal_abelian_quotient` in the user guide.
+The native construction uses the bounded faces of the relative Ryshkov
+polyhedron. A cell is determined by its complete minimum set S; its
+dimension is the dimension of the form space minus the rank of the evaluation
+vectors for S. Faces whose minimum sets do not span K² are discarded.
+All local cone faces are obtained by intersecting facets, then identified
+under the arithmetic group.
 
-Our current pipeline records perfect-form stabilizers, neighbour maps and
-ridge cycles sufficient for presentations and matrix words. It does not yet
-export a HAP-compatible equivariant cellular chain complex with all the
-needed incidences, stabilizer actions and orientations. A finitely presented
-OSCAR group is not by itself the VMH complex expected by this reader.
+In rank two, all transporters between spanning minimum sets can be found
+exactly by enumerating the images of two K-independent vectors. This also
+computes complete stabilizers and every boundary embedding. The orientation
+character is the determinant sign on the cell's rational tangent space;
+boundary signs use the outward-normal-first convention. The validation checks
+incidences, orientations and cancellation of `d²` in the signed permutation
+modules, before any tensoring with the integers.
 
-The two small examples above provide concrete reference data for implementing
-that export and validating boundary maps. Until then, use HAP's stored
-complexes or the tested Magma export when a free resolution is needed.
+For imaginary SL, the finite determinant quotient splits the GL cell orbits,
+and the boundary maps and stabilizers are restricted to determinant one.
+This is the actual SL group, including its centre. No presentation-to-resolution
+shortcut is assumed.
+
+For H₁ alone, abelianizing a native presentation remains sufficient. The full
+complex provides the extra geometric data needed for higher degrees.
