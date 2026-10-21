@@ -70,9 +70,11 @@ end
 @testset "native enumeration through group presentations and words" begin
     mktempdir() do directory
         R=withenv("PERFECT_FORMS_BACKEND_CONFIG"=>"/no/such/backend/config.json") do
-            run_field_pipeline(12;backend=:native,directory,reuse_baseline=false)
+            run_field_pipeline(voronoi_request(12);directory,reuse_baseline=false)
         end
         @test R.run["backend"]=="native"
+        @test R.run["request"]==voronoi_request(12)
+        @test JSON3.read(read(joinpath(directory,"run.json"),String),Dict{String,Any})["request"]==voronoi_request(12)
         @test length(R.enumeration.representatives)==3
         @test verify_presentation(R.gl)
         @test verify_sl_presentation(R.sl)

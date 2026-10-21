@@ -69,6 +69,22 @@ end
 
 @testset "optional HAP Julia provider" begin
     enable_hap_julia_backend()
+    construct=GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")")
+    request=voronoi_request(-7)
+    Kgeneral=construct(GAP.GapObj(request;recursive=true))
+    @test hap_homology(GAP.Globals.FreeGResolution(Kgeneral,3),2)==[2,12]
+    Kdirect=hap_voronoi_complex(voronoi_request(-7;group=:SL);resolution_length=3)
+    @test hap_homology(GAP.Globals.FreeGResolution(Kdirect,3),2)==[12]
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplex(rec())")
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplex(rec() : backend := \"absent\")")
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplex(2 : backend := \"julia\")")
+    @test_throws GAP.GAPError GAP.evalstr("RegisterVoronoiBackend(\"magma\", r -> r)")
+    for (key,value) in (("rank",3),("order",Dict("kind"=>"nonmaximal")),
+                       ("lattice",Dict("kind"=>"projective")),
+                       ("field",Dict("kind"=>"number_field","polynomial"=>[-1,-1,0,1])))
+        bad=deepcopy(request);bad[key]=value
+        @test_throws GAP.GAPError construct(GAP.GapObj(bad;recursive=true))
+    end
     # GAP's interface takes radicands: -1 must request discriminant -4.
     K=GAP.evalstr("VoronoiComplexGL(2,-1 : backend := \"julia\")")
     @test GAP.evalstr("K -> K!.arithmeticVoronoi.discriminant")(K)==-4

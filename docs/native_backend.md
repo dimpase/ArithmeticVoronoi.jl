@@ -74,8 +74,10 @@ Julia dependency for the existing C++ interface and comparison tests; it has
 not yet been split into an optional extension. The pinned dependency does not
 build C++ during installation.
 
-The API default remains `backend=:polyhedral_common` to preserve existing
-saved computations. Native enumeration is selected explicitly, runs afresh,
+The older problem-object and discriminant APIs retain
+`backend=:polyhedral_common` as their default. The
+[record-based API](requests.md) defaults to `backend=:native` and is used by
+the native experiment runners. Native enumeration runs afresh,
 and has no process deadline or memory limit. `config`, `cache_dir`, `work_dir`,
 `timeout` and `force` are C++-backend options. `write_enumeration(path, E)` can
 save a native result for inspection; native checkpoint loading is not

@@ -25,9 +25,16 @@ function load_simplification(P,path,matrices,relations)
     S
 end
 
-function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"),
+function run_field_pipeline(D::Integer;backend=:polyhedral_common,kwargs...)
+    run_field_pipeline(voronoi_request(D);backend,kwargs...)
+end
+
+function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
                             simplify=true,timeout=600.0,reuse_baseline=:auto,
-                            backend=:polyhedral_common,progress=false)
+                            backend=:native,progress=false)
+    request=enumeration_request(request)
+    D=request["field"]["discriminant"]
+    isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"))
     (reuse_baseline isa Bool || reuse_baseline===:auto) || throw(ArgumentError("reuse_baseline must be true, false or :auto"))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
@@ -42,7 +49,7 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
     status=Dict{String,Any}("enumeration"=>"pending","two_cells"=>"pending","GL"=>"pending",
         "SL"=>"pending","PSL"=>"pending","simplification"=>Dict(k=>(simplify ? "pending" : "not_requested") for k in ("GL","SL","PSL")),"constructive_words"=>"unvalidated",
         "literature_comparison"=>D in (5,8,12,13) ? "pending" : "not_applicable")
-    run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"status"=>status,
+    run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"request"=>request,"status"=>status,
         "stage_seconds"=>timings,"julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
         "julia_threads"=>Threads.nthreads(),"started_utc"=>string(now(UTC)))
     save()=atomic_json(joinpath(directory,"run.json"),run)
@@ -59,7 +66,7 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
         end
     end
     save()
-    P=arithmetic_problem(D)
+    P=arithmetic_problem(request)
     metadata=stage("field_and_unit_verification",()->field_metadata(P));atomic_json(joinpath(directory,"field.json"),metadata)
     E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;backend,progress,timeout))
     run["backend"]=string(backend)

@@ -284,26 +284,30 @@ end
 
 """A fresh native Julia Voronoi complex as a HAP non-free resolution object."""
 function hap_voronoi_complex(D::Int;group=:GL,resolution_length=100,progress=false)
-    group in (:GL,:SL) || throw(ArgumentError("choose group=:GL or :SL"))
-    group==:SL && D>0 && throw(ArgumentError("real-quadratic SL complexes are not implemented"))
-    E=enumerate_perfect_forms(arithmetic_problem(D);backend=:native,progress)
+    hap_voronoi_complex(voronoi_request(D;group);resolution_length,progress)
+end
+
+"""Construct a HAP complex from a field/order/lattice/group request record."""
+function hap_voronoi_complex(request::VoronoiRequestRecord;resolution_length=100,progress=false)
+    r=normalize_voronoi_request(request)
+    group=Symbol(r["group"])
+    group==:SL && r["field"]["discriminant"]>0 && throw(ArgumentError("real-quadratic SL complexes are not implemented"))
+    resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
+    E=enumerate_perfect_forms(arithmetic_problem(r);backend=:native,progress)
     hap_complex(voronoi_complex(E;group,progress);resolution_length)
 end
 
 """
 Register the in-process Julia provider with HAP's optional backend dispatcher.
-Afterwards use VoronoiComplexGL(2,d : backend := "julia") in GAP. HAP takes
-squarefree radicands d; hap_voronoi_complex takes fundamental discriminants D.
+Afterwards use VoronoiComplex(request : backend := "julia") in GAP. The
+quadratic GL/SL convenience constructors still accept squarefree radicands.
 """
-function enable_hap_julia_backend(;progress=false)
+function enable_hap_julia_backend(;progress=false,resolution_length=100)
+    resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     GAP.Packages.load("hap") || error("HAP is not installed")
     GAP.Globals.Read(GAP.GapObj(joinpath(PACKAGE_ROOT,"gap","VoronoiBackends.g")))
-    provider=function(kind,n,d)
-        n=Int(n);d=Int(d);kind=Symbol(String(GAP.gap_to_julia(kind)))
-        n==2 || throw(ArgumentError("the Julia Voronoi backend supports rank 2"))
-        d!=0 && d!=1 && is_squarefree(ZZ(d)) || throw(ArgumentError("HAP requires a squarefree quadratic radicand"))
-        D=mod(d,4)==1 ? d : 4d
-        hap_voronoi_complex(D;group=kind,progress)
+    provider=function(request)
+        hap_voronoi_complex(GAP.gap_to_julia(request;recursive=true);progress,resolution_length)
     end
     GAP.Globals.RegisterVoronoiBackend(GAP.GapObj("julia"),GAP.GapObj(provider))
     nothing

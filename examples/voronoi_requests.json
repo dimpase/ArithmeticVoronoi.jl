@@ -1,0 +1,16 @@
+[
+  {
+    "group": "GL",
+    "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": -7},
+    "order": {"kind": "maximal"},
+    "lattice": {"kind": "free"}
+  },
+  {
+    "group": "GL",
+    "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": 5},
+    "order": {"kind": "maximal"},
+    "lattice": {"kind": "free"}
+  }
+]

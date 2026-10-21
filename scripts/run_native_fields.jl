@@ -1,11 +1,12 @@
 # Run from the checkout root with julia --project=. scripts/run_native_fields.jl.
 # --output=DIR selects the parent directory; --resume retains completed fields.
-# Remaining arguments are discriminants; with none, run the documented survey.
+# --requests=FILE reads JSON records. Integers are quadratic GL shortcuts.
 const import_started=time_ns()
 using ArithmeticVoronoi, Oscar, LinearAlgebra, JSON3
 const NAV=ArithmeticVoronoi
 const import_seconds=(time_ns()-import_started)/1e9
 const SURVEY_DISCRIMINANTS=[5,8,12,13,17,21,24,28,29,33,37,40,41,44,56,60]
+include("request_arguments.jl")
 
 function validate_words(R)
     P=R.enumeration.problem;K=P.field;w=P.generator
@@ -41,13 +42,14 @@ function validate_words(R)
     validation
 end
 
-function compute_field(D,root;on_result=nothing)
-    R=run_field_pipeline(D;backend=:native,directory=joinpath(root,"D$D"),
+function compute_field(request,root;on_result=nothing)
+    D=request["field"]["discriminant"]
+    R=run_field_pipeline(request;backend=:native,directory=joinpath(root,"D$D"),
         reuse_baseline=false)
     println("D$D: checking matrix-to-word certificates");flush(stdout)
     started=time_ns();validation=validate_words(R);seconds=(time_ns()-started)/1e9
     comparison=isnothing(on_result) ? nothing : on_result(R)
-    Dict("status"=>"complete","directory"=>"D$D",
+    Dict("status"=>"complete","directory"=>"D$D","request"=>request,
         "perfect_form_orbits"=>length(R.enumeration.representatives),
         "labelled_neighbours"=>length(R.enumeration.neighbours),
         "oriented_loops"=>R.run["geometry"]["oriented_loops"],
@@ -61,19 +63,9 @@ end
 
 function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
               default_output=joinpath(NAV.PACKAGE_ROOT,"results/native_fields"))
-    root=default_output
-    discriminants=Int[];resume=false
-    for arg in args
-        if startswith(arg,"--output=")
-            root=abspath(split(arg,'=';limit=2)[2])
-        elseif arg=="--resume"
-            resume=true
-        else
-            push!(discriminants,parse(Int,arg))
-        end
-    end
-    isempty(discriminants) && append!(discriminants,default_discriminants)
-    unique!(discriminants)
+    (;root,resume,requests)=request_arguments(args;default_discriminants,default_output)
+    requests=NAV.enumeration_request.(requests)
+    discriminants=[r["field"]["discriminant"] for r in requests]
     LinearAlgebra.BLAS.set_num_threads(1)
     mkpath(root)
     fields=Dict{String,Any}()
@@ -87,25 +79,27 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
         end
     end
     summary=Dict("schema"=>"av_native_field_batch_v1","status"=>"running",
-        "discriminants"=>discriminants,"fields"=>fields,"resumed"=>resume,
+        "discriminants"=>discriminants,"requests"=>requests,"fields"=>fields,"resumed"=>resume,
         "julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
         "julia_threads"=>Threads.nthreads(),"blas_threads"=>LinearAlgebra.BLAS.get_num_threads(),
         "package_import_seconds"=>import_seconds,
         "timing_note"=>"Fields run sequentially. The first field computed in each Julia session includes compilation; existing compatible two-cell and simplification certificates may be reused on reruns.")
     save()=NAV.atomic_json(summary_path,summary)
     save()
-    for D in discriminants
+    for request in requests
+        D=request["field"]["discriminant"]
         if resume && haskey(fields,string(D)) && fields[string(D)]["status"]=="complete" &&
+            matching_request(fields[string(D)],request) &&
             (isnothing(on_result) || !isnothing(get(fields[string(D)],"comparison",nothing)))
             println("D$D: retaining completed batch result");flush(stdout)
             continue
         end
-        fields[string(D)]=Dict("status"=>"running");save()
+        fields[string(D)]=Dict("status"=>"running","request"=>request);save()
         try
-            fields[string(D)]=compute_field(D,root;on_result)
+            fields[string(D)]=compute_field(request,root;on_result)
         catch err
             err isa InterruptException && rethrow()
-            fields[string(D)]=Dict("status"=>"failed","error"=>sprint(showerror,err))
+            fields[string(D)]=Dict("status"=>"failed","request"=>request,"error"=>sprint(showerror,err))
             showerror(stderr,err,catch_backtrace());println(stderr);flush(stderr)
         end
         save();GC.gc()

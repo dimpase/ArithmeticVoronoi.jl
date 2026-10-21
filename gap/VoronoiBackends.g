@@ -15,11 +15,27 @@ BindGlobal("RegisterVoronoiBackend", function(name, provider)
     fi;
     HAP_VORONOI_BACKENDS.(name) := provider;
 end);
-BindGlobal("CallVoronoiBackend", function(name, kind, n, d)
+BindGlobal("CallVoronoiBackend", function(name, request)
+    if not IsRecord(request) then
+        Error("a Voronoi request must be a record");
+    fi;
     if not IsString(name) or not IsBound(HAP_VORONOI_BACKENDS.(name)) then
         Error("unknown Voronoi backend; register it with RegisterVoronoiBackend");
     fi;
-    return HAP_VORONOI_BACKENDS.(name)(kind,n,d);
+    return HAP_VORONOI_BACKENDS.(name)(request);
+end);
+BindGlobal("VoronoiComplex", function(request)
+    local backend;
+    backend := ValueOption("backend");
+    if backend=fail then
+        Error("specify a registered Voronoi backend with : backend := name");
+    fi;
+    return CallVoronoiBackend(backend,request);
+end);
+BindGlobal("HAPQuadraticVoronoiRequest", function(kind,n,d)
+    return rec(group:=kind,rank:=n,
+        field:=rec(kind:="quadratic",radicand:=d),
+        order:=rec(kind:="maximal"),lattice:=rec(kind:="free"));
 end);
 BindGlobal("AV_HAP_MAGMA_GL", VoronoiComplexGL);
 BindGlobal("AV_HAP_MAGMA_SL", VoronoiComplexSL);
@@ -27,7 +43,7 @@ VoronoiComplexGL := function(n,d)
     local backend;
     backend := ValueOption("backend");
     if backend<>fail and backend<>"magma" then
-        return CallVoronoiBackend(backend,"GL",n,d);
+        return CallVoronoiBackend(backend,HAPQuadraticVoronoiRequest("GL",n,d));
     fi;
     return AV_HAP_MAGMA_GL(n,d);
 end;
@@ -35,8 +51,11 @@ VoronoiComplexSL := function(n,d)
     local backend;
     backend := ValueOption("backend");
     if backend<>fail and backend<>"magma" then
-        return CallVoronoiBackend(backend,"SL",n,d);
+        return CallVoronoiBackend(backend,HAPQuadraticVoronoiRequest("SL",n,d));
     fi;
     return AV_HAP_MAGMA_SL(n,d);
 end;
+fi;
+if not IsBound(VoronoiComplex) then
+    Error("this HAP checkout has an older draft backend interface; update it and restart GAP/Julia");
 fi;

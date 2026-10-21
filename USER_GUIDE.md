@@ -163,6 +163,11 @@ in Hecke and polyhedral geometry in OSCAR; its matrices stay in Julia.
 
 ## Batches, output and restarting
 
+The enumerator, presentation pipeline and HAP provider share a request record
+describing the group, rank, field, order and lattice. `voronoi_request(D)` is
+the shortcut for our quadratic GL experiments. See
+[request records](docs/requests.md) for the full Julia/GAP schema and JSON examples.
+
 Run a single field from the shell:
 
 ```sh
@@ -185,6 +190,15 @@ destination, or resume fields already marked complete:
 julia --threads=1 --startup-file=no --project=. scripts/run_native_fields.jl --output=results/my_real_batch 17 21 60
 julia --threads=1 --startup-file=no --project=. scripts/run_imaginary_fields.jl --output=results/my_imaginary_batch -4 -23
 julia --threads=1 --startup-file=no --project=. scripts/run_native_fields.jl --resume
+```
+
+Both runners also accept `--requests=examples/voronoi_requests.json`; the
+imaginary runner requires a file containing only imaginary GL requests.
+The canonical request is saved with each result and checked when resuming.
+To compute fresh complexes and higher homology through HAP's general interface:
+
+```sh
+julia --project=. scripts/run_hap.jl --requests=examples/voronoi_requests.json --degree=2 --output=results/my_homology
 ```
 
 The default destinations are `results/native_fields/` and
@@ -255,15 +269,17 @@ already includes GAP.jl, so use the GAP instance inside OSCAR:
 using ArithmeticVoronoi, Oscar
 import Oscar: GAP
 
-K = hap_voronoi_complex(-7; group=:SL, resolution_length=2, progress=true);
+K = hap_voronoi_complex(voronoi_request(-7; group=:SL);
+    resolution_length=2, progress=true);
 resolution = GAP.Globals.FreeGResolution(K, 2);
 chain = GAP.Globals.TensorWithIntegers(resolution);
 sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(chain, 1))))  # [0, 4]: Z × C4
 ```
 
 This constructs a new complex in Julia and needs no Magma or stored data.
-`hap_voronoi_complex` takes a field **discriminant**, like our other Julia
-interfaces. HAP's own quadratic constructors take **squarefree radicands**:
+`voronoi_request(D)` takes a field **discriminant**; the older
+`hap_voronoi_complex(D)` shortcut still works. HAP's quadratic convenience
+constructors take **squarefree radicands**:
 their Gaussian case uses `-1`, where our Julia interface uses `-4`.
 HAP is not a required component of the native presentation algorithm.
 

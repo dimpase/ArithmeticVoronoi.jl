@@ -56,5 +56,6 @@ Saved archives and Python are optional.
 - [Five imaginary quadratic fields](docs/imaginary_quadratic.md): full
   presentations and comparisons with Yasaki, HAP and Aurel Page's Magma code.
 - [Native higher homology with HAP and Schönnenbeck comparisons](docs/hap_and_vmh.md).
+- [Shared request records and JSON experiment batches](docs/requests.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).

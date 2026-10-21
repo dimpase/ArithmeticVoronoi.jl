@@ -1,15 +1,15 @@
 diff --git a/lib/Voronoi/seb.gi b/lib/Voronoi/seb.gi
-index f866329..79bf318 100644
+index f866329..de815d7 100644
 --- a/lib/Voronoi/seb.gi
 +++ b/lib/Voronoi/seb.gi
-@@ -1,10 +1,34 @@
+@@ -1,10 +1,50 @@
  HAP_KOMPLEKS123:=fail;
  DIMS:=0;;   #THIS IS NOT ALLOWED! CHANGE IT!!
  
-+# Optional providers implement function(kind,n,d), where kind is "GL" or "SL"
-+# and d is a squarefree quadratic radicand. A provider returns a HAP non-free
-+# resolution, or fail for unsupported inputs. The caller explicitly chooses it
-+# with : backend := "name". No extra dependency is loaded by HAP.
++# Optional providers implement function(request), returning a HAP non-free
++# resolution or fail for unsupported inputs. HAP passes the request record
++# unchanged; providers interpret and validate its field, order, lattice, group
++# and other data. No extra dependency is loaded by HAP.
 +BindGlobal("HAP_VORONOI_BACKENDS", rec());
 +BindGlobal("RegisterVoronoiBackend", function(name, provider)
 +    if not IsString(name) or Length(name)=0 or name="magma"
@@ -18,11 +18,27 @@ index f866329..79bf318 100644
 +    fi;
 +    HAP_VORONOI_BACKENDS.(name) := provider;
 +end);
-+BindGlobal("CallVoronoiBackend", function(name, kind, n, d)
++BindGlobal("CallVoronoiBackend", function(name, request)
++    if not IsRecord(request) then
++        Error("a Voronoi request must be a record");
++    fi;
 +    if not IsString(name) or not IsBound(HAP_VORONOI_BACKENDS.(name)) then
 +        Error("unknown Voronoi backend; register it with RegisterVoronoiBackend");
 +    fi;
-+    return HAP_VORONOI_BACKENDS.(name)(kind,n,d);
++    return HAP_VORONOI_BACKENDS.(name)(request);
++end);
++BindGlobal("VoronoiComplex", function(request)
++    local backend;
++    backend := ValueOption("backend");
++    if backend=fail then
++        Error("specify a registered Voronoi backend with : backend := name");
++    fi;
++    return CallVoronoiBackend(backend,request);
++end);
++BindGlobal("HAPQuadraticVoronoiRequest", function(kind,n,d)
++    return rec(group:=kind,rank:=n,
++        field:=rec(kind:="quadratic",radicand:=d),
++        order:=rec(kind:="maximal"),lattice:=rec(kind:="free"));
 +end);
 +
  ############################################################
@@ -33,12 +49,12 @@ index f866329..79bf318 100644
 +
 +backend:=ValueOption("backend");
 +if backend<>fail and backend<>"magma" then
-+return CallVoronoiBackend(backend,"GL",n,d);
++return CallVoronoiBackend(backend,HAPQuadraticVoronoiRequest("GL",n,d));
 +fi;
  
  if d<0 then
  file:="~/pkg/Voronoi/VMH-ImaginaryQuadraticNumberFields/Magma/BasicData.m";
-@@ -43,7 +67,12 @@ end;
+@@ -43,7 +83,12 @@ end;
  ############################################################
  ############################################################
  VoronoiComplexSL:=function(n,d)
@@ -47,7 +63,7 @@ index f866329..79bf318 100644
 +
 +backend:=ValueOption("backend");
 +if backend<>fail and backend<>"magma" then
-+return CallVoronoiBackend(backend,"SL",n,d);
++return CallVoronoiBackend(backend,HAPQuadraticVoronoiRequest("SL",n,d));
 +fi;
  
  if d<0 then
@@ -69,60 +85,93 @@ index cfb0b26..e247f2e 100644
  ################# OBJECTIFICATIONS DONE ##########################
 diff --git a/tst/testextra/voronoi-backends.tst b/tst/testextra/voronoi-backends.tst
 new file mode 100644
-index 0000000..26a7d89
+index 0000000..7d1dff5
 --- /dev/null
 +++ b/tst/testextra/voronoi-backends.tst
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,30 @@
 +gap> START_TEST("voronoi-backends.tst");
-+gap> RegisterVoronoiBackend("hap-test", function(kind,n,d)
-+> return [kind,n,d]; end);
-+gap> Print(VoronoiComplexGL(2,-7 : backend := "hap-test"),"\n");
++gap> RegisterVoronoiBackend("hap-test", request -> request);
++gap> haprequest := rec(group:="unit",rank:=3,
++> field:=rec(polynomial:=[-1,-1,0,1]),order:=rec(basis:=[1,2,3]),
++> lattice:=rec(ideals:=["a","b","c"]),extra:=rec(example:=true));;
++gap> Print(IsIdenticalObj(haprequest,VoronoiComplex(haprequest : backend := "hap-test")),"\n");
++true
++gap> haprequest := VoronoiComplexGL(2,-7 : backend := "hap-test");;
++gap> Print([haprequest.group,haprequest.rank,haprequest.field.radicand],"\n");
 +[ "GL", 2, -7 ]
-+gap> Print(VoronoiComplexSL(2,-1 : backend := "hap-test"),"\n");
++gap> Print([haprequest.field.kind,haprequest.order.kind,haprequest.lattice.kind],"\n");
++[ "quadratic", "maximal", "free" ]
++gap> haprequest := VoronoiComplexSL(2,-1 : backend := "hap-test");;
++gap> Print([haprequest.group,haprequest.rank,haprequest.field.radicand],"\n");
 +[ "SL", 2, -1 ]
-+gap> Print(VoronoiComplexGL(3,5 : backend := "hap-test"),"\n");
++gap> haprequest := VoronoiComplexGL(3,5 : backend := "hap-test");;
++gap> Print([haprequest.group,haprequest.rank,haprequest.field.radicand],"\n");
 +[ "GL", 3, 5 ]
-+gap> RegisterVoronoiBackend("hap-test-fail", function(kind,n,d)
-+> return fail; end);
++gap> RegisterVoronoiBackend("hap-test-fail", request -> fail);
++gap> Print(VoronoiComplex(rec() : backend := "hap-test-fail"),"\n");
++fail
 +gap> Print(VoronoiComplexSL(2,5 : backend := "hap-test-fail"),"\n");
 +fail
-+gap> Print(VoronoiComplexGL(2,-7 : backend := "hap-test"),"\n");
-+[ "GL", 2, -7 ]
++gap> RegisterVoronoiBackend("hap-test", request -> request.rank);
++gap> Print(VoronoiComplexGL(4,5 : backend := "hap-test"),"\n");
++4
++gap> Unbind(haprequest);
 +gap> Unbind(HAP_VORONOI_BACKENDS.("hap-test"));
 +gap> Unbind(HAP_VORONOI_BACKENDS.("hap-test-fail"));
 +gap> STOP_TEST("voronoi-backends.tst", 1000);
 diff --git a/tutorial/tutorialBianchi.xml b/tutorial/tutorialBianchi.xml
-index a0cf35a..dae372e 100644
+index a0cf35a..2c2d7e0 100644
 --- a/tutorial/tutorialBianchi.xml
 +++ b/tutorial/tutorialBianchi.xml
-@@ -407,5 +407,30 @@ The signs in the boundary maps of the free resolution are delicate. Another easy
+@@ -407,5 +407,51 @@ The signs in the boundary maps of the free resolution are delicate. Another easy
  <#Include SYSTEM "tutex/bianchi.17.txt">
  </Example>
  
 +</Section>
 +
 +<Section><Heading>Optional Voronoi backends</Heading>
-+<P>The functions <C>VoronoiComplexGL(n,d)</C> and
-+<C>VoronoiComplexSL(n,d)</C> accept the option <C>backend</C>.
-+Without this option, or with <C>backend := "magma"</C>, they use the
-+Magma implementation described above. An external package can register an
-+alternative using <C>RegisterVoronoiBackend(name, provider)</C>. The name
-+must be a nonempty string other than <C>"magma"</C>, and
-+<C>provider(kind,n,d)</C> must be a function. Its first argument is
-+<C>"GL"</C> or <C>"SL"</C>; <C>d</C> is a squarefree radicand, not a
-+field discriminant. The provider returns a HAP non-free resolution for the
-+requested group, or <C>fail</C> if the input is unsupported. Failure never
-+silently falls back to Magma. Registering an existing name replaces its
-+provider.</P>
-+<P>For example, a Julia package running with GAP.jl can register an
-+in-process callback under the name <C>"julia"</C>. Once registered,
-+<C>VoronoiComplexGL(2,-7 : backend := "julia")</C> calls that provider.
-+HAP itself does not install or load Julia. An unregistered backend name is
-+an error. Providers must supply complete stabilizers, the orientation action
++An external package can register a provider using
++<C>RegisterVoronoiBackend(name, provider)</C>, where <C>provider</C> is a
++function of one argument. The name must be a nonempty string other than
++<C>"magma"</C>. Registering an existing name replaces its provider.
++<P/>
++The general entry point is <C>VoronoiComplex(request : backend := name)</C>.
++It requires a record and an explicitly selected registered provider. HAP
++passes the record unchanged; the provider interprets and validates its
++contents. The interface imposes no particular field degree, rank or group
++family. For example, a provider may accept the following description:
++<Log><![CDATA[
++request := rec(
++    group := "GL", rank := 2,
++    field := rec(kind := "quadratic", discriminant := -7),
++    order := rec(kind := "maximal"),
++    lattice := rec(kind := "free"));
++K := VoronoiComplex(request : backend := "julia");
++]]></Log>
++Field polynomials, order bases, lattice ideals or subgroup data can be
++included when a provider supports them. This does not assert that any
++particular provider implements those cases. A provider returns a HAP
++non-free resolution or <C>fail</C> for an unsupported request; it may also
++raise an error explaining the limitation. Failure never falls back to Magma.
++<P/>
++The existing functions <C>VoronoiComplexGL(n,d)</C> and
++<C>VoronoiComplexSL(n,d)</C> also accept the option <C>backend</C>.
++When selecting a registered provider, these construct a record with
++<C>group</C> equal to <C>"GL"</C> or <C>"SL"</C>, <C>rank := n</C>,
++<C>field := rec(kind := "quadratic", radicand := d)</C>,
++<C>order := rec(kind := "maximal")</C> and
++<C>lattice := rec(kind := "free")</C>. Here <C>d</C> is a squarefree
++radicand, not a field discriminant. Without the backend option, or with
++<C>backend := "magma"</C>, these two convenience functions retain the
++Magma implementation described above.
++<P/>
++A Julia package running with GAP.jl can register an in-process callback
++under the name <C>"julia"</C>. HAP itself does not install or load Julia.
++An unregistered backend name is an error. Providers must supply complete stabilizers, the orientation action
 +and equivariant boundaries; perfect forms or a group presentation alone
 +do not suffice for higher homology. Standard HAP operations such as
 +<C>FreeGResolution</C> and <C>TensorWithIntegers</C> then apply to the
 +returned object. A contracting homotopy is a separate capability and must
-+not be inferred merely from the existence of a resolution.</P>
++not be inferred merely from the existence of a resolution.
  </Section>
  </Chapter>

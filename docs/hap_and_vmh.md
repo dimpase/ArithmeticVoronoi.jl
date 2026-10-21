@@ -30,7 +30,8 @@ using ArithmeticVoronoi, Oscar
 import Oscar: GAP
 
 # Fresh GL(2,O) computation for Q(sqrt(-7)); input is a field discriminant.
-K = hap_voronoi_complex(-7; resolution_length=4, progress=true);
+request = voronoi_request(-7);
+K = hap_voronoi_complex(request; resolution_length=4, progress=true);
 R = GAP.Globals.FreeGResolution(K, 4);
 C = GAP.Globals.TensorWithIntegers(R);
 [sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,n)))) for n in 1:3]
@@ -69,11 +70,19 @@ cohomology work; HAP's integral cup-product routine needs additional data.
 
 ```julia
 enable_hap_julia_backend(; progress=true)
-K = GAP.evalstr("VoronoiComplexGL(2,-7 : backend := \"julia\")");
+construct = GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")");
+K = construct(GAP.GapObj(voronoi_request(-7); recursive=true));
+# Existing quadratic convenience calls also work:
 S = GAP.evalstr("VoronoiComplexSL(2,-7 : backend := \"julia\")");
 ```
 
-These HAP calls take **squarefree radicands**: `-1` means Q(i), whose
+The request record describes the group, rank, field, order and lattice. It is
+also accepted by the Julia enumerator and presentation pipeline; see
+[request records and experiment runners](requests.md) for JSON batches and
+`scripts/run_hap.jl`. The HAP dispatcher forwards arbitrary records; each
+provider validates the cases it implements.
+
+The quadratic convenience calls take **squarefree radicands**: `-1` means Q(i), whose
 discriminant in `hap_voronoi_complex` is `-4`. Unsupported Julia requests
 raise an error; they do not launch Magma as a fallback. The callback runs
 inside the existing Julia/GAP.jl process, with no subprocess or intermediate

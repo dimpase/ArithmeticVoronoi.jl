@@ -1,5 +1,5 @@
 # From the checkout root: julia --project=. scripts/run_imaginary_fields.jl
-# Supports --output=DIR, --resume, and explicit negative field discriminants.
+# Supports --requests=FILE, --output=DIR, --resume, and negative discriminants.
 include("run_native_fields.jl")
 using SHA
 
@@ -33,10 +33,11 @@ function imaginary_checks(R)
         hap[string(name)]=Dict("status"=>"matched","invariant_factors"=>invariants)
     end
     # Timings use fresh enumerations: one warm-up, then three measured runs.
-    enumerate_perfect_forms(P;backend=:native)
+    request=R.run["request"]
+    enumerate_perfect_forms(request;backend=:native)
     times=Float64[]
     for _ in 1:3
-        GC.gc();start=time_ns();E=enumerate_perfect_forms(P;backend=:native)
+        GC.gc();start=time_ns();E=enumerate_perfect_forms(request;backend=:native)
         push!(times,(time_ns()-start)/1e9)
         NAV.ensure(length(E.representatives)==length(R.enumeration.representatives),"fresh enumeration orbit count changed")
     end
@@ -76,7 +77,7 @@ function imaginary_bundle(root,summary)
                 "abelianization"=>entry["presentations"][name]["abelianization"],
                 "certificate_sha256"=>bytes2hex(sha256(read(path))))
         end
-        fields[string(D)]=Dict("field"=>readjson(joinpath(directory,"field.json")),
+        fields[string(D)]=Dict("field"=>readjson(joinpath(directory,"field.json")),"request"=>entry["request"],
             "perfect_form_orbits"=>entry["perfect_form_orbits"],
             "labelled_neighbours"=>entry["labelled_neighbours"],"groups"=>groups,
             "comparison"=>entry["comparison"],"timings"=>entry["stage_seconds"],
