@@ -137,13 +137,21 @@ KleinianGroups timings for PSL/PGL are respectively 0.93/0.83 seconds for
 and measure a different computation; they do not establish a speed ratio.
 PGL is GL modulo **all** scalar units, and is not PSL.
 
-Magma is not installed on this machine, so Page's code has **not** been rerun.
-For that comparison, [scripts/compare_page.m](../scripts/compare_page.m)
+Page's unmodified KleinianGroups 1.0 was rerun with Magma 2.30-1 on this
+machine. All 15 GL/SL/PSL abelianizations for these five fields agree with
+the native results above. The separate
+[Page presentation bundle](../results/page_presentations.json) contains
+the exact generator matrices, relators, abelian invariants and CPU timings.
+The Page entries in the original native survey bundle record the historical
+paper timings, not this rerun.
+
+The comparison driver, [scripts/compare_page.m](../scripts/compare_page.m),
 uses the entry points in Page's own `example.m`: `BianchiOrder`,
 `NormalizedBasis`, `Presentation`, `LiftPresentation` and `QuatToMatrix`.
-It prints all three abelianizations and the GL/SL presentations with matrices.
-The script was checked against the package source but has not been executed
-in Magma. With Magma installed, download the
+Each independent computation constructs a fresh order and resets the random
+seed to 1 for reproducibility.
+The driver prints the results and exports JSON in the same matrix and word
+encoding as our native bundle. With a licensed Magma installation, download the
 [unmodified KleinianGroups 1.0 archive](https://www.normalesup.org/~page/Recherche/Logiciels/KleinianGroups/KleinianGroups-1.0.tar.gz)
 and run from its parent directory:
 
@@ -154,11 +162,22 @@ mkdir -p /tmp/av-page
 cd /tmp/av-page
 curl -fLO https://www.normalesup.org/~page/Recherche/Logiciels/KleinianGroups/KleinianGroups-1.0.tar.gz
 tar -xzf KleinianGroups-1.0.tar.gz
-magma -b "$AV_REPO/scripts/compare_page.m"
+magma -b "OutputFile:=$AV_REPO/results/page_presentations.json" "$AV_REPO/scripts/compare_page.m"
+cd "$AV_REPO"
+julia --threads=1 --startup-file=no --project=. test/page_comparison.jl
 ```
 
 Page's `BianchiOrder(d)` takes the positive radicand in `Q(sqrt(-d))`:
 for discriminant -4 the script passes `1`.
+The Julia check verifies all exported matrix relations exactly (modulo
+sign for PSL), recomputes the abelianizations with OSCAR and compares them
+with the native bundle. These checks do not prove an isomorphism between
+the two finite presentations.
+The recorded run passed all 93 checks, covering 250 generator matrices and
+512 relators. Page's domain and presentation computations took 1.1–2.2 CPU
+seconds per group on this host, including the lift for SL/GL and excluding
+order construction, export and abelianization. These measure more work than
+the native enumeration-only timings above.
 
 ## Load a saved presentation
 

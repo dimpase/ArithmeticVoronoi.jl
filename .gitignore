@@ -30,6 +30,7 @@ __pycache__/
 !/results/contracts_summary.json
 !/results/native_presentations.json
 !/results/imaginary_presentations.json
+!/results/page_presentations.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json
 !/results/two_cell_tests.txt
