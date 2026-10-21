@@ -4,14 +4,16 @@ function field_metadata(P)
     units=verified_units(P)
     C,map=class_group(P.order;GRH=false)
     h=BigInt(order(C))
-    ensure(h==(P.discriminant==40 ? 2 : 1),"unexpected ordinary class number; inspect the exact class-group computation")
+    ensure(h>0,"ordinary class-group computation did not return a finite group")
     (;discriminant=P.discriminant,polynomial_coefficients=[P.root_product,-P.root_sum,1],
       integral_basis=["1","w"],order_is_maximal=discriminant(P.order)==P.discriminant,
       basis_discriminant=P.root_sum^2-4P.root_product,
-      fundamental_unit=[fraction_string(coeff(units.epsilon,k)) for k in 0:1],
-      fundamental_unit_norm=fraction_string(norm(units.epsilon)),unit_rank=1,
-      fundamental_unit_free_exponent=string(units.epsilon_exponent),
-      fundamental_unit_torsion=units.epsilon_torsion,
+      fundamental_unit=units.rank==0 ? nothing : [fraction_string(coeff(units.epsilon,k)) for k in 0:1],
+      fundamental_unit_norm=units.rank==0 ? nothing : fraction_string(norm(units.epsilon)),unit_rank=units.rank,
+      fundamental_unit_free_exponent=units.rank==0 ? nothing : string(units.epsilon_exponent),
+      fundamental_unit_torsion=units.rank==0 ? nothing : units.epsilon_torsion,
+      torsion_unit_order=units.torsion_order,
+      torsion_unit_generator=[fraction_string(coeff(units.torsion_generator,k)) for k in 0:1],
       ordinary_class_number=string(h),
       ordinary_class_group_invariants=[string(order(C[i])) for i in 1:ngens(C) if order(C[i])>1],
       class_group_kind="ordinary",narrow_class_group=nothing,

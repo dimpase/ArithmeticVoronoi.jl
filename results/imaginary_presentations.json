@@ -1,0 +1,3846 @@
+{
+  "julia_version": "1.13.2",
+  "certificates": "Full raw presentations, Tietze generator maps, ridge coverage and word certificates are in the run directory; this bundle stores the simplified presentations.",
+  "julia_threads": 1,
+  "discriminants": [
+    -3,
+    -4,
+    -7,
+    -15,
+    -23
+  ],
+  "cpu": "Intel(R) Core(TM) Ultra 7 165U",
+  "word_encoding": "Signed one-based generator indices in matrix-product order. PSL matrices are SL lifts and relators evaluate to +/-I.",
+  "fields": {
+    "-3": {
+      "pipeline_seconds": 41.694246783,
+      "groups": {
+        "SL": {
+          "certificate_sha256": "282ee3e2a37a006c4f9b80e29759230954bb7f6bca8cc566aa374cd49d019c7e",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "-1"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-2"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              1,
+              -2,
+              -2,
+              1,
+              1
+            ],
+            [
+              -1,
+              3,
+              1,
+              1,
+              3
+            ],
+            [
+              3,
+              -2,
+              -2,
+              -3,
+              -2,
+              -2
+            ],
+            [
+              -3,
+              2,
+              -3,
+              2,
+              -3,
+              2
+            ],
+            [
+              -2,
+              -1,
+              -2,
+              -1,
+              -2,
+              -1
+            ],
+            [
+              -1,
+              -2,
+              1,
+              -3,
+              2,
+              1,
+              -3,
+              -2,
+              3
+            ],
+            [
+              2,
+              -3,
+              1,
+              2,
+              3,
+              3,
+              -1,
+              2,
+              3,
+              1
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "3"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "certificate_sha256": "283c198976d63afb77f50580e63c9a9c24e66f526d32329bc3b0f6c92af49fe4",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "2",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              2,
+              -3,
+              2,
+              -3
+            ],
+            [
+              2,
+              2,
+              1,
+              -2,
+              1
+            ],
+            [
+              -3,
+              -3,
+              2,
+              3,
+              2,
+              -3
+            ],
+            [
+              2,
+              3,
+              3,
+              3,
+              2,
+              3
+            ],
+            [
+              -3,
+              -3,
+              -1,
+              3,
+              3,
+              1
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              -1,
+              -2,
+              -1,
+              -2,
+              -1,
+              -2
+            ],
+            [
+              -1,
+              -3,
+              1,
+              2,
+              -3,
+              -1,
+              -3,
+              1,
+              2,
+              -3,
+              -1,
+              3,
+              1,
+              -3,
+              -2
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "6"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "certificate_sha256": "d5b9fc43f8aeac10e3cde886513a1778356c0cbe088681b37d1b6021bb5e70d9",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "-1"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "2",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              3,
+              1,
+              3,
+              1
+            ],
+            [
+              1,
+              -2,
+              1,
+              -2
+            ],
+            [
+              -2,
+              -1,
+              -2,
+              -1,
+              -2,
+              -1
+            ],
+            [
+              3,
+              2,
+              3,
+              2,
+              3,
+              2
+            ],
+            [
+              3,
+              2,
+              1,
+              -3,
+              -2,
+              -1,
+              -3,
+              -2
+            ]
+          ],
+          "projective": true,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "3"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "field": {
+        "fundamental_unit_torsion": null,
+        "ordinary_class_number": "1",
+        "fundamental_unit_norm": null,
+        "torsion_unit_order": 6,
+        "narrow_class_group": null,
+        "basis_discriminant": -3,
+        "fundamental_unit": null,
+        "ordinary_class_group_invariants": [],
+        "integral_basis": [
+          "1",
+          "w"
+        ],
+        "discriminant": -3,
+        "fundamental_unit_free_exponent": null,
+        "order_is_maximal": true,
+        "proof_settings": "Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
+        "torsion_unit_generator": [
+          "0",
+          "1"
+        ],
+        "lmfdb_label": null,
+        "lmfdb_generator_map": null,
+        "polynomial_coefficients": [
+          1,
+          -1,
+          1
+        ],
+        "class_group_kind": "ordinary",
+        "lmfdb_status": "unverified; LMFDB returned browser challenges on the D5/D8 verification probes",
+        "unit_rank": 0
+      },
+      "comparison": {
+        "HAP": {
+          "source": "https://gap-packages.github.io/hap/tutorial/chap14.html",
+          "version": "1.78",
+          "groups": {
+            "SL": {
+              "invariant_factors": [
+                3
+              ],
+              "status": "matched"
+            },
+            "PSL": {
+              "invariant_factors": [
+                3
+              ],
+              "status": "matched"
+            }
+          },
+          "scope": "independent SL/PSL abelianization comparison; not a certified isomorphism of presentations",
+          "radicand": -3
+        },
+        "polytope_f_vectors": [
+          [
+            4,
+            6,
+            4
+          ]
+        ],
+        "Page": {
+          "published_KleinianGroups_PGL_seconds": 0.83,
+          "source": "https://www.normalesup.org/~page/Recherche/Documents/articles/kln_gps.pdf",
+          "scope": "different hardware and tasks; these timings do not establish a speed ratio",
+          "table": "3.1",
+          "status": "historical published timings; Magma was not rerun",
+          "published_KleinianGroups_PSL_seconds": 0.93
+        },
+        "native_enumeration_seconds": [
+          0.037276746,
+          0.028960393,
+          0.028612525
+        ],
+        "native_enumeration_median_seconds": 0.028960393,
+        "status": "passed",
+        "yasaki": {
+          "source": "https://arxiv.org/abs/0908.1762",
+          "tables": "2, 3, 4",
+          "status": "matched"
+        }
+      },
+      "word_validation": {
+        "distinct_inputs": 10,
+        "examples": [
+          {
+            "group": "GL",
+            "input": "minus_identity",
+            "word_length": 3,
+            "certificate": "words/minus_identity_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "minus_identity",
+            "word_length": 3,
+            "certificate": "words/minus_identity_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "minus_identity",
+            "word_length": 0,
+            "certificate": "words/minus_identity_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "U",
+            "word_length": 21,
+            "certificate": "words/U_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "U",
+            "word_length": 23,
+            "certificate": "words/U_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "U",
+            "word_length": 30,
+            "certificate": "words/U_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "W",
+            "word_length": 24,
+            "certificate": "words/W_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "W",
+            "word_length": 22,
+            "certificate": "words/W_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "W",
+            "word_length": 27,
+            "certificate": "words/W_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_1",
+            "word_length": 10,
+            "certificate": "words/lower_1_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_1",
+            "word_length": 17,
+            "certificate": "words/lower_1_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_1",
+            "word_length": 18,
+            "certificate": "words/lower_1_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_w",
+            "word_length": 19,
+            "certificate": "words/lower_w_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_w",
+            "word_length": 18,
+            "certificate": "words/lower_w_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_w",
+            "word_length": 17,
+            "certificate": "words/lower_w_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_SL",
+            "word_length": 17,
+            "certificate": "words/unit_diagonal_SL_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "unit_diagonal_SL",
+            "word_length": 22,
+            "certificate": "words/unit_diagonal_SL_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "unit_diagonal_SL",
+            "word_length": 16,
+            "certificate": "words/unit_diagonal_SL_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "product",
+            "word_length": 30,
+            "certificate": "words/product_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "product",
+            "word_length": 45,
+            "certificate": "words/product_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "product",
+            "word_length": 43,
+            "certificate": "words/product_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "scalar",
+            "word_length": 8,
+            "certificate": "words/scalar_GL.json"
+          },
+          {
+            "group": "GL",
+            "input": "inverse_scalar",
+            "word_length": 10,
+            "certificate": "words/inverse_scalar_GL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_GL",
+            "word_length": 13,
+            "certificate": "words/unit_diagonal_GL_GL.json"
+          }
+        ],
+        "raw_certificates": 3,
+        "status": "passed",
+        "simplified_certificates": 24
+      },
+      "perfect_form_orbits": 1,
+      "labelled_neighbours": 1,
+      "timings": {
+        "two_cells_and_coverage": 2.906431178,
+        "ridges": 1.102365126,
+        "GL_assembly": 1.805098969,
+        "SL_extraction": 0.693046401,
+        "SL_simplification": 0.193267027,
+        "abelianizations": 0.380509632,
+        "PSL_simplification": 0.683379382,
+        "GL_simplification": 0.260569119,
+        "field_and_unit_verification": 2.188967218,
+        "PSL_quotient": 0.220981203,
+        "perfect_enumeration_and_validation": 23.711668263
+      }
+    },
+    "-4": {
+      "pipeline_seconds": 1.789533282,
+      "groups": {
+        "SL": {
+          "certificate_sha256": "a48d78aeb0734d2b2385e02e1fc174e6287be953374fe401b7ed9deebff47986",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "1"
+                ],
+                [
+                  "0",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "-1"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2,
+              1,
+              1
+            ],
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              -3,
+              -1,
+              -3,
+              1
+            ],
+            [
+              3,
+              2,
+              3,
+              -1,
+              2,
+              3,
+              2,
+              3,
+              -1,
+              2,
+              3,
+              2,
+              3,
+              -1,
+              2
+            ],
+            [
+              2,
+              1,
+              3,
+              -2,
+              3,
+              1,
+              2,
+              1,
+              2,
+              1,
+              3,
+              2,
+              -1,
+              -3,
+              2,
+              -1
+            ],
+            [
+              -2,
+              -1,
+              3,
+              -2,
+              1,
+              -3,
+              2,
+              -1,
+              -2,
+              1,
+              3,
+              -2,
+              1,
+              -3,
+              2,
+              -1
+            ],
+            [
+              3,
+              2,
+              3,
+              -1,
+              2,
+              -1,
+              3,
+              2,
+              3,
+              2,
+              3,
+              -1,
+              2,
+              -1,
+              3,
+              -2
+            ],
+            [
+              -3,
+              1,
+              -2,
+              3,
+              -1,
+              2,
+              1,
+              3,
+              2,
+              3,
+              3,
+              -2,
+              1,
+              -3,
+              2,
+              -1,
+              -2,
+              1,
+              -2,
+              3,
+              -1,
+              2,
+              -3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "certificate_sha256": "61335bcfc623060456cb9d990054c79b5949aca6f3d979226112b29ba919ed41",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "2"
+                ],
+                [
+                  "-1",
+                  "1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              3,
+              3
+            ],
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              -2,
+              1,
+              -2,
+              -1,
+              -2,
+              1
+            ],
+            [
+              3,
+              1,
+              1,
+              3,
+              -1,
+              -1
+            ],
+            [
+              3,
+              -1,
+              -2,
+              3,
+              -1,
+              -2
+            ],
+            [
+              -2,
+              -1,
+              -1,
+              2,
+              2,
+              1,
+              1,
+              -2
+            ],
+            [
+              3,
+              -2,
+              3,
+              -2,
+              3,
+              -2,
+              3,
+              -2
+            ],
+            [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "4"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "certificate_sha256": "8f1ad972370cbaaa5afe51a87267bf83984cd128c2883491a2ff4772762f969b",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "1",
+                  "1"
+                ],
+                [
+                  "0",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "1"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "-1"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              1,
+              -2,
+              3,
+              1,
+              -2,
+              3
+            ],
+            [
+              3,
+              1,
+              3,
+              2,
+              3,
+              1,
+              3,
+              2
+            ],
+            [
+              -3,
+              -2,
+              3,
+              -2,
+              -3,
+              -2,
+              3,
+              -2
+            ],
+            [
+              2,
+              -3,
+              -2,
+              3,
+              3,
+              2,
+              -3,
+              -2,
+              3,
+              3
+            ],
+            [
+              2,
+              -3,
+              -2,
+              -3,
+              2,
+              3,
+              -2,
+              -3,
+              2,
+              -3,
+              -2,
+              3
+            ]
+          ],
+          "projective": true,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "field": {
+        "fundamental_unit_torsion": null,
+        "ordinary_class_number": "1",
+        "fundamental_unit_norm": null,
+        "torsion_unit_order": 4,
+        "narrow_class_group": null,
+        "basis_discriminant": -4,
+        "fundamental_unit": null,
+        "ordinary_class_group_invariants": [],
+        "integral_basis": [
+          "1",
+          "w"
+        ],
+        "discriminant": -4,
+        "fundamental_unit_free_exponent": null,
+        "order_is_maximal": true,
+        "proof_settings": "Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
+        "torsion_unit_generator": [
+          "0",
+          "1"
+        ],
+        "lmfdb_label": null,
+        "lmfdb_generator_map": null,
+        "polynomial_coefficients": [
+          1,
+          0,
+          1
+        ],
+        "class_group_kind": "ordinary",
+        "lmfdb_status": "unverified; LMFDB returned browser challenges on the D5/D8 verification probes",
+        "unit_rank": 0
+      },
+      "comparison": {
+        "HAP": {
+          "source": "https://gap-packages.github.io/hap/tutorial/chap14.html",
+          "version": "1.78",
+          "groups": {
+            "SL": {
+              "invariant_factors": [
+                2,
+                2
+              ],
+              "status": "matched"
+            },
+            "PSL": {
+              "invariant_factors": [
+                2,
+                2
+              ],
+              "status": "matched"
+            }
+          },
+          "scope": "independent SL/PSL abelianization comparison; not a certified isomorphism of presentations",
+          "radicand": -1
+        },
+        "polytope_f_vectors": [
+          [
+            6,
+            12,
+            8
+          ]
+        ],
+        "native_enumeration_seconds": [
+          0.027802742,
+          0.024378836,
+          0.023561013
+        ],
+        "native_enumeration_median_seconds": 0.024378836,
+        "status": "passed",
+        "yasaki": {
+          "source": "https://arxiv.org/abs/0908.1762",
+          "tables": "2, 3, 4",
+          "status": "matched"
+        }
+      },
+      "word_validation": {
+        "distinct_inputs": 10,
+        "examples": [
+          {
+            "group": "GL",
+            "input": "minus_identity",
+            "word_length": 4,
+            "certificate": "words/minus_identity_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "minus_identity",
+            "word_length": 0,
+            "certificate": "words/minus_identity_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "U",
+            "word_length": 15,
+            "certificate": "words/U_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "U",
+            "word_length": 30,
+            "certificate": "words/U_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "U",
+            "word_length": 10,
+            "certificate": "words/U_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "W",
+            "word_length": 11,
+            "certificate": "words/W_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "W",
+            "word_length": 10,
+            "certificate": "words/W_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "W",
+            "word_length": 7,
+            "certificate": "words/W_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_1",
+            "word_length": 7,
+            "certificate": "words/lower_1_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_1",
+            "word_length": 21,
+            "certificate": "words/lower_1_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_1",
+            "word_length": 2,
+            "certificate": "words/lower_1_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_w",
+            "word_length": 9,
+            "certificate": "words/lower_w_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_w",
+            "word_length": 28,
+            "certificate": "words/lower_w_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_w",
+            "word_length": 6,
+            "certificate": "words/lower_w_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_SL",
+            "word_length": 18,
+            "certificate": "words/unit_diagonal_SL_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "unit_diagonal_SL",
+            "word_length": 30,
+            "certificate": "words/unit_diagonal_SL_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "unit_diagonal_SL",
+            "word_length": 14,
+            "certificate": "words/unit_diagonal_SL_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "product",
+            "word_length": 23,
+            "certificate": "words/product_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "product",
+            "word_length": 24,
+            "certificate": "words/product_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "product",
+            "word_length": 11,
+            "certificate": "words/product_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_GL.json"
+          },
+          {
+            "group": "GL",
+            "input": "inverse_scalar",
+            "word_length": 6,
+            "certificate": "words/inverse_scalar_GL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_GL",
+            "word_length": 10,
+            "certificate": "words/unit_diagonal_GL_GL.json"
+          }
+        ],
+        "raw_certificates": 3,
+        "status": "passed",
+        "simplified_certificates": 24
+      },
+      "perfect_form_orbits": 1,
+      "labelled_neighbours": 1,
+      "timings": {
+        "two_cells_and_coverage": 0.332216975,
+        "ridges": 0.404623045,
+        "GL_assembly": 0.106509747,
+        "SL_extraction": 0.09476238,
+        "SL_simplification": 0.183410244,
+        "abelianizations": 0.000107924,
+        "PSL_simplification": 0.068650482,
+        "GL_simplification": 0.023582971,
+        "field_and_unit_verification": 0.01209276,
+        "PSL_quotient": 0.082662344,
+        "perfect_enumeration_and_validation": 0.301456106
+      }
+    },
+    "-15": {
+      "pipeline_seconds": 4.073919797,
+      "groups": {
+        "SL": {
+          "certificate_sha256": "9f9fcf43b70623bf342dd234befec5565cb63f0a1e945d6ed3e5c965090a4a92",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "-2"
+                ],
+                [
+                  "-3",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "3",
+                  "1"
+                ],
+                [
+                  "4",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              3,
+              1,
+              -3,
+              -1
+            ],
+            [
+              1,
+              1,
+              1,
+              -2,
+              -2
+            ],
+            [
+              -3,
+              -2,
+              -2,
+              3,
+              -2,
+              -2
+            ],
+            [
+              -4,
+              -2,
+              -2,
+              4,
+              -2,
+              -2
+            ],
+            [
+              -4,
+              2,
+              1,
+              4,
+              -3,
+              -2,
+              3,
+              -1
+            ],
+            [
+              4,
+              -1,
+              -4,
+              2,
+              1,
+              -4,
+              -2,
+              4
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 2,
+            "torsion": [
+              "12"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "certificate_sha256": "dfd29cdbb225b53d30327a42d310ca3fbdc74a85ae847e7d2192d3b64124b256",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-3",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-2"
+                ]
+              ],
+              [
+                [
+                  "4",
+                  "-1"
+                ],
+                [
+                  "3",
+                  "1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              5,
+              5
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              1,
+              4,
+              1,
+              4
+            ],
+            [
+              1,
+              3,
+              1,
+              3
+            ],
+            [
+              4,
+              2,
+              4,
+              2
+            ],
+            [
+              -2,
+              -2,
+              -1,
+              -1,
+              -1
+            ],
+            [
+              5,
+              -2,
+              -2,
+              5,
+              -2,
+              -2
+            ],
+            [
+              -2,
+              -2,
+              3,
+              -2,
+              -2,
+              3
+            ],
+            [
+              -1,
+              -2,
+              5,
+              -1,
+              -2,
+              5
+            ],
+            [
+              5,
+              -2,
+              5,
+              3,
+              5,
+              -2,
+              5,
+              3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "2",
+              "2",
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "certificate_sha256": "0f09e1bf3f353019fc12aba4bcd243eec444ed222d843192e032f800e2d43c5a",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "-2"
+                ],
+                [
+                  "-3",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "3",
+                  "1"
+                ],
+                [
+                  "4",
+                  "-1"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              3,
+              1,
+              -3,
+              -1
+            ],
+            [
+              -4,
+              2,
+              1,
+              4,
+              -3,
+              2,
+              3,
+              -1
+            ],
+            [
+              -4,
+              2,
+              4,
+              -1,
+              2,
+              4,
+              1,
+              -4
+            ]
+          ],
+          "projective": true,
+          "abelianization": {
+            "free_rank": 2,
+            "torsion": [
+              "6"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "field": {
+        "fundamental_unit_torsion": null,
+        "ordinary_class_number": "2",
+        "fundamental_unit_norm": null,
+        "torsion_unit_order": 2,
+        "narrow_class_group": null,
+        "basis_discriminant": -15,
+        "fundamental_unit": null,
+        "ordinary_class_group_invariants": [
+          "2"
+        ],
+        "integral_basis": [
+          "1",
+          "w"
+        ],
+        "discriminant": -15,
+        "fundamental_unit_free_exponent": null,
+        "order_is_maximal": true,
+        "proof_settings": "Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
+        "torsion_unit_generator": [
+          "-1",
+          "0"
+        ],
+        "lmfdb_label": null,
+        "lmfdb_generator_map": null,
+        "polynomial_coefficients": [
+          4,
+          -1,
+          1
+        ],
+        "class_group_kind": "ordinary",
+        "lmfdb_status": "unverified; LMFDB returned browser challenges on the D5/D8 verification probes",
+        "unit_rank": 0
+      },
+      "comparison": {
+        "HAP": {
+          "source": "https://gap-packages.github.io/hap/tutorial/chap14.html",
+          "version": "1.78",
+          "groups": {
+            "SL": {
+              "invariant_factors": [
+                12,
+                0,
+                0
+              ],
+              "status": "matched"
+            },
+            "PSL": {
+              "invariant_factors": [
+                6,
+                0,
+                0
+              ],
+              "status": "matched"
+            }
+          },
+          "scope": "independent SL/PSL abelianization comparison; not a certified isomorphism of presentations",
+          "radicand": -15
+        },
+        "polytope_f_vectors": [
+          [
+            4,
+            6,
+            4
+          ],
+          [
+            6,
+            12,
+            8
+          ]
+        ],
+        "Page": {
+          "published_KleinianGroups_PGL_seconds": 2.32,
+          "source": "https://www.normalesup.org/~page/Recherche/Documents/articles/kln_gps.pdf",
+          "scope": "different hardware and tasks; these timings do not establish a speed ratio",
+          "table": "3.1",
+          "status": "historical published timings; Magma was not rerun",
+          "published_KleinianGroups_PSL_seconds": 0.92
+        },
+        "native_enumeration_seconds": [
+          0.038620832,
+          0.035277357,
+          0.037036868
+        ],
+        "native_enumeration_median_seconds": 0.037036868,
+        "status": "passed",
+        "yasaki": {
+          "source": "https://arxiv.org/abs/0908.1762",
+          "tables": "2, 3, 4",
+          "status": "matched"
+        }
+      },
+      "word_validation": {
+        "distinct_inputs": 10,
+        "examples": [
+          {
+            "group": "GL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "minus_identity",
+            "word_length": 0,
+            "certificate": "words/minus_identity_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "U",
+            "word_length": 6,
+            "certificate": "words/U_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "U",
+            "word_length": 10,
+            "certificate": "words/U_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "U",
+            "word_length": 6,
+            "certificate": "words/U_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "W",
+            "word_length": 7,
+            "certificate": "words/W_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "W",
+            "word_length": 6,
+            "certificate": "words/W_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "W",
+            "word_length": 2,
+            "certificate": "words/W_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_1",
+            "word_length": 7,
+            "certificate": "words/lower_1_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_1",
+            "word_length": 11,
+            "certificate": "words/lower_1_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_1",
+            "word_length": 7,
+            "certificate": "words/lower_1_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_w",
+            "word_length": 7,
+            "certificate": "words/lower_w_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_w",
+            "word_length": 6,
+            "certificate": "words/lower_w_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_w",
+            "word_length": 2,
+            "certificate": "words/lower_w_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "unit_diagonal_SL",
+            "word_length": 0,
+            "certificate": "words/unit_diagonal_SL_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "product",
+            "word_length": 15,
+            "certificate": "words/product_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "product",
+            "word_length": 15,
+            "certificate": "words/product_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "product",
+            "word_length": 13,
+            "certificate": "words/product_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "scalar",
+            "word_length": 0,
+            "certificate": "words/scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "inverse_scalar",
+            "word_length": 0,
+            "certificate": "words/inverse_scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_GL",
+            "word_length": 6,
+            "certificate": "words/unit_diagonal_GL_GL.json"
+          }
+        ],
+        "raw_certificates": 3,
+        "status": "passed",
+        "simplified_certificates": 28
+      },
+      "perfect_form_orbits": 2,
+      "labelled_neighbours": 6,
+      "timings": {
+        "two_cells_and_coverage": 1.38288378,
+        "ridges": 0.513880509,
+        "GL_assembly": 0.198351233,
+        "SL_extraction": 0.012357922,
+        "SL_simplification": 0.008209622,
+        "abelianizations": 0.000104988,
+        "PSL_simplification": 0.003094119,
+        "GL_simplification": 0.004003541,
+        "field_and_unit_verification": 0.344466313,
+        "PSL_quotient": 0.00845035,
+        "perfect_enumeration_and_validation": 0.61527717
+      }
+    },
+    "-7": {
+      "pipeline_seconds": 1.644955056,
+      "groups": {
+        "SL": {
+          "certificate_sha256": "a77f116099b7d9a90cfb4331014e55be2928da8a1153b8a4ee3dea4ae3473068",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "-1"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              3,
+              -1,
+              3
+            ],
+            [
+              -3,
+              -3,
+              -1,
+              3,
+              -1
+            ],
+            [
+              -2,
+              1,
+              1,
+              2,
+              -1,
+              -1
+            ],
+            [
+              2,
+              3,
+              -2,
+              -1,
+              2,
+              3,
+              -2,
+              1
+            ],
+            [
+              2,
+              3,
+              2,
+              3,
+              -2,
+              3,
+              1,
+              -2,
+              -1,
+              3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 1,
+            "torsion": [
+              "4"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "certificate_sha256": "f66437e751921d0f7c17cb3b1767bef6281f4ca24f8736dfec332fe3c73eb015",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              4,
+              4
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              -3,
+              -1,
+              -3
+            ],
+            [
+              -1,
+              2,
+              -1,
+              2
+            ],
+            [
+              3,
+              4,
+              3,
+              4
+            ],
+            [
+              -3,
+              -1,
+              -1,
+              -3,
+              -3
+            ],
+            [
+              4,
+              -1,
+              -1,
+              4,
+              -1,
+              -1
+            ],
+            [
+              2,
+              4,
+              3,
+              2,
+              1,
+              3,
+              2,
+              -3,
+              4,
+              2,
+              1,
+              3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "2",
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "certificate_sha256": "d77d42e9a12934b75a128d39d74f58970f7ff27dea17f0acda9dd7cb4b09f1d5",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "0",
+                  "1"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "-1"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              1,
+              -2,
+              1,
+              -2
+            ],
+            [
+              3,
+              1,
+              -3,
+              2,
+              3,
+              1,
+              -3,
+              2
+            ],
+            [
+              1,
+              -3,
+              -2,
+              3,
+              -2,
+              3,
+              1,
+              2,
+              -3,
+              2
+            ]
+          ],
+          "projective": true,
+          "abelianization": {
+            "free_rank": 1,
+            "torsion": [
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "field": {
+        "fundamental_unit_torsion": null,
+        "ordinary_class_number": "1",
+        "fundamental_unit_norm": null,
+        "torsion_unit_order": 2,
+        "narrow_class_group": null,
+        "basis_discriminant": -7,
+        "fundamental_unit": null,
+        "ordinary_class_group_invariants": [],
+        "integral_basis": [
+          "1",
+          "w"
+        ],
+        "discriminant": -7,
+        "fundamental_unit_free_exponent": null,
+        "order_is_maximal": true,
+        "proof_settings": "Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
+        "torsion_unit_generator": [
+          "-1",
+          "0"
+        ],
+        "lmfdb_label": null,
+        "lmfdb_generator_map": null,
+        "polynomial_coefficients": [
+          2,
+          -1,
+          1
+        ],
+        "class_group_kind": "ordinary",
+        "lmfdb_status": "unverified; LMFDB returned browser challenges on the D5/D8 verification probes",
+        "unit_rank": 0
+      },
+      "comparison": {
+        "HAP": {
+          "source": "https://gap-packages.github.io/hap/tutorial/chap14.html",
+          "version": "1.78",
+          "groups": {
+            "SL": {
+              "invariant_factors": [
+                4,
+                0
+              ],
+              "status": "matched"
+            },
+            "PSL": {
+              "invariant_factors": [
+                2,
+                0
+              ],
+              "status": "matched"
+            }
+          },
+          "scope": "independent SL/PSL abelianization comparison; not a certified isomorphism of presentations",
+          "radicand": -7
+        },
+        "polytope_f_vectors": [
+          [
+            6,
+            9,
+            5
+          ]
+        ],
+        "native_enumeration_seconds": [
+          0.019413165,
+          0.016238126,
+          0.018265379
+        ],
+        "native_enumeration_median_seconds": 0.018265379,
+        "status": "passed",
+        "yasaki": {
+          "source": "https://arxiv.org/abs/0908.1762",
+          "tables": "2, 3, 4",
+          "status": "matched"
+        }
+      },
+      "word_validation": {
+        "distinct_inputs": 10,
+        "examples": [
+          {
+            "group": "GL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "minus_identity",
+            "word_length": 0,
+            "certificate": "words/minus_identity_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "U",
+            "word_length": 7,
+            "certificate": "words/U_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "U",
+            "word_length": 5,
+            "certificate": "words/U_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "U",
+            "word_length": 7,
+            "certificate": "words/U_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "W",
+            "word_length": 6,
+            "certificate": "words/W_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "W",
+            "word_length": 9,
+            "certificate": "words/W_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "W",
+            "word_length": 7,
+            "certificate": "words/W_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_1",
+            "word_length": 7,
+            "certificate": "words/lower_1_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_1",
+            "word_length": 9,
+            "certificate": "words/lower_1_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_1",
+            "word_length": 7,
+            "certificate": "words/lower_1_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_w",
+            "word_length": 5,
+            "certificate": "words/lower_w_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_w",
+            "word_length": 2,
+            "certificate": "words/lower_w_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_w",
+            "word_length": 2,
+            "certificate": "words/lower_w_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "unit_diagonal_SL",
+            "word_length": 0,
+            "certificate": "words/unit_diagonal_SL_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "product",
+            "word_length": 17,
+            "certificate": "words/product_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "product",
+            "word_length": 23,
+            "certificate": "words/product_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "product",
+            "word_length": 17,
+            "certificate": "words/product_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "scalar",
+            "word_length": 0,
+            "certificate": "words/scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "inverse_scalar",
+            "word_length": 0,
+            "certificate": "words/inverse_scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_GL",
+            "word_length": 10,
+            "certificate": "words/unit_diagonal_GL_GL.json"
+          }
+        ],
+        "raw_certificates": 3,
+        "status": "passed",
+        "simplified_certificates": 28
+      },
+      "perfect_form_orbits": 1,
+      "labelled_neighbours": 2,
+      "timings": {
+        "two_cells_and_coverage": 0.75729231,
+        "ridges": 0.261356923,
+        "GL_assembly": 0.034273408,
+        "SL_extraction": 0.010307951,
+        "SL_simplification": 0.007202315,
+        "abelianizations": 8.0919e-05,
+        "PSL_simplification": 0.004382653,
+        "GL_simplification": 0.00396656,
+        "field_and_unit_verification": 0.015816465,
+        "PSL_quotient": 0.007321263,
+        "perfect_enumeration_and_validation": 0.474221171
+      }
+    },
+    "-23": {
+      "pipeline_seconds": 1.462016185,
+      "groups": {
+        "SL": {
+          "certificate_sha256": "8bcb417c46f689b797058b566aec920e6ec44f8752b6cc744fe343624c77f2a8",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-5",
+                  "-4"
+                ],
+                [
+                  "5",
+                  "-4"
+                ]
+              ],
+              [
+                [
+                  "14",
+                  "0"
+                ],
+                [
+                  "5",
+                  "4"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "-1"
+                ],
+                [
+                  "2",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "1"
+                ],
+                [
+                  "-3",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "5",
+                  "2"
+                ],
+                [
+                  "-2",
+                  "2"
+                ]
+              ],
+              [
+                [
+                  "-10",
+                  "1"
+                ],
+                [
+                  "-3",
+                  "-2"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "2"
+                ],
+                [
+                  "-4",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-2"
+                ],
+                [
+                  "3",
+                  "-2"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              3,
+              1,
+              -3,
+              -1
+            ],
+            [
+              -3,
+              -2,
+              -2,
+              3,
+              -2,
+              -2
+            ],
+            [
+              -4,
+              -2,
+              -2,
+              4,
+              -2,
+              -2
+            ],
+            [
+              5,
+              -2,
+              -2,
+              -5,
+              -2,
+              -2
+            ],
+            [
+              -2,
+              -2,
+              1,
+              -2,
+              -2,
+              -1
+            ],
+            [
+              5,
+              -2,
+              4,
+              2,
+              -5,
+              -4
+            ],
+            [
+              -5,
+              -4,
+              -2,
+              4,
+              -1,
+              5,
+              1,
+              2
+            ],
+            [
+              -1,
+              -5,
+              1,
+              5,
+              -2,
+              -3,
+              5,
+              2,
+              -5,
+              3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 3,
+            "torsion": [
+              "12"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "certificate_sha256": "9abb194a2794fe6340fa547c6a67f154b82a169d7ec32bb2baae8bdc8052c03a",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "-5",
+                  "-4"
+                ],
+                [
+                  "5",
+                  "-4"
+                ]
+              ],
+              [
+                [
+                  "14",
+                  "0"
+                ],
+                [
+                  "5",
+                  "4"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "0",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "1",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "3",
+                  "0"
+                ],
+                [
+                  "1",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "1"
+                ],
+                [
+                  "-3",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-7",
+                  "-2"
+                ],
+                [
+                  "1",
+                  "-3"
+                ]
+              ],
+              [
+                [
+                  "12",
+                  "-2"
+                ],
+                [
+                  "7",
+                  "2"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "2"
+                ],
+                [
+                  "-4",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-2"
+                ],
+                [
+                  "3",
+                  "-2"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              4,
+              2,
+              4,
+              2
+            ],
+            [
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              3,
+              -2,
+              3,
+              -2
+            ],
+            [
+              5,
+              1,
+              5,
+              1
+            ],
+            [
+              -1,
+              -1,
+              2,
+              -1,
+              -1,
+              -2
+            ],
+            [
+              6,
+              -1,
+              5,
+              6,
+              -1,
+              5
+            ],
+            [
+              -1,
+              -1,
+              4,
+              -1,
+              -1,
+              4
+            ],
+            [
+              6,
+              -1,
+              -1,
+              -6,
+              -1,
+              -1
+            ],
+            [
+              -1,
+              -1,
+              3,
+              -1,
+              -1,
+              3
+            ],
+            [
+              4,
+              6,
+              1,
+              4,
+              6,
+              1
+            ],
+            [
+              1,
+              4,
+              2,
+              6,
+              -2,
+              1,
+              -6,
+              4
+            ],
+            [
+              6,
+              1,
+              -6,
+              3,
+              6,
+              1,
+              -6,
+              3
+            ]
+          ],
+          "projective": false,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2",
+              "2",
+              "2",
+              "2",
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "certificate_sha256": "3d6b5de3b5a4592d8465e59ebdc67bb3449bff9ad5491942253848b9d2cc5561",
+          "generator_matrices": [
+            [
+              [
+                [
+                  "0",
+                  "0"
+                ],
+                [
+                  "1",
+                  "0"
+                ]
+              ],
+              [
+                [
+                  "-1",
+                  "0"
+                ],
+                [
+                  "-1",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-5",
+                  "-4"
+                ],
+                [
+                  "5",
+                  "-4"
+                ]
+              ],
+              [
+                [
+                  "14",
+                  "0"
+                ],
+                [
+                  "5",
+                  "4"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "-1"
+                ],
+                [
+                  "2",
+                  "-1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "1"
+                ],
+                [
+                  "-3",
+                  "0"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "5",
+                  "2"
+                ],
+                [
+                  "-2",
+                  "2"
+                ]
+              ],
+              [
+                [
+                  "-10",
+                  "1"
+                ],
+                [
+                  "-3",
+                  "-2"
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  "-1",
+                  "2"
+                ],
+                [
+                  "-4",
+                  "1"
+                ]
+              ],
+              [
+                [
+                  "-2",
+                  "-2"
+                ],
+                [
+                  "3",
+                  "-2"
+                ]
+              ]
+            ]
+          ],
+          "relators": [
+            [
+              2,
+              2
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              3,
+              -1,
+              -3,
+              1
+            ],
+            [
+              5,
+              2,
+              4,
+              2,
+              -5,
+              -4
+            ],
+            [
+              2,
+              -5,
+              -4,
+              2,
+              4,
+              -1,
+              5,
+              1
+            ],
+            [
+              2,
+              -5,
+              -1,
+              5,
+              1,
+              -3,
+              5,
+              2,
+              -5,
+              3
+            ]
+          ],
+          "projective": true,
+          "abelianization": {
+            "free_rank": 3,
+            "torsion": [
+              "6"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "field": {
+        "fundamental_unit_torsion": null,
+        "ordinary_class_number": "3",
+        "fundamental_unit_norm": null,
+        "torsion_unit_order": 2,
+        "narrow_class_group": null,
+        "basis_discriminant": -23,
+        "fundamental_unit": null,
+        "ordinary_class_group_invariants": [
+          "3"
+        ],
+        "integral_basis": [
+          "1",
+          "w"
+        ],
+        "discriminant": -23,
+        "fundamental_unit_free_exponent": null,
+        "order_is_maximal": true,
+        "proof_settings": "Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
+        "torsion_unit_generator": [
+          "-1",
+          "0"
+        ],
+        "lmfdb_label": null,
+        "lmfdb_generator_map": null,
+        "polynomial_coefficients": [
+          6,
+          -1,
+          1
+        ],
+        "class_group_kind": "ordinary",
+        "lmfdb_status": "unverified; LMFDB returned browser challenges on the D5/D8 verification probes",
+        "unit_rank": 0
+      },
+      "comparison": {
+        "HAP": {
+          "source": "https://gap-packages.github.io/hap/tutorial/chap14.html",
+          "version": "1.78",
+          "groups": {
+            "SL": {
+              "invariant_factors": [
+                12,
+                0,
+                0,
+                0
+              ],
+              "status": "matched"
+            },
+            "PSL": {
+              "invariant_factors": [
+                6,
+                0,
+                0,
+                0
+              ],
+              "status": "matched"
+            }
+          },
+          "scope": "independent SL/PSL abelianization comparison; not a certified isomorphism of presentations",
+          "radicand": -23
+        },
+        "polytope_f_vectors": [
+          [
+            5,
+            8,
+            5
+          ],
+          [
+            6,
+            9,
+            5
+          ],
+          [
+            6,
+            12,
+            8
+          ]
+        ],
+        "Page": {
+          "published_KleinianGroups_PGL_seconds": 2.06,
+          "source": "https://www.normalesup.org/~page/Recherche/Documents/articles/kln_gps.pdf",
+          "scope": "different hardware and tasks; these timings do not establish a speed ratio",
+          "table": "3.1",
+          "status": "historical published timings; Magma was not rerun",
+          "published_KleinianGroups_PSL_seconds": 1.22
+        },
+        "native_enumeration_seconds": [
+          0.052932601,
+          0.048787531,
+          0.050952538
+        ],
+        "native_enumeration_median_seconds": 0.050952538,
+        "status": "passed",
+        "yasaki": {
+          "source": "https://arxiv.org/abs/0908.1762",
+          "tables": "2, 3, 4",
+          "status": "matched"
+        }
+      },
+      "word_validation": {
+        "distinct_inputs": 10,
+        "examples": [
+          {
+            "group": "GL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "minus_identity",
+            "word_length": 2,
+            "certificate": "words/minus_identity_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "minus_identity",
+            "word_length": 0,
+            "certificate": "words/minus_identity_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "U",
+            "word_length": 21,
+            "certificate": "words/U_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "U",
+            "word_length": 7,
+            "certificate": "words/U_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "U",
+            "word_length": 5,
+            "certificate": "words/U_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "W",
+            "word_length": 21,
+            "certificate": "words/W_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "W",
+            "word_length": 10,
+            "certificate": "words/W_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "W",
+            "word_length": 6,
+            "certificate": "words/W_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_1",
+            "word_length": 16,
+            "certificate": "words/lower_1_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_1",
+            "word_length": 4,
+            "certificate": "words/lower_1_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_1",
+            "word_length": 4,
+            "certificate": "words/lower_1_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "lower_w",
+            "word_length": 19,
+            "certificate": "words/lower_w_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "lower_w",
+            "word_length": 4,
+            "certificate": "words/lower_w_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "lower_w",
+            "word_length": 4,
+            "certificate": "words/lower_w_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "unit_diagonal_SL",
+            "word_length": 2,
+            "certificate": "words/unit_diagonal_SL_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "unit_diagonal_SL",
+            "word_length": 0,
+            "certificate": "words/unit_diagonal_SL_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "product",
+            "word_length": 42,
+            "certificate": "words/product_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "product",
+            "word_length": 24,
+            "certificate": "words/product_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "product",
+            "word_length": 20,
+            "certificate": "words/product_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "scalar",
+            "word_length": 2,
+            "certificate": "words/scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "scalar",
+            "word_length": 0,
+            "certificate": "words/scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_GL.json"
+          },
+          {
+            "group": "SL",
+            "input": "inverse_scalar",
+            "word_length": 2,
+            "certificate": "words/inverse_scalar_SL.json"
+          },
+          {
+            "group": "PSL",
+            "input": "inverse_scalar",
+            "word_length": 0,
+            "certificate": "words/inverse_scalar_PSL.json"
+          },
+          {
+            "group": "GL",
+            "input": "unit_diagonal_GL",
+            "word_length": 24,
+            "certificate": "words/unit_diagonal_GL_GL.json"
+          }
+        ],
+        "raw_certificates": 3,
+        "status": "passed",
+        "simplified_certificates": 28
+      },
+      "perfect_form_orbits": 3,
+      "labelled_neighbours": 10,
+      "timings": {
+        "two_cells_and_coverage": 0.367504202,
+        "ridges": 0.646364218,
+        "GL_assembly": 0.082826583,
+        "SL_extraction": 0.019146563,
+        "SL_simplification": 0.010431182,
+        "abelianizations": 8.5066e-05,
+        "PSL_simplification": 0.005609715,
+        "GL_simplification": 0.006359718,
+        "field_and_unit_verification": 0.011643733,
+        "PSL_quotient": 0.013441708,
+        "perfect_enumeration_and_validation": 0.17794616
+      }
+    }
+  },
+  "oscar_version": "1.8.2",
+  "status": "complete",
+  "schema": "av_imaginary_presentations_v1",
+  "matrix_encoding": "Each entry [a,b] means a+b*w, with exact rational strings and w=(s+sqrt(D))/2, s=D mod 4.",
+  "blas_threads": 1,
+  "timing_note": "Fields run sequentially. The first field computed in each Julia session includes compilation; existing compatible two-cell and simplification certificates may be reused on reruns.",
+  "enumeration_timing_note": "One warm-up followed by three fresh native enumerations per field, with GC before each; package import and compilation excluded."
+}

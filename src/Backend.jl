@@ -70,10 +70,23 @@ function load_checkpoint(P,B,path)
     E
 end
 
+"""
+    enumerate_perfect_forms(P::ArithmeticVoronoiProblem; backend=:polyhedral_common, progress=false, ...)
+
+Compute perfect forms, complete K-linear stabilizers and labelled neighbours.
+Use `backend=:native` for exact Julia/Hecke/OSCAR enumeration from scratch,
+without an exporter executable or configuration. `progress=true` prints seed
+and facet traversal progress. The native path has no deadline or disk cache.
+
+The default `:polyhedral_common` uses the configured C++ exporter and validated
+checkpoints. `config`, `cache_dir`, `work_dir`, `timeout` and `force` apply to
+that backend. Both paths return an `ArithmeticVoronoiEnumeration`.
+"""
 function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:polyhedral_common,config=nothing,
         cache_dir=joinpath(PACKAGE_ROOT,"results/cache"),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),
-        timeout=60.0,force=false)
-    backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"native backend is not implemented; the mathematical records are backend-independent"))
+        timeout=60.0,force=false,progress=false)
+    backend==:native && return enumerate_native(P;progress)
+    backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"choose :native or :polyhedral_common"))
     B=isnothing(config) ? default_backend(P) : config
     key=cache_key(P,B);path=joinpath(cache_dir,key*".json")
     if isfile(path) && !force
@@ -115,7 +128,7 @@ function enumeration_data(E)
         transporter=field_matrix_data(P,n.transporter),signed_target_facet_map=n.facet_map) for n in E.neighbours]
     (;schema=SCHEMA,problem=problem_descriptor(P),completion_status=string(E.completion_status),
       normalization="minimum squared trace length one; one common rational scale",
-      transporter_convention="H=transpose(g)*F_target*g; g maps neighbour minimal vectors to target minimal vectors",
+      transporter_convention=is_hermitian(P) ? "H=conjugate_transpose(g)*F_target*g; g maps neighbour minimal vectors to target minimal vectors" : "H=transpose(g)*F_target*g; g maps neighbour minimal vectors to target minimal vectors",
       word_convention="matrix products in written order; negative stabilizer index denotes inverse",
       forms,neighbours,pending_facets=E.pending_facets,provenance=E.provenance)
 end

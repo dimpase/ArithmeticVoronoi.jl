@@ -20,6 +20,7 @@ matrix_rows(A)=[[A[i,j] for j in 1:ncols(A)] for i in 1:nrows(A)]
 matrix_key(A)=Tuple(BigInt(ZZ(x)) for x in A)
 function form_coordinates(P,F)
     P.degree==1 && return QQFieldElem[F[1,1],F[1,2],F[2,2]]
+    is_hermitian(P) && return QQFieldElem[coeff(F[1,1],0),coeff(F[1,2],0),coeff(F[1,2],1),coeff(F[2,2],0)]
     QQFieldElem[coeff(F[i,j],k) for (i,j) in [(1,1),(1,2),(2,2)] for k in 0:1]
 end
 
@@ -100,7 +101,7 @@ function validate_export(P::ArithmeticVoronoiProblem,data)
         index=Dict(Tuple(v)=>j for (j,v) in enumerate(V))
         push!(signed_index_maps,[index[signed_key(v)] for v in vectors.supplied])
         gens=[internal_matrix(P,matrix_wire(G)) for G in entry["stabilizer_generators_row"]]
-        for g in gens;ensure(transpose(g)*F*g==F,"backend stabilizer fails exact congruence");end
+        for g in gens;ensure(act_form(P,F,g)==F,"backend stabilizer fails exact congruence");end
         claimed=parse(BigInt,entry["stabilizer_order"])
         ensure(claimed>0,"invalid stabilizer order")
         closure=finite_matrix_closure([encode_matrix(P,g) for g in gens],P.rank*P.degree,claimed)
@@ -139,7 +140,7 @@ function validate_export(P::ArithmeticVoronoiProblem,data)
             pivot=findfirst(!iszero,normal);scale=direction[pivot]/normal[pivot]
             ensure(scale>0 && direction==scale*normal,"neighbour is not on the outward exact facet ray")
             g=internal_matrix(P,matrix_wire(edge["transporter_row"]))
-            ensure(transpose(g)*records[target].form*g==HF,"labelled transporter has wrong direction or congruence")
+            ensure(act_form(P,records[target].form,g)==HF,"labelled transporter has wrong direction or congruence")
             R=encode_matrix(P,g);target_index=Dict(Tuple(v)=>j for (j,v) in enumerate(records[target].minimal_vectors))
             map_vector(v)=[BigInt(ZZ(sum(R[j,k]*v[k] for k in eachindex(v)))) for j in eachindex(v)]
             ensure(Set(signed_key(map_vector(v)) for v in hv.vectors)==Set(keys(target_index)),"transporter does not map the exhaustive neighbour minimum set onto its target")

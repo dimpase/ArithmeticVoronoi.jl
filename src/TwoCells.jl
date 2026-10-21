@@ -5,7 +5,6 @@ export RidgeRecord, TwoCellContext, TwoCellCertificate, trace_pairing_matrix,
 const TWO_CELL_SCHEMA="arithmetic_voronoi_two_cells_v1"
 const MatrixLetter=Tuple{Symbol,Int,Int}
 qmatrix_key(A)=Tuple(fraction_string(x) for x in A)
-act_form(F,g)=transpose(g)*F*g
 function apply_integral(M,v)
     [BigInt(ZZ(sum(M[i,j]*v[j] for j in eachindex(v)))) for i in 1:nrows(M)]
 end
@@ -63,7 +62,7 @@ function enumerate_ridges(E::ArithmeticVoronoiEnumeration)
             ensure(kr==2,"ridge does not meet the positive cone: supporting vectors have K-rank one")
             interior=zero_matrix(P.field,P.rank,P.rank)
             for (v,j) in zip(field_vectors,indices)
-                outer=matrix(P.field,[v[a]*v[b] for a in 1:P.rank,b in 1:P.rank])
+                outer=vector_outer(P,v)
                 coordinates=form_coordinates(P,outer)
                 dual=[sum(pairing[a,b]*coordinates[b] for b in eachindex(coordinates)) for a in eachindex(coordinates)]
                 ensure(dual==[r.evaluation_rays[j,k] for k in 1:ncols(r.evaluation_rays)],"primal/dual trace pairing mismatch")
@@ -128,7 +127,7 @@ function facet_absolute(P,r,a,facet)
 end
 function actual_state(ctx,i,a,incoming,outgoing)
     P=ctx.enumeration.problem;r=ctx.enumeration.representatives[i]
-    (;representative=i,frame=a,gram=trace_gram(P,act_form(r.form,a)),incoming,outgoing,
+    (;representative=i,frame=a,gram=trace_gram(P,act_form(P,r.form,a)),incoming,outgoing,
       incoming_vectors=facet_absolute(P,r,a,incoming),outgoing_vectors=facet_absolute(P,r,a,outgoing))
 end
 state_key(state)=(qmatrix_key(state.gram),Tuple(state.incoming_vectors),Tuple(state.outgoing_vectors))
@@ -140,7 +139,7 @@ function step_across(ctx,state,fixed_vectors)
     next_frame=b*s*state.frame
     check_group_matrix(P,encode_matrix(P,next_frame))
     H=form_from_trace(P,edge.neighbour_gram)
-    ensure(act_form(H,s*state.frame)==act_form(E.representatives[j].form,next_frame),"noncommutative transporter update failed")
+    ensure(act_form(P,H,s*state.frame)==act_form(P,E.representatives[j].form,next_frame),"noncommutative transporter update failed")
     target=E.representatives[j];coordinate_index=Dict(Tuple(v)=>k for (k,v) in enumerate(target.minimal_vectors))
     R=encode_matrix(P,next_frame)
     local_indices(vectors)=sort!(collect(coordinate_index[signed_key(apply_integral(R,v))] for v in vectors))
@@ -190,7 +189,7 @@ function walk_ridge(ctx::TwoCellContext,i,ridge_id;outgoing=nothing,max_steps=10
         if state_key(state)==initial
             ensure(state.representative==i,"geometric closure has an inequivalent representative")
             h=state.frame;hword=stabilizer_word(ctx,i,h)
-            ensure(act_form(r.form,h)==r.form,"residual fails exact vertex stabilization")
+            ensure(act_form(P,r.form,h)==r.form,"residual fails exact vertex stabilization")
             correction=MatrixLetter[(:s,i,k) for k in hword]
             attaching=[word;inverse_matrix_word(correction)]
             ensure(eval_matrix_word(ctx,attaching)==identity_matrix(P.field,P.rank),"residual-corrected attaching relation is not the identity")
@@ -317,7 +316,7 @@ function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT
         "labelled_facet_count_convention"=>"local directed facet orbits under each finite perfect-form stabilizer",
         "entries"=>[Dict("source"=>i,"ridge"=>r.id,"status"=>"pending") for (i,ridges) in enumerate(ctx.ridges) for r in ridges])
     ledger_path=joinpath(directory,"coverage.json");atomic_json(ledger_path,ledger)
-    certificates=TwoCellCertificate[];cached=0;start=time_ns();cursor=0
+    certificates=TwoCellCertificate[];cached=0;start=time_ns();cursor=0;last_checkpoint=start
     try
         for (i,ridges) in enumerate(ctx.ridges),ridge in ridges
             cursor+=1;entry=ledger["entries"][cursor];based=TwoCellCertificate[];files=String[]
@@ -336,7 +335,14 @@ function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT
             entry["length"]=length(first(based).steps)
             entry["identification_witness"]="identity: this local ridge is processed directly in its stored frame"
             ledger["cache_hits"]=cached;ledger["completed_oriented_loops"]=length(certificates)
-            atomic_json(ledger_path,ledger)
+            # Each loop already has an atomic certificate file, from which a
+            # resumed run reconstructs coverage. Rewriting the growing ledger
+            # after every ridge would make checkpoint work quadratic in the
+            # number of ridges. Refresh live coverage about once per second;
+            # completion, requested stops and errors always save it below.
+            if cursor==1 || time_ns()-last_checkpoint>=1_000_000_000
+                atomic_json(ledger_path,ledger);last_checkpoint=time_ns()
+            end
             if cursor==1 && i==1
                 write_first_two_cell(ctx,first(based);directory)
             end

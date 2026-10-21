@@ -74,7 +74,7 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
             computation_run_id="sha256:"*refs["run.json"]["sha256"],
             geometry=R.run["geometry"],statuses=R.run["status"],
             certificate_directory="$prefix/two_cells",word_certificate_directory="$prefix/words",
-            literature_directory=D==40 ? nothing : "$prefix/KW"))
+            literature_directory=D in (5,8,12,13) ? "$prefix/KW" : nothing))
     end
     for file in readdir(joinpath(PACKAGE_ROOT,"src"))
         endswith(file,".jl") && copy_artifact(joinpath(PACKAGE_ROOT,"src",file),"software/src/$file")

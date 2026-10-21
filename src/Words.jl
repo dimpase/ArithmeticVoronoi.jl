@@ -32,7 +32,7 @@ end
 function translated_word(R,raw_word,target,simplified)
     word=raw_word
     if target!=:GL
-        rewrite=schreier_rewrite(raw_word,R.sl.determinant_images,R.sl.schreier_ids)
+        rewrite=schreier_rewrite(R.sl,raw_word)
         ensure(rewrite.coset==0,"determinant-one word has a nontrivial determinant-square coset")
         word=rewrite.word
     end
@@ -43,9 +43,9 @@ end
 function reduction_target(C,g)
     E=C.context.enumeration;P=E.problem;B=zero_matrix(P.field,P.rank,P.rank)
     for z in E.representatives[1].minimal_vectors
-        v=field_vector(P,z);B+=matrix(P.field,[v[i]*v[j] for i in 1:P.rank,j in 1:P.rank])
+        v=field_vector(P,z);B+=vector_outer(P,v)
     end
-    inv(g)*B*transpose(inv(g))
+    inv(g)*B*form_adjoint(P,inv(g))
 end
 
 """Replay a supplied path without running a search or trusting its matrix word."""
@@ -60,14 +60,14 @@ function replay_word_path(C,g,data)
     for step in data["steps"]
         ensure(step["source"]==i && field_matrix_wire(P,step["source_frame"])==a,"word path has a corrupt source frame")
         facet=Int(step["facet"]);f=E.representatives[i].facets[facet]
-        localQ=a*Q*transpose(a);coordinates=form_coordinates(P,localQ)
+        localQ=a*Q*form_adjoint(P,a);coordinates=form_coordinates(P,localQ)
         dual=[sum(pairing[k,l]*coordinates[l] for l in eachindex(coordinates)) for k in eachindex(coordinates)]
         ensure(sum(f.normal[k]*dual[k] for k in eachindex(dual))<0,"word path did not cross a separating facet")
         edge=ctx.neighbours[i][f.neighbour_orbit];s=f.to_orbit_representative;j=edge.target
         ensure(field_matrix_wire(P,step["source_correction"])==s && field_matrix_wire(P,step["neighbour_transporter"])==edge.transporter,"corrupt word crossing labels")
         next=edge.transporter*s*a
         ensure(step["target"]==j && field_matrix_wire(P,step["actual_frame"])==next,"word path has a corrupt next frame")
-        before=objective(act_form(E.representatives[i].form,a));after=objective(act_form(E.representatives[j].form,next))
+        before=objective(act_form(P,E.representatives[i].form,a));after=objective(act_form(P,E.representatives[j].form,next))
         ensure(before==rational_wire(step["before"]) && after==rational_wire(step["after"]) && after<before,"corrupt or nondecreasing trace objectives")
         ensure(denominator(before*nf*nq)==1 && denominator(after*nf*nq)==1,"word path left its fixed rational denominator lattice")
         l=C.coherent.lifts[i];sword=finite_element_word(C,i,inv(l)*s*l)
@@ -76,7 +76,7 @@ function replay_word_path(C,g,data)
         ensure(evaluate_word(C.generator_matrices,word)==inv(C.coherent.lifts[j])*next,"word path matrix frame mismatch")
         i=j;a=next
     end
-    ensure(i==1 && act_form(E.representatives[1].form,a)==act_form(E.representatives[1].form,g),"word path ends at the wrong target cone")
+    ensure(i==1 && act_form(P,E.representatives[1].form,a)==act_form(P,E.representatives[1].form,g),"word path ends at the wrong target cone")
     h=a*inv(g);hword=Int.(data["residual_stabilizer_word"])
     ensure(all(abs(k) in C.vertex_generator_ids[1] for k in hword),"word path correction is not in the root finite-stabilizer alphabet")
     ensure(haskey(C.vertex_groups[1].keys,matrix_key(encode_matrix(P,h))),"word path residual is outside the root stabilizer")

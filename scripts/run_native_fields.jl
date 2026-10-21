@@ -1,0 +1,122 @@
+# Run from the checkout root with julia --project=. scripts/run_native_fields.jl.
+# --output=DIR selects the parent directory; --resume retains completed fields.
+# Remaining arguments are discriminants; with none, run the documented survey.
+const import_started=time_ns()
+using ArithmeticVoronoi, Oscar, LinearAlgebra, JSON3
+const NAV=ArithmeticVoronoi
+const import_seconds=(time_ns()-import_started)/1e9
+const SURVEY_DISCRIMINANTS=[5,8,12,13,17,21,24,28,29,33,37,40,41,44,56,60]
+
+function validate_words(R)
+    P=R.enumeration.problem;K=P.field;w=P.generator
+    e=R.sl.units.rank==0 ? R.sl.units.torsion_generator : R.sl.units.epsilon
+    I=identity_matrix(K,2)
+    U=matrix(K,[1 1;0 1]);W=matrix(K,[1 w;0 1])
+    L=matrix(K,[1 0;1 1]);Lw=matrix(K,[1 0;w 1])
+    H=matrix(K,[e 0;0 inv(e)])
+    inputs=[("minus_identity",-I),("U",U),("W",W),("lower_1",L),
+        ("lower_w",Lw),("unit_diagonal_SL",H),("product",U*inv(Lw)*H*W),
+        ("scalar",e*I),("inverse_scalar",inv(e)*I),
+        ("unit_diagonal_GL",matrix(K,[e 0;0 1]))]
+    examples=Dict{String,Any}[]
+    for (label,g) in inputs,target in (:GL,:SL,:PSL)
+        target!=:GL && det(g)!=1 && continue
+        path=joinpath(R.directory,"words","$(label)_$target.json")
+        c=matrix_to_word(R,g;target,cache_path=path)
+        NAV.ensure(verify_word_certificate(R,g,c),"word certificate failed for $label/$target")
+        push!(examples,Dict("input"=>label,"group"=>string(target),
+            "word_length"=>length(c["word"]),"certificate"=>relpath(path,R.directory)))
+    end
+    # Also exercise the original presentation alphabets independently of Tietze maps.
+    for target in (:GL,:SL,:PSL)
+        c=matrix_to_word(R,W;target,simplified=false)
+        NAV.ensure(verify_word_certificate(R,W,c),"raw word certificate failed for $target")
+        NAV.atomic_json(joinpath(R.directory,"words","W_$(target)_raw.json"),c)
+    end
+    validation=Dict("status"=>"passed","distinct_inputs"=>length(inputs),
+        "simplified_certificates"=>length(examples),"raw_certificates"=>3,"examples"=>examples)
+    NAV.atomic_json(joinpath(R.directory,"word_validation.json"),validation)
+    R.run["status"]["constructive_words"]="validated_GL_SL_PSL"
+    NAV.atomic_json(joinpath(R.directory,"run.json"),R.run)
+    validation
+end
+
+function compute_field(D,root;on_result=nothing)
+    R=run_field_pipeline(D;backend=:native,directory=joinpath(root,"D$D"),
+        reuse_baseline=false)
+    println("D$D: checking matrix-to-word certificates");flush(stdout)
+    started=time_ns();validation=validate_words(R);seconds=(time_ns()-started)/1e9
+    comparison=isnothing(on_result) ? nothing : on_result(R)
+    Dict("status"=>"complete","directory"=>"D$D",
+        "perfect_form_orbits"=>length(R.enumeration.representatives),
+        "labelled_neighbours"=>length(R.enumeration.neighbours),
+        "oriented_loops"=>R.run["geometry"]["oriented_loops"],
+        "ordinary_class_number"=>R.metadata.ordinary_class_number,
+        "fundamental_unit"=>R.metadata.fundamental_unit,
+        "fundamental_unit_norm"=>R.metadata.fundamental_unit_norm,
+        "pipeline_seconds"=>R.run["total_in_process_seconds"],
+        "stage_seconds"=>R.run["stage_seconds"],"presentations"=>R.run["presentations"],
+        "word_validation_seconds"=>seconds,"word_validation"=>validation,"comparison"=>comparison)
+end
+
+function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
+              default_output=joinpath(NAV.PACKAGE_ROOT,"results/native_fields"))
+    root=default_output
+    discriminants=Int[];resume=false
+    for arg in args
+        if startswith(arg,"--output=")
+            root=abspath(split(arg,'=';limit=2)[2])
+        elseif arg=="--resume"
+            resume=true
+        else
+            push!(discriminants,parse(Int,arg))
+        end
+    end
+    isempty(discriminants) && append!(discriminants,default_discriminants)
+    unique!(discriminants)
+    LinearAlgebra.BLAS.set_num_threads(1)
+    mkpath(root)
+    fields=Dict{String,Any}()
+    summary_path=joinpath(root,"summary.json")
+    if resume && isfile(summary_path)
+        previous=JSON3.read(read(summary_path,String),Dict{String,Any})
+        NAV.ensure(previous["schema"]=="av_native_field_batch_v1","incompatible batch summary")
+        for D in discriminants
+            haskey(previous["fields"],string(D)) || continue
+            fields[string(D)]=previous["fields"][string(D)]
+        end
+    end
+    summary=Dict("schema"=>"av_native_field_batch_v1","status"=>"running",
+        "discriminants"=>discriminants,"fields"=>fields,"resumed"=>resume,
+        "julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
+        "julia_threads"=>Threads.nthreads(),"blas_threads"=>LinearAlgebra.BLAS.get_num_threads(),
+        "package_import_seconds"=>import_seconds,
+        "timing_note"=>"Fields run sequentially. The first field computed in each Julia session includes compilation; existing compatible two-cell and simplification certificates may be reused on reruns.")
+    save()=NAV.atomic_json(summary_path,summary)
+    save()
+    for D in discriminants
+        if resume && haskey(fields,string(D)) && fields[string(D)]["status"]=="complete" &&
+            (isnothing(on_result) || !isnothing(get(fields[string(D)],"comparison",nothing)))
+            println("D$D: retaining completed batch result");flush(stdout)
+            continue
+        end
+        fields[string(D)]=Dict("status"=>"running");save()
+        try
+            fields[string(D)]=compute_field(D,root;on_result)
+        catch err
+            err isa InterruptException && rethrow()
+            fields[string(D)]=Dict("status"=>"failed","error"=>sprint(showerror,err))
+            showerror(stderr,err,catch_backtrace());println(stderr);flush(stderr)
+        end
+        save();GC.gc()
+    end
+    failed=[D for D in discriminants if fields[string(D)]["status"]!="complete"]
+    summary["status"]=isempty(failed) ? "complete" : "incomplete";save()
+    isempty(failed) || error("Failed fields: $(join(failed,", ")); inspect each D*/run.json and the batch log")
+    println("All $(length(discriminants)) fields completed; results in ",abspath(root))
+    (;root,summary)
+end
+
+if abspath(PROGRAM_FILE)==@__FILE__
+    main(ARGS)
+end

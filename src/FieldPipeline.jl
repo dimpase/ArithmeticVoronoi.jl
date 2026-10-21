@@ -26,7 +26,8 @@ function load_simplification(P,path,matrices,relations)
 end
 
 function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"),
-                            simplify=true,timeout=600.0,reuse_baseline=:auto)
+                            simplify=true,timeout=600.0,reuse_baseline=:auto,
+                            backend=:polyhedral_common,progress=false)
     (reuse_baseline isa Bool || reuse_baseline===:auto) || throw(ArgumentError("reuse_baseline must be true, false or :auto"))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
@@ -40,7 +41,7 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
     end
     status=Dict{String,Any}("enumeration"=>"pending","two_cells"=>"pending","GL"=>"pending",
         "SL"=>"pending","PSL"=>"pending","simplification"=>Dict(k=>(simplify ? "pending" : "not_requested") for k in ("GL","SL","PSL")),"constructive_words"=>"unvalidated",
-        "literature_comparison"=>D==40 ? "not_applicable" : "pending")
+        "literature_comparison"=>D in (5,8,12,13) ? "pending" : "not_applicable")
     run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"status"=>status,
         "stage_seconds"=>timings,"julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
         "julia_threads"=>Threads.nthreads(),"started_utc"=>string(now(UTC)))
@@ -60,7 +61,8 @@ function run_field_pipeline(D;directory=joinpath(PACKAGE_ROOT,"results/fields","
     save()
     P=arithmetic_problem(D)
     metadata=stage("field_and_unit_verification",()->field_metadata(P));atomic_json(joinpath(directory,"field.json"),metadata)
-    E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;timeout))
+    E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;backend,progress,timeout))
+    run["backend"]=string(backend)
     status["enumeration"]="complete";run["enumeration_from_cache"]=E.provenance["from_cache"]
     run["backend_seconds"]=get(E.provenance,"backend_seconds",nothing)
     write_enumeration(joinpath(directory,"enumeration.json"),E);save()

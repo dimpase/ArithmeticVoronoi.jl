@@ -33,7 +33,7 @@ function graph_edges(ctx)
                 for u in vertices[i]
                     p=endpoint==1 ? u : inv(edge.transporter)*u
                     left,right=endpoint==1 ? (A,B) : (B,A)
-                    if act_form(left,p)==F && act_form(right,p)==H
+                    if act_form(P,left,p)==F && act_form(P,right,p)==H
                         found=(q,p,endpoint);break
                     end
                 end
@@ -54,30 +54,30 @@ function graph_edges(ctx)
     end
     for (q,edge) in enumerate(edges)
         F=E.representatives[edge.source].form;H=edge.neighbour
-        oriented=[u for u in vertices[edge.source] if act_form(H,u)==H]
-        reversals=edge.source==edge.target ? [u*edge.transporter for u in vertices[edge.source] if act_form(H,u*edge.transporter)==F] : Any[]
+        oriented=[u for u in vertices[edge.source] if act_form(P,H,u)==H]
+        reversals=edge.source==edge.target ? [u*edge.transporter for u in vertices[edge.source] if act_form(P,H,u*edge.transporter)==F] : Any[]
         full=[oriented;reversals]
         ensure(length(full)==length(oriented)*(isempty(reversals) ? 1 : 2),"setwise/oriented edge stabilizer index is not one or two")
         ensure(length(edge.darts)==(isempty(reversals) ? 2 : 1),"local directed incidence orbits do not match global edge/inversion classification")
         keys=Set(matrix_key(encode_matrix(P,g)) for g in oriented)
         for g in full
             check_group_matrix(P,encode_matrix(P,g))
-            ensure(act_form(edge.midpoint,g)==edge.midpoint,"edge stabilizer does not fix its midpoint")
+            ensure(act_form(P,edge.midpoint,g)==edge.midpoint,"edge stabilizer does not fix its midpoint")
         end
         for g in reversals
-            ensure(act_form(F,g)==H && act_form(H,g)==F,"endpoint reversal failed")
+            ensure(act_form(P,F,g)==H && act_form(P,H,g)==F,"endpoint reversal failed")
             ensure(matrix_key(encode_matrix(P,g*g)) in keys,"endpoint reversal square is outside the oriented edge stabilizer")
         end
         edges[q]=merge(edge,(;oriented_stabilizer=oriented,setwise_stabilizer=full,reversals))
     end
     for d in darts
-        E0=[u for u in vertices[d.source] if act_form(d.neighbour,u)==d.neighbour]
+        E0=[u for u in vertices[d.source] if act_form(P,d.neighbour,u)==d.neighbour]
         canonical=edges[d.edge]
         Hkeys=Set(matrix_key(encode_matrix(P,g)) for g in canonical.setwise_stabilizer)
         for u in E0
             ensure(matrix_key(encode_matrix(P,d.edge_to_local*u*inv(d.edge_to_local))) in Hkeys,"half-edge inclusion into midpoint stabilizer failed")
             v=d.transporter*u*inv(d.transporter)
-            ensure(act_form(E.representatives[d.target].form,v)==E.representatives[d.target].form,"original oriented-edge inclusion failed")
+            ensure(act_form(P,E.representatives[d.target].form,v)==E.representatives[d.target].form,"original oriented-edge inclusion failed")
         end
         darts[d.id]=merge(d,(;oriented_stabilizer=E0))
     end
@@ -304,11 +304,11 @@ function matrix_to_word(C::PresentationCertificate,g;max_cones=10000,timeout=120
     ensure(C.coherent.lifts[1]==identity_matrix(P.field,P.rank),"word routine requires the root lift to be identity")
     base=zero_matrix(P.field,P.rank,P.rank)
     for z in E.representatives[1].minimal_vectors
-        v=field_vector(P,z);base+=matrix(P.field,[v[i]*v[j] for i in 1:P.rank,j in 1:P.rank])
+        v=field_vector(P,z);base+=vector_outer(P,v)
     end
-    fixed=inv(g)*base*transpose(inv(g))
+    fixed=inv(g)*base*form_adjoint(P,inv(g))
     ensure(positive_definite(trace_gram(P,fixed)),"constructive reduction target is not positive definite")
-    targetkey=qmatrix_key(trace_gram(P,act_form(E.representatives[1].form,g)))
+    targetkey=qmatrix_key(trace_gram(P,act_form(P,E.representatives[1].form,g)))
     pairing=trace_pairing_matrix(P);i=1;a=identity_matrix(P.field,P.rank);word=Int[];start=time_ns();steps=Any[]
     objective(F)=sum(form_coordinates(P,F)[k]*pairing[k,l]*form_coordinates(P,fixed)[l] for k in 1:nrows(pairing),l in 1:ncols(pairing))
     lookup=Dict((d.source,d.local_orbit)=>d.id for d in C.graph.darts)
@@ -322,11 +322,11 @@ function matrix_to_word(C::PresentationCertificate,g;max_cones=10000,timeout=120
         throw(ArithmeticValidationError(reason))
     end
     for number in 0:max_cones-1
-        local_target=a*fixed*transpose(a);coordinates=form_coordinates(P,local_target)
+        local_target=a*fixed*form_adjoint(P,a);coordinates=form_coordinates(P,local_target)
         dual=[sum(pairing[k,l]*coordinates[l] for l in eachindex(coordinates)) for k in eachindex(coordinates)]
         violations=[sum(f.normal[k]*dual[k] for k in eachindex(dual)) for f in E.representatives[i].facets]
         if all(x>=0 for x in violations)
-            ensure(qmatrix_key(trace_gram(P,act_form(E.representatives[i].form,a)))==targetkey,"interior cone reduction ended at the wrong actual perfect form")
+            ensure(qmatrix_key(trace_gram(P,act_form(P,E.representatives[i].form,a)))==targetkey,"interior cone reduction ended at the wrong actual perfect form")
             ensure(i==1,"target perfect form has the wrong arithmetic orbit")
             h=a*inv(g);hword=finite_element_word(C,1,h)
             result=freely_reduce([inverse_word(hword);word])
@@ -338,7 +338,7 @@ function matrix_to_word(C::PresentationCertificate,g;max_cones=10000,timeout=120
         facet=findfirst(x->x<0,violations);f=E.representatives[i].facets[facet]
         d=lookup[(i,f.neighbour_orbit)];edge=ctx.neighbours[i][f.neighbour_orbit];s=f.to_orbit_representative
         next=edge.transporter*s*a;j=edge.target
-        before=objective(act_form(E.representatives[i].form,a));after=objective(act_form(E.representatives[j].form,next))
+        before=objective(act_form(P,E.representatives[i].form,a));after=objective(act_form(P,E.representatives[j].form,next))
         ensure(after<before,"separating-facet crossing did not strictly decrease the exact trace objective")
         ensure(denominator(before*objective_denominator)==1 && denominator(after*objective_denominator)==1,"trace objectives left their fixed denominator lattice")
         l=C.coherent.lifts[i];sword=finite_element_word(C,i,inv(l)*s*l)

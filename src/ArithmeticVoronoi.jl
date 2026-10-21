@@ -12,6 +12,7 @@ export ArithmeticVoronoiProblem, arithmetic_problem, classical_problem,
 
 const SCHEMA="arithmetic_voronoi_v1"
 const ACTION="columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)"
+const HERMITIAN_ACTION="columns; F^g=conjugate_transpose(g)*F*g; (F^g)^h=F^(g*h)"
 
 struct ArithmeticVoronoiProblem
     field::Any
@@ -33,15 +34,31 @@ struct GroupConstraintError <: Exception
 end
 Base.showerror(io::IO,e::GroupConstraintError)=print(io,e.reason)
 
+is_hermitian(P::ArithmeticVoronoiProblem)=P.discriminant<0
+form_conjugate(P,x)=is_hermitian(P) ? P.field(coeff(x,0))+coeff(x,1)*(P.root_sum-P.generator) : x
+form_adjoint(P,A)=is_hermitian(P) ? transpose(map_entries(x->form_conjugate(P,x),A)) : transpose(A)
+act_form(P,F,g)=form_adjoint(P,g)*F*g
+# Historical symmetric-form helper; arithmetic code uses the explicit problem.
+act_form(F,g)=transpose(g)*F*g
+vector_outer(P,v)=matrix(P.field,[v[i]*form_conjugate(P,v[j]) for i in 1:P.rank,j in 1:P.rank])
+form_lattice(P,F)=is_hermitian(P) ? hermitian_lattice(P.field;gram=F) : quadratic_lattice(P.field;gram=F)
+
 function trace_block(s,p,a0,a1)
     t0,t1,t2,t3=2,s,s*s-2p,s*s*s-3s*p
     matrix(QQ,[a0*t0+a1*t1 a0*t1+a1*t2;a0*t1+a1*t2 a0*t2+a1*t3])
 end
 
 function trace_gram(P::ArithmeticVoronoiProblem,F)
-    size(F)==(P.rank,P.rank) && F==transpose(F) || throw(ArgumentError("form must be symmetric of the specified rank"))
+    size(F)==(P.rank,P.rank) && F==form_adjoint(P,F) || throw(ArgumentError("form must be symmetric/Hermitian of the specified rank"))
     P.degree==1 && return change_base_ring(QQ,F)
     A=zero_matrix(QQ,2P.rank,2P.rank)
+    if is_hermitian(P)
+        basis=(P.field(1),P.generator)
+        for i in 1:P.rank,j in 1:P.rank,a in 1:2,b in 1:2
+            A[2i-2+a,2j-2+b]=tr(form_conjugate(P,basis[a])*F[i,j]*basis[b])
+        end
+        return A
+    end
     for i in 1:P.rank,j in 1:P.rank
         a=P.field(F[i,j]);block=trace_block(P.root_sum,P.root_product,coeff(a,0),coeff(a,1))
         A[2i-1:2i,2j-1:2j]=block
@@ -52,20 +69,23 @@ end
 function make_problem(K,O,w,d,D,s,p)
     r=2;J=d==1 ? zero_matrix(QQ,1,1) : matrix(QQ,[0 -p;1 s])
     E=block_diagonal_matrix([J,J])
-    placeholder=ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,QQMatrix[],ACTION,"GL(2,O) acting K-linearly on the free lattice O^2; retain -I")
+    action=D<0 ? HERMITIAN_ACTION : ACTION
+    placeholder=ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,QQMatrix[],action,"GL(2,O) acting K-linearly on the free lattice O^2; retain -I")
     basis=QQMatrix[]
     for (i,j) in [(1,1),(1,2),(2,2)],k in 0:d-1
+        D<0 && i==j && k==1 && continue
         F=zero_matrix(K,r,r);a=k==0 ? K(1) : w
-        F[i,j]=a;F[j,i]=a
+        F[i,j]=a;F[j,i]=form_conjugate(placeholder,a)
         push!(basis,trace_gram(placeholder,F))
     end
-    ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,basis,ACTION,placeholder.group_constraints)
+    ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,basis,action,placeholder.group_constraints)
 end
 
+"""K-linear GL(2,O) forms for a fundamental discriminant D; Hermitian when D<0."""
 function arithmetic_problem(D::Int)
-    models=Dict(5=>(1,-1),8=>(0,-2),12=>(0,-3),13=>(1,-3),40=>(0,-10))
-    haskey(models,D) || throw(ArgumentError("maximal-order models support discriminants 5, 8, 12, 13 and 40"))
-    s,p=models[D]
+    (D<0 || D>1) && Hecke.is_fundamental_discriminant(D) || throw(ArgumentError("a fundamental quadratic discriminant is required"))
+    s=mod(D,4)
+    p=div(s*s-D,4)
     R,x=polynomial_ring(QQ,"t")
     K,w=number_field(x^2-s*x+p,"w";cached=false)
     O=maximal_order(K)
@@ -162,22 +182,22 @@ function shortest_data(A)
 end
 
 function equivalence(P,F,H)
-    L=quadratic_lattice(P.field;gram=H);M=quadratic_lattice(P.field;gram=F)
+    L=form_lattice(P,H);M=form_lattice(P,F)
     ok,h=Hecke.is_isometric_with_isometry(L,M)
     ok || return nothing
-    g=transpose(h)
+    g=form_adjoint(P,h)
     check_group_matrix(P,encode_matrix(P,g))
-    transpose(g)*F*g==H || error("Hecke isometry action convention mismatch")
+    act_form(P,F,g)==H || error("Hecke isometry action convention mismatch")
     g
 end
 function finite_stabilizer(P,F)
-    L=quadratic_lattice(P.field;gram=F)
-    gens=[transpose(g) for g in Hecke.automorphism_group_generators(L)]
+    L=form_lattice(P,F)
+    gens=[form_adjoint(P,g) for g in Hecke.automorphism_group_generators(L)]
     central=-identity_matrix(P.field,P.rank)
     central in gens || push!(gens,central)
     for g in gens
         check_group_matrix(P,encode_matrix(P,g))
-        transpose(g)*F*g==F || error("Hecke stabilizer action convention mismatch")
+        act_form(P,F,g)==F || error("Hecke stabilizer action convention mismatch")
     end
     (;generators=gens,order=BigInt(Hecke.automorphism_group_order(L)),lattice=L)
 end
@@ -218,6 +238,7 @@ end
 include("Validation.jl")
 include("Backend.jl")
 include("TwoCells.jl")
+include("NativeBackend.jl")
 include("Presentations.jl")
 include("SLExtraction.jl")
 include("Simplification.jl")

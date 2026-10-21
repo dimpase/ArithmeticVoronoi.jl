@@ -1,4 +1,8 @@
 include("model.jl")
+include("quadratic_units.jl")
+include("native.jl")
+include("imaginary.jl")
+include("imaginary_bundle.jl")
 include("contracts.jl")
 include("two_cells.jl")
 include("fields_words.jl")
