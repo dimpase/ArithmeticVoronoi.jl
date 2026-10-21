@@ -85,7 +85,14 @@ checkpoint; native enumerations are not yet supported by that archive format.
 
 ## Algorithm and checks
 
-The implementation is in `src/NativeBackend.jl`. It follows the relative
+The group-presentation and constructive-membership algorithm follows
+Braun, Coulangeon, Nebe and Schönnenbeck,
+[*Computing in arithmetic groups with Voronoi's algorithm*](https://arxiv.org/abs/1407.6234).
+Perfect-form enumeration supplies the vertices and neighbours used by that
+algorithm; ridge cycles and stabilizers supply the presentation relations.
+
+The native enumerator is implemented in `src/NativeBackend.jl`. It follows
+the relative
 Ryshkov-polyhedron approach described by Achill Schürmann in
 [Enumerating perfect forms](https://arxiv.org/abs/0901.1587), with Dutour
 Sikirić's `polyhedral_common` serving as the independent reference implementation.

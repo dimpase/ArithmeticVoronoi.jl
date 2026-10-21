@@ -2,6 +2,11 @@
 
 Executed 2026-10-17 for `oscar_arithmetic_voronoi_codex_handoff.md`.
 
+This is a historical audit. The C++ sources and build now live in
+[PerfectForms.jl](https://github.com/dimpase/PerfectForms.jl); paths below
+describe the original workspace. Use [the user guide](USER_GUIDE.md) for
+current installation and native Julia computations.
+
 **Verdict: usable after the listed local fixes.** This verdict covers the
 GMP serial perfect-form/facet-neighbour path for the free rank-two lattices
 over Z and the maximal orders of discriminants 5 and 8. It does not certify
@@ -32,7 +37,7 @@ machine-readable records are [D5](results/D5.json), [D8](results/D8.json),
 - Top source: `MathieuDutSik/polyhedral_common` commit
   `cfcd79dbddf67a494a1c71b776174b190da5209a`.
 - All seven recursive submodule pins and the nauty fork pin are in
-  [backend/pins.json](backend/pins.json). Submodules were initialized without
+  the former `backend/pins.json`. Submodules were initialized without
   `--remote`. The selected nauty commit is
   `cb9dc822f9d1aa3a02b1dcb7a18dd9609d838b1e`.
 - Source and build are separate directories under
@@ -97,8 +102,9 @@ Relevant pinned source is
 [perfect_tspace](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/src_perfect/perfect_tspace.h),
 [complex](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/src_perfect/perfect_complex.h),
 and [GAP access](https://github.com/MathieuDutSik/polyhedral_common/blob/cfcd79dbddf67a494a1c71b776174b190da5209a/CI_tests/access_points.g).
-The retained [patch](patches/polyhedral_common.patch) is CMake-only; the
-[exporter](backend/export_perfect.cpp) is approximately 220 lines. The useful
+The retained patch (`patches/polyhedral_common.patch` in the original layout)
+is CMake-only; the exporter (`backend/export_perfect.cpp`) is approximately
+220 lines. The useful
 upstream strengths are exact GMP arithmetic, constrained field-linear tests,
 existing neighbour/transport records and finite-group computations. The
 successful narrow gate is not a whole-repository engineering endorsement.
@@ -202,7 +208,8 @@ builds are serial; ten-thread HSR settings are unrelated to this backend.
 
 ## Reproduction and next gate
 
-Exact commands and prerequisites are in [README.txt](README.txt). From the
+Current commands and prerequisites are in [the user guide](USER_GUIDE.md#optional-c-backend).
+The commands below record the historical workspace layout. From the
 workspace root, the principal checks actually executed are:
 
 ```sh
@@ -226,7 +233,7 @@ then the central quotient and index-four kernel with tracked SL matrices.
 **No GL/SL presentation or global word solver is implemented or claimed.**
 
 Upstream attribution and license texts are retained in
-[backend/NOTICE.txt](backend/NOTICE.txt). No Magma runtime or borrowed
+the original `backend/NOTICE.txt`. No Magma runtime or borrowed
 SLnCohomology code was used. The acceptance gate was completed without
 publication, upstream pushes or maintainer contact. Subsequently, the user
 requested three upstream issue reports; exact texts, reproductions and verified

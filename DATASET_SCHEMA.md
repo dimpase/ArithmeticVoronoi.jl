@@ -72,7 +72,7 @@ null and the exact source artifact hashes identify the implementation.
 ## Verification entry points and strength
 
 From the repository root, after `git lfs pull` and unpacking the dataset as
-shown in README.txt, install this checkout's Julia dependencies and run:
+shown in [the user guide](USER_GUIDE.md#optional-historical-archives), install this checkout's Julia dependencies and run:
 
 ```sh
 julia --startup-file=no --project=. \

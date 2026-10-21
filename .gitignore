@@ -31,6 +31,7 @@ __pycache__/
 !/results/native_presentations.json
 !/results/imaginary_presentations.json
 !/results/page_presentations.json
+!/results/vmh_comparison.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json
 !/results/two_cell_tests.txt

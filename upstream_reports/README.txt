@@ -21,8 +21,10 @@ The numbered .md files are the exact issue bodies. requests/ contains the
 submitted JSON payloads; posted/ contains readbacks from GitHub. The submission
 manifest verifies matching text, title, author and open status.
 
-From the repository root, after the CMake configuration in README.txt,
-reproduce the CLI and GAP failures sequentially:
+The commands below use the original build layout and record the submitted
+reproductions. For current PerfectForms build instructions, see USER_GUIDE.md.
+To reproduce these probes, supply the corresponding upstream checkout and
+driver paths as arguments:
 
 These optional audit probes also require a standalone GAP executable on PATH
 (or --gap passed to reproduce.py). This is separate from the GAP dependency

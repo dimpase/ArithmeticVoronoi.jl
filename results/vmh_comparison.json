@@ -1,0 +1,72 @@
+{
+    "date": "2026-10-21",
+    "scope": "Fresh Magma Voronoi enumeration, GL presentation and full complex; HAP import, free resolution to degree 2 and integral H1; compared with native GL abelianization. Not a certified presentation isomorphism or a higher-homology check.",
+    "gap_jl_version": "0.17.6",
+    "fields": [
+        {
+            "magma_cpu_seconds": 6.34,
+            "source_revision": "befcfeda041781b7de922a16a37388decee2c642",
+            "configuration": "K=QuadraticField(5), n=2, integral-basis lattice O^2",
+            "discriminant": 5,
+            "source_repository": "https://github.com/schoennenbeck/VMH-TotallyRealNumberFields",
+            "complex_sha256": "c8b9860c2133a38f6178f890c1581db732de8a248e15522a155cd2c34601f186",
+            "group": "GL",
+            "first_homology_invariant_factors": [
+                0,
+                2
+            ],
+            "cell_orbit_counts": [
+                2,
+                4,
+                5,
+                4,
+                1
+            ],
+            "status": "matched",
+            "native_abelianization": {
+                "method": "Smith normal form of the relator exponent-sum matrix",
+                "torsion": [
+                    "2"
+                ],
+                "free_rank": 1
+            }
+        },
+        {
+            "magma_cpu_seconds": 0.18,
+            "source_revision": "b5b79a8103c648c36e90b8bd95880782a3ff0d2e",
+            "configuration": "n=2, d=-7, steinitz=1",
+            "discriminant": -7,
+            "source_repository": "https://github.com/schoennenbeck/VMH-ImaginaryQuadraticNumberFields",
+            "complex_sha256": "a203c1e790ea2272d3275bcd939f152074b7eacfa448b0709ab5e05e279cb3ea",
+            "group": "GL",
+            "first_homology_invariant_factors": [
+                2,
+                2,
+                2
+            ],
+            "cell_orbit_counts": [
+                1,
+                2,
+                1
+            ],
+            "status": "matched",
+            "native_abelianization": {
+                "free_rank": 0,
+                "torsion": [
+                    "2",
+                    "2",
+                    "2"
+                ],
+                "method": "Smith normal form of the relator exponent-sum matrix"
+            }
+        }
+    ],
+    "julia_version": "1.13.2",
+    "magma_version": "2.30.1",
+    "oscar_version": "1.8.2",
+    "gap_version": "4.16.1",
+    "source_changes": "Only the documented BasicData.m input configuration was changed; upstream algorithms and GAP readers were unmodified.",
+    "schema": "av_vmh_hap_comparison_v1",
+    "hap_version": "1.78",
+    "timing_note": "One run; Magma CPU time for enumeration, presentation, complex construction and export; excludes startup and HAP processing."
+}
