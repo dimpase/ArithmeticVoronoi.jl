@@ -4,7 +4,8 @@
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).
 It loads the Voronoi entry points at package startup, adds a general record
 interface and provider registration, and includes a GAP test and tutorial
-documentation. Loading these definitions does not run Magma. It is submitted
+documentation, plus a small Julia integration example in CI. Loading these
+definitions does not run Magma. It is submitted
 upstream as [draft HAP PR #167](https://github.com/gap-packages/hap/pull/167).
 
 In a HAP checkout, apply it with:
@@ -35,7 +36,7 @@ The general constructor requires an explicit registered backend. The legacy
 option retain the Magma path; with a provider they construct quadratic records
 using the squarefree radicand `d`. An unavailable provider
 is an error; an unsupported request never silently launches another backend.
-HAP acquires no Julia dependency. The patch test uses a tiny mock provider
+HAP gains no Julia runtime dependency. The patch test uses a tiny mock provider
 and requires neither Julia nor Magma:
 
 ```gap
@@ -43,6 +44,17 @@ LoadPackage("hap");
 Test(Filename(DirectoriesPackageLibrary("hap","tst/testextra"),
               "voronoi-backends.tst"));
 ```
+
+The separate **Julia Voronoi example (GL2, D=-7)** CI job runs
+[`voronoi-julia.jl`](https://github.com/dimpase/hap/blob/4d305d3e48069cc684ad5c5b935a49bd4223046b/.github/scripts/voronoi-julia.jl)
+from the HAP checkout. It uses a pinned
+ArithmeticVoronoi commit and its Julia environment, loads HAP from the PR
+checkout, and constructs a fresh complex through the public record interface.
+For `GL(2,O)` with `O` the integers of `Q(sqrt(-7))`, it checks cell-orbit counts
+`[1,2,1]`, integral `H1 = (Z/2)^3`, and `H2 = Z/2 + Z/12`. The request and
+computed invariants appear in the job log. This job needs no Magma, C++
+exporter build, or stored complexes; the ordinary GAP test matrix keeps its
+existing dependencies.
 
 ArithmeticVoronoi registers its real provider inside Julia/GAP.jl:
 
@@ -80,6 +92,8 @@ Validated on 2026-10-21 with Julia 1.13.2, OSCAR 1.8.2 and GAP 4.16.1:
 - All 55 passed with the full patched upstream checkout (which declares
   version 1.80), including its package-startup registration. The GAP provider
   dispatch test also passed.
+- The small Julia CI example passed all five checks locally against that
+  checkout, including its public dispatcher, cell-orbit counts and H1/H2.
 - All 41 request-validation assertions and 1,185 assertions in `test/native.jl`
   and `test/imaginary.jl` passed, including the record-based presentation pipeline.
 - GAPDoc parsed and validated the complete updated tutorial, including the
