@@ -46,7 +46,7 @@ Test(Filename(DirectoriesPackageLibrary("hap","tst/testextra"),
 ```
 
 The separate **Julia Voronoi example (GL2, D=-7)** CI job runs
-[`voronoi-julia.jl`](https://github.com/dimpase/hap/blob/4d305d3e48069cc684ad5c5b935a49bd4223046b/.github/scripts/voronoi-julia.jl)
+[`voronoi-julia.jl`](https://github.com/dimpase/hap/blob/f1347b0542009bbfd8d9a1194318d2cb4d59f84c/.github/scripts/voronoi-julia.jl)
 from the HAP checkout. It uses a pinned
 ArithmeticVoronoi commit and its Julia environment, loads HAP from the PR
 checkout, and constructs a fresh complex through the public record interface.
@@ -55,6 +55,12 @@ For `GL(2,O)` with `O` the integers of `Q(sqrt(-7))`, it checks cell-orbit count
 computed invariants appear in the job log. This job needs no Magma, C++
 exporter build, or stored complexes; the ordinary GAP test matrix keeps its
 existing dependencies.
+
+The job caches the Julia depot and explicitly precompiles ArithmeticVoronoi
+and its dependencies, with per-package timings and Julia's default compilation
+parallelism. The example reports package-loading time separately. A first run
+must populate the cache; later runs can reuse it. Compilation of methods first
+used by the example is still included in its test time.
 
 ArithmeticVoronoi registers its real provider inside Julia/GAP.jl:
 
