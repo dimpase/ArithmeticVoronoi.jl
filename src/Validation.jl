@@ -19,9 +19,9 @@ end
 matrix_rows(A)=[[A[i,j] for j in 1:ncols(A)] for i in 1:nrows(A)]
 matrix_key(A)=Tuple(BigInt(ZZ(x)) for x in A)
 function form_coordinates(P,F)
-    P.degree==1 && return QQFieldElem[F[1,1],F[1,2],F[2,2]]
-    is_hermitian(P) && return QQFieldElem[coeff(F[1,1],0),coeff(F[1,2],0),coeff(F[1,2],1),coeff(F[2,2],0)]
-    QQFieldElem[coeff(F[i,j],k) for (i,j) in [(1,1),(1,2),(2,2)] for k in 0:1]
+    P.degree==1 && return QQFieldElem[F[i,j] for i in 1:P.rank for j in i:P.rank]
+    QQFieldElem[coeff(F[i,j],k) for i in 1:P.rank for j in i:P.rank for k in 0:1
+                if !(is_hermitian(P) && i==j && k==1)]
 end
 
 function finite_matrix_closure(generators,dimension,expected_order)

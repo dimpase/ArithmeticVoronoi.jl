@@ -26,7 +26,9 @@ function main(args)
         "hap_version"=>String(GAP.gap_to_julia(GAP.Globals.GAPInfo.PackagesLoaded.hap[2])))
     save()=ArithmeticVoronoi.atomic_json(joinpath(root,"summary.json"),summary)
     for request in requests
-        name="$(request["group"])_D$(request["field"]["discriminant"])"
+        # Preserve old rank-two paths while preventing collisions across ranks.
+        rank_suffix=request["rank"]==2 ? "" : string(request["rank"])
+        name="$(request["group"])$(rank_suffix)_D$(request["field"]["discriminant"])"
         path=joinpath(root,name*".json")
         if resume && isfile(path)
             previous=JSON3.read(read(path,String),Dict{String,Any})
@@ -41,10 +43,18 @@ function main(args)
             started=time_ns()
             K=construct(GAP.GapObj(request;recursive=true))
             entry["complex_seconds"]=(time_ns()-started)/1e9
+            save()
+            println(name,": complex constructed; building the HAP resolution");flush(stdout)
             started=time_ns()
             R=GAP.Globals.FreeGResolution(K,degree+1)
             C=GAP.Globals.TensorWithIntegers(R)
-            entry["homology"]=Dict(string(n)=>sort!(BigInt.(GAP.gap_to_julia(GAP.Globals.Homology(C,n)))) for n in 1:degree)
+            entry["homology"]=Dict{String,Any}()
+            for n in 1:degree
+                println(name,": computing integral H",n);flush(stdout)
+                entry["homology"][string(n)]=sort!(BigInt.(GAP.gap_to_julia(GAP.Globals.Homology(C,n))))
+                println(name,": H",n," = ",entry["homology"][string(n)]);flush(stdout)
+                save()
+            end
             entry["homology_seconds"]=(time_ns()-started)/1e9
             entry["status"]="complete"
         catch err

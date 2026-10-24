@@ -33,6 +33,7 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
                             simplify=true,timeout=600.0,reuse_baseline=:auto,
                             backend=:native,progress=false)
     request=enumeration_request(request)
+    request["rank"]==2 || throw(ArgumentError("the GL/SL/PSL presentation pipeline currently requires rank 2; higher-rank enumeration and HAP complexes are available separately"))
     D=request["field"]["discriminant"]
     isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"))
     (reuse_baseline isa Bool || reuse_baseline===:auto) || throw(ArgumentError("reuse_baseline must be true, false or :auto"))

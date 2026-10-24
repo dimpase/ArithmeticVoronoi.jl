@@ -1,6 +1,24 @@
 using ArithmeticVoronoi, Oscar, Test
 import Oscar: GAP
 
+# CI also runs this suite against a pinned upstream checkout. Check its entry
+# points before enabling the adapter, which otherwise supports older releases.
+hap_test_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","")
+@testset "HAP package selection" begin
+    if isempty(hap_test_root)
+        @test GAP.Packages.load("hap")
+    else
+        @test GAP.Packages.load(realpath(hap_test_root))
+        @test realpath(GAP.Packages.locate_package("hap"))==realpath(hap_test_root)
+        for name in ("RegisterVoronoiBackend","VoronoiComplex","VoronoiComplexGL","VoronoiComplexSL")
+            @test GAP.Globals.IsBoundGlobal(GAP.GapObj(name))
+        end
+    end
+end
+println("HAP ",GAP.gap_to_julia(GAP.Globals.GAPInfo.PackagesLoaded.hap[2]),
+        " from ",GAP.Packages.locate_package("hap"))
+flush(stdout)
+
 const HAV=ArithmeticVoronoi
 hap_homology(R,n)=sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(
     GAP.Globals.TensorWithIntegers(R),n))))
@@ -68,7 +86,16 @@ end
 end
 
 @testset "optional HAP Julia provider" begin
+    entry_points=Dict()
+    if GAP.Globals.IsBoundGlobal(GAP.GapObj("RegisterVoronoiBackend"))
+        for name in (:RegisterVoronoiBackend,:VoronoiComplex,:VoronoiComplexGL,:VoronoiComplexSL)
+            entry_points[name]=getproperty(GAP.Globals,name)
+        end
+    end
     enable_hap_julia_backend()
+    for (name,entry_point) in entry_points
+        @test GAP.Globals.IsIdenticalObj(entry_point,getproperty(GAP.Globals,name))
+    end
     construct=GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")")
     request=voronoi_request(-7)
     Kgeneral=construct(GAP.GapObj(request;recursive=true))
@@ -79,7 +106,7 @@ end
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplex(rec() : backend := \"absent\")")
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplex(2 : backend := \"julia\")")
     @test_throws GAP.GAPError GAP.evalstr("RegisterVoronoiBackend(\"magma\", r -> r)")
-    for (key,value) in (("rank",3),("order",Dict("kind"=>"nonmaximal")),
+    for (key,value) in (("rank",1),("order",Dict("kind"=>"nonmaximal")),
                        ("lattice",Dict("kind"=>"projective")),
                        ("field",Dict("kind"=>"number_field","polynomial"=>[-1,-1,0,1])))
         bad=deepcopy(request);bad[key]=value
@@ -97,7 +124,9 @@ end
     @test GAP.evalstr("K -> K!.arithmeticVoronoi.discriminant")(Kreal)==8
     @test hap_homology(GAP.Globals.FreeGResolution(Kreal,2),1)==
           hap_homology(GAP.Globals.ResolutionGL2QuadraticIntegers(2,2),1)
-    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(3,-7 : backend := \"julia\")")
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(1,-7 : backend := \"julia\")")
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(2,-12 : backend := \"julia\")")
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(2,5 : backend := \"julia\")")
 end
+
+include("higher_rank.jl")

@@ -45,11 +45,14 @@ complexes. Julia checks the equivariant boundary equation `d²=0` exactly.
 HAP then resolves the finite cell stabilizers to the requested degree.
 `resolution_length=n+1` suffices for computing Hₙ.
 
-Supported groups are **GL₂ over real and imaginary quadratic maximal orders**
-and **SL₂ over imaginary quadratic maximal orders**, on the free lattice O².
-Use `group=:SL` for the latter. Central −I is retained. This interface does
-not currently supply real-quadratic SL, projective quotients, rank 3 or
-nonfree lattices.
+Supported groups are **GLₙ over real and imaginary quadratic maximal orders**
+and **SLₙ over imaginary quadratic maximal orders**, on the free lattice Oⁿ,
+for ranks at least two. Use `voronoi_request(D; rank=n, group=:SL)` for the
+latter. Scalar matrices are retained when they belong to the group; −I lies
+in SL only in even rank. This interface does not currently supply
+real-quadratic SL, projective quotients or nonfree lattices.
+See [higher-rank examples and validation](higher_rank.md). The separate
+presentation pipeline remains rank two.
 
 To reuse a perfect-form enumeration or inspect the native cells:
 
@@ -88,9 +91,11 @@ raise an error; they do not launch Magma as a fallback. The callback runs
 inside the existing Julia/GAP.jl process, with no subprocess or intermediate
 file. Existing calls without `backend := "julia"` retain HAP's behavior.
 
-The [HAP patch](../patches/hap/README.md) introduces a general optional
-provider interface. `enable_hap_julia_backend()` also loads a compatibility
-wrapper for unpatched HAP, so no installed package files need editing.
+The optional provider interface was merged in
+[HAP PR #167](https://github.com/gap-packages/hap/pull/167) on 23 October 2026.
+`enable_hap_julia_backend()` preserves those upstream entry points and loads
+a compatibility wrapper for older HAP, so no installed package files need
+editing. The [original patch](../patches/hap/README.md) is retained for reference.
 
 ## Use complexes already stored in HAP
 
@@ -288,12 +293,15 @@ quotient by −I; do not identify that with quotienting GL by all scalar units.
 The native construction uses the bounded faces of the relative Ryshkov
 polyhedron. A cell is determined by its complete minimum set S; its
 dimension is the dimension of the form space minus the rank of the evaluation
-vectors for S. Faces whose minimum sets do not span K² are discarded.
+vectors for S. Faces whose minimum sets do not span Kⁿ are discarded.
 All local cone faces are obtained by intersecting facets, then identified
 under the arithmetic group.
 
-In rank two, all transporters between spanning minimum sets can be found
-exactly by enumerating the images of two K-independent vectors. This also
+All transporters between spanning minimum sets can be found exactly by
+enumerating the images of a K-basis. The search checks source-vector images
+as soon as their basis coordinates are determined. For equal-size minimum
+sets it also uses their canonical positive metrics to constrain pairings. This
+retains an exhaustive search while pruning impossible partial images. It also
 computes complete stabilizers and every boundary embedding. The orientation
 character is the determinant sign on the cell's rational tangent space;
 boundary signs use the outward-normal-first convention. The validation checks

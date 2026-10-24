@@ -286,8 +286,10 @@ HAP is not a required component of the native presentation algorithm.
 The [HAP and Schönnenbeck guide](docs/hap_and_vmh.md) explains the package
 layers, native higher homology, an optional Julia provider for HAP's own
 Voronoi entry points, and independent comparisons with fresh Magma complexes.
-Native complexes support quadratic GL₂ and imaginary-quadratic SL₂; cup
-products require additional contracting-homotopy data.
+Native complexes also accept higher rank through `voronoi_request(D; rank=n)`:
+quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. The presentation pipeline
+above remains rank two. See [higher-rank computations and validation](docs/higher_rank.md).
+Cup products require additional contracting-homotopy data.
 
 Current comparisons are:
 

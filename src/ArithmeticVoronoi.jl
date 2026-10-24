@@ -66,13 +66,15 @@ function trace_gram(P::ArithmeticVoronoiProblem,F)
     A
 end
 
-function make_problem(K,O,w,d,D,s,p)
-    r=2;J=d==1 ? zero_matrix(QQ,1,1) : matrix(QQ,[0 -p;1 s])
-    E=block_diagonal_matrix([J,J])
+function make_problem(K,O,w,d,D,s,p,r=2)
+    r isa Integer && !(r isa Bool) && 2<=r<=typemax(Int) || throw(ArgumentError("rank must be an integer at least 2"))
+    r=Int(r)
+    J=d==1 ? zero_matrix(QQ,1,1) : matrix(QQ,[0 -p;1 s])
+    E=block_diagonal_matrix([J for _ in 1:r])
     action=D<0 ? HERMITIAN_ACTION : ACTION
-    placeholder=ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,QQMatrix[],action,"GL(2,O) acting K-linearly on the free lattice O^2; retain -I")
+    placeholder=ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,QQMatrix[],action,"GL($r,O) acting K-linearly on the free lattice O^$r; retain -I")
     basis=QQMatrix[]
-    for (i,j) in [(1,1),(1,2),(2,2)],k in 0:d-1
+    for i in 1:r,j in i:r,k in 0:d-1
         D<0 && i==j && k==1 && continue
         F=zero_matrix(K,r,r);a=k==0 ? K(1) : w
         F[i,j]=a;F[j,i]=form_conjugate(placeholder,a)
@@ -81,8 +83,8 @@ function make_problem(K,O,w,d,D,s,p)
     ArithmeticVoronoiProblem(K,O,w,d,r,D,s,p,E,basis,action,placeholder.group_constraints)
 end
 
-"""K-linear GL(2,O) forms for a fundamental discriminant D; Hermitian when D<0."""
-function arithmetic_problem(D::Int)
+"""K-linear GL(rank,O) forms for a fundamental discriminant D; Hermitian when D<0."""
+function arithmetic_problem(D::Int;rank=2)
     (D<0 || D>1) && Hecke.is_fundamental_discriminant(D) || throw(ArgumentError("a fundamental quadratic discriminant is required"))
     s=mod(D,4)
     p=div(s*s-D,4)
@@ -92,9 +94,9 @@ function arithmetic_problem(D::Int)
     discriminant(O)==D && w in O || error("generator does not give the requested maximal order")
     # The discriminant of (1,w) equals that of O, so Z[w]=O exactly.
     s*s-4p==D || error("integral basis discriminant mismatch")
-    make_problem(K,O,w,2,D,s,p)
+    make_problem(K,O,w,2,D,s,p,rank)
 end
-classical_problem()=make_problem(QQ,ZZ,QQ(0),1,1,0,0)
+classical_problem(;rank=2)=make_problem(QQ,ZZ,QQ(0),1,1,0,0,rank)
 
 function form_from_trace(P::ArithmeticVoronoiProblem,A)
     A=change_base_ring(QQ,A)
@@ -202,11 +204,11 @@ function finite_stabilizer(P,F)
     (;generators=gens,order=BigInt(Hecke.automorphism_group_order(L)),lattice=L)
 end
 
-backend_permutation(P)=P.degree==1 ? collect(1:P.rank) : [1,3,2,4]
+backend_permutation(P)=[P.degree*(i-1)+k for k in 1:P.degree for i in 1:P.rank]
 backend_gram(P,A)=A[backend_permutation(P),backend_permutation(P)]
-internal_gram(P,A)=A[backend_permutation(P),backend_permutation(P)]
+internal_gram(P,A)=A[invperm(backend_permutation(P)),invperm(backend_permutation(P))]
 internal_matrix(P,A)=decode_matrix(P,internal_gram(P,transpose(A)))
-internal_vector(P,v)=[BigInt(ZZ(x)) for x in v[backend_permutation(P)]]
+internal_vector(P,v)=[BigInt(ZZ(x)) for x in v[invperm(backend_permutation(P))]]
 
 struct PerfectFormRecord
     form::Any

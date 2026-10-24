@@ -1,0 +1,27 @@
+[
+  {
+    "group": "GL", "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": -7},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "GL", "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": 5},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "SL", "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": -7},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "GL", "rank": 2,
+    "field": {"kind": "quadratic", "radicand": -1},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "GL", "rank": 2,
+    "field": {"kind": "quadratic", "discriminant": -15},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  }
+]

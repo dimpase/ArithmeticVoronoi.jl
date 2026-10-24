@@ -34,7 +34,7 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
         dimension:=dimension, elts:=elts, group:=group, stabilizer:=stabilizer,
         action:=action, boundary:=boundary, homotopy:=fail, hasse:=fail,
         arithmeticVoronoi:=rec(discriminant:=data.discriminant,
-                              groupKind:=data.groupKind, backend:="julia"),
+                              rank:=data.rank, groupKind:=data.groupKind, backend:="julia"),
         properties:=[["type","resolution"],["reduced",true],
                     ["length",length],["characteristic",0]]));
 end);

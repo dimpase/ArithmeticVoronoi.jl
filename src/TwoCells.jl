@@ -39,6 +39,7 @@ end
 """All exact codimension-two faces, without arithmetic orbit identifications."""
 function enumerate_ridges(E::ArithmeticVoronoiEnumeration)
     P=E.problem;dimension=length(P.form_basis);pairing=trace_pairing_matrix(P)
+    P.rank==2 || throw(ArgumentError("presentation ridge certificates currently require rank 2; use voronoi_complex for higher-rank cells"))
     result=Vector{RidgeRecord}[]
     for (i,r) in enumerate(E.representatives)
         seen=Dict{Tuple,Vector{Int}}()

@@ -24,7 +24,8 @@ function problem_descriptor(P)
     (;discriminant=P.discriminant,degree=P.degree,rank=P.rank,
       polynomial_coefficients=P.degree==1 ? [0,1] : [P.root_product,-P.root_sum,1],
       order="maximal",order_basis=P.degree==1 ? ["1"] : ["1","w"],
-      lattice="free O^2",coordinate_order=P.degree==1 ? ["e1","e2"] : ["e1","w*e1","e2","w*e2"],
+      lattice="free O^$(P.rank)",coordinate_order=P.degree==1 ? ["e$i" for i in 1:P.rank] :
+        [label for i in 1:P.rank for label in ("e$i","w*e$i")],
       multiplication=matrix_strings(P.multiplication),form_basis=matrix_strings.(P.form_basis),
       group=P.group_constraints,action=P.action_convention)
 end
@@ -35,7 +36,10 @@ function cache_key(P,B::BackendConfig)
                 executable_sha256=B.executable_sha256,options=backend_options(P))
     bytes2hex(sha256(JSON3.write(descriptor)))
 end
-namelist(P;arithmetic="gmp")=PerfectForms.perfect_form_request(P.discriminant;arithmetic)
+function namelist(P;arithmetic="gmp")
+    P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
+    PerfectForms.perfect_form_request(P.discriminant;arithmetic)
+end
 
 function load_checkpoint(P,B,path)
     checkpoint=try JSON3.read(read(path,String),Dict{String,Any}) catch err
@@ -87,6 +91,7 @@ function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:polyhedral
         timeout=60.0,force=false,progress=false)
     backend==:native && return enumerate_native(P;progress)
     backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"choose :native or :polyhedral_common"))
+    P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
     B=isnothing(config) ? default_backend(P) : config
     key=cache_key(P,B);path=joinpath(cache_dir,key*".json")
     if isfile(path) && !force

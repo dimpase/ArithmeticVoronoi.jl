@@ -3,15 +3,16 @@ export voronoi_request, normalize_voronoi_request
 const VoronoiRequestRecord = Union{NamedTuple,AbstractDict}
 
 """
-    voronoi_request(D; group=:GL)
+    voronoi_request(D; group=:GL, rank=2)
 
-Describe a rank-two group over the maximal order of the quadratic field with
-fundamental discriminant `D`, on the free lattice O². The returned record can
-be passed to `enumerate_perfect_forms`, `run_field_pipeline` (both for GL), or
-`hap_voronoi_complex` (GL, or imaginary-quadratic SL), and serialized as JSON.
+Describe a group over the maximal order of the quadratic field with
+fundamental discriminant `D`, on the free lattice O^rank. The returned record can
+be passed to `enumerate_perfect_forms` (GL), `hap_voronoi_complex` (GL, or
+imaginary-quadratic SL), and serialized as JSON. `run_field_pipeline` still
+requires rank-two GL.
 """
-function voronoi_request(D::Integer;group=:GL)
-    normalize_voronoi_request((;group,rank=2,
+function voronoi_request(D::Integer;group=:GL,rank=2)
+    normalize_voronoi_request((;group,rank,
         field=(;kind="quadratic",discriminant=D),
         order=(;kind="maximal"),lattice=(;kind="free")))
 end
@@ -47,7 +48,7 @@ function normalize_voronoi_request(request::VoronoiRequestRecord)
     r=request_record(request,"request",["group","rank","field","order","lattice"])
     r["group"] in ("GL","SL",:GL,:SL) || throw(ArgumentError("the Julia provider supports group GL or SL"))
     n=request_integer(r["rank"],"rank")
-    n==2 || throw(ArgumentError("the Julia Voronoi provider supports rank 2"))
+    n>=2 || throw(ArgumentError("the Julia Voronoi provider requires rank at least 2"))
     f=request_record(r["field"],"field",["kind","discriminant","radicand"],["kind"])
     f["kind"]=="quadratic" || throw(ArgumentError("the Julia provider currently requires a quadratic field"))
     xor(haskey(f,"discriminant"),haskey(f,"radicand")) ||
@@ -73,7 +74,7 @@ end
 
 function arithmetic_problem(request::VoronoiRequestRecord)
     r=normalize_voronoi_request(request)
-    arithmetic_problem(r["field"]["discriminant"])
+    arithmetic_problem(r["field"]["discriminant"];rank=r["rank"])
 end
 
 function enumeration_request(request)

@@ -1,14 +1,23 @@
-# Optional Julia provider for HAP's Voronoi functions
+# Merged optional-provider interface for HAP
+
+[HAP PR #167](https://github.com/gap-packages/hap/pull/167) was merged on
+23 October 2026 as `223c6b03ea8f482d64e6ca055d4b178a2378d3d2`.
+Current HAP source already contains this interface. Do not apply the archived
+patch to it. Older released HAP works with our compatibility wrapper.
+
+The dispatcher already accepts arbitrary ranks. Higher-rank support is
+implemented in the Julia provider; see [examples and validation](../../docs/higher_rank.md).
+No further HAP API patch is needed for it. The original patch and its validation
+record below are retained for reference.
 
 `0001-optional-voronoi-backends.patch` is prepared against
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).
 It loads the Voronoi entry points at package startup, adds a general record
 interface and provider registration, and includes a GAP test and tutorial
 documentation, plus a small Julia integration example in CI. Loading these
-definitions does not run Magma. It is submitted
-upstream as [draft HAP PR #167](https://github.com/gap-packages/hap/pull/167).
+definitions does not run Magma.
 
-In a HAP checkout, apply it with:
+Only in a checkout at the original base revision, apply it with:
 
 ```sh
 git apply /absolute/path/to/arithmetic_voronoi/patches/hap/0001-optional-voronoi-backends.patch
@@ -72,7 +81,7 @@ construct = GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")");
 K = construct(GAP.GapObj(voronoi_request(-7); recursive=true));
 ```
 
-For released HAP without this patch, `enable_hap_julia_backend()` loads
+For older released HAP without this interface, `enable_hap_julia_backend()` loads
 [a compatibility wrapper](../../gap/VoronoiBackends.g) implementing the same
 dispatch. Installed HAP files are not modified. The callback runs in the
 existing Julia process; standalone GAP would need its own registered

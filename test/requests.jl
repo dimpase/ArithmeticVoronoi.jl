@@ -14,7 +14,7 @@ include(joinpath(@__DIR__,"../scripts/request_arguments.jl"))
     for D in (0,1,-12,20,45)
         @test_throws ArgumentError voronoi_request(D)
     end
-    for (key,value) in (("rank",3),("rank",2.0),("rank",true),("group","PSL"),
+    for (key,value) in (("rank",1),("rank",2.0),("rank",true),("group","PSL"),
         ("field",Dict("kind"=>"number_field","polynomial"=>[-1,-1,0,1])),
         ("order",Dict("kind"=>"nonmaximal")),("lattice",Dict("kind"=>"projective")),
         ("lattice",Dict("kind"=>"free","ideal"=>"nonprincipal")),

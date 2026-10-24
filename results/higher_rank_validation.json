@@ -1,0 +1,372 @@
+{
+  "schema": "arithmetic_voronoi_higher_rank_validation_v1",
+  "status": "passed_with_incomplete_extended_checks",
+  "recorded_utc": "2026-10-24T09:03:52.672805+00:00",
+  "base_commit": "2e657c89172b73c6432d19143e46ce55815210b5",
+  "julia_version": "1.13.2",
+  "oscar_version": "1.8.2",
+  "magma_version": [
+    2,
+    30,
+    1
+  ],
+  "hap": {
+    "bundled_version": "1.78",
+    "upstream_version": "1.80",
+    "upstream_commit": "fa63c46f5974d15d26e27359e5f515a421fd186c"
+  },
+  "vmh_commits": [
+    "befcfeda041781b7de922a16a37388decee2c642",
+    "b5b79a8103c648c36e90b8bd95880782a3ff0d2e"
+  ],
+  "tests": [
+    {
+      "name": "native_regressions",
+      "command": "julia --startup-file=no --project=. -e 'include(\"test/model.jl\"); include(\"test/requests.jl\"); include(\"test/native.jl\"); include(\"test/imaginary.jl\")'",
+      "passed": 1329,
+      "failed": 0,
+      "log_sha256": "49bbbe53c1f6bfff979fdbc6bf66dee05444c3da4ed2646b4907c1a851e93c92"
+    },
+    {
+      "name": "bundled_hap",
+      "command": "julia --startup-file=no --project=. test/hap.jl",
+      "passed": 239,
+      "failed": 0,
+      "log_sha256": "478580b9a33876b54de234f96d24d33f34700a6bb5880cb0619404faef0c1dfe"
+    },
+    {
+      "name": "merged_upstream_hap",
+      "command": "ARITHMETIC_VORONOI_HAP_ROOT=/path/to/hap julia --startup-file=no --project=. test/hap.jl",
+      "passed": 248,
+      "failed": 0,
+      "log_sha256": "b4bebeef4eb18a2ad4cbec01a192af9fd8439939349a04430675b0851cea8009"
+    }
+  ],
+  "additional_checks": {
+    "presentation_rank_guards": "passed",
+    "mixed_rank_batch_and_resume": "passed",
+    "batch_progress_and_partial_results": "passed",
+    "eisenstein_SL3_stabilizer_order": 216
+  },
+  "comparison_cases": [
+    {
+      "rank": 3,
+      "discriminant": 1,
+      "groups": {
+        "GL": {
+          "seconds": 95.787275406,
+          "magma_complex_sha256": "405f76dd06639308976561d09455abc7fee73efa939d1e4e26fa570db96b50de",
+          "homology": [
+            [
+              2
+            ],
+            [
+              2,
+              2
+            ]
+          ],
+          "cells": [
+            1,
+            1,
+            2,
+            1
+          ]
+        }
+      },
+      "exact_form_isometries": [
+        1
+      ],
+      "status": "passed",
+      "magma_seconds": 1.365691234,
+      "enumeration_seconds": 40.055644558,
+      "perfect_forms": 1,
+      "stabilizer_orders": [
+        48
+      ],
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "hap_version": "1.80",
+      "magma_forms_sha256": "6530090bc0379d1ec3977cb78cfe027d8284407843cc63bc6e2bcf3bbedfb635",
+      "scope": "Exact form isometries, cell counts, all cell stabilizer orders, H1/H2, and Magma GL presentation abelianization"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "groups": {
+        "GL": {
+          "seconds": 116.948171174,
+          "magma_complex_sha256": "c8b9860c2133a38f6178f890c1581db732de8a248e15522a155cd2c34601f186",
+          "homology": [
+            [
+              0,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2
+            ]
+          ],
+          "cells": [
+            2,
+            4,
+            5,
+            4,
+            1
+          ]
+        }
+      },
+      "exact_form_isometries": [
+        2,
+        1
+      ],
+      "enumeration_seconds": 56.311107851,
+      "rank": 2,
+      "discriminant": 5,
+      "status": "passed",
+      "magma_seconds": 7.795704481,
+      "perfect_forms": 2,
+      "stabilizer_orders": [
+        12,
+        20
+      ],
+      "magma_forms_sha256": "da852abe6216e61d1f6ba05b80b0e4ee0702b1ecdd43e4ca4837da209f755fb3",
+      "hap_version": "1.78",
+      "scope": "Exact form isometries, cell counts, all cell stabilizer orders, H1/H2, and Magma GL presentation abelianization"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "groups": {
+        "SL": {
+          "seconds": 13.9499094,
+          "magma_complex_sha256": "fa0fedc8f94f87bb6321ea116112c342cc8b8d9fcc20e23e02a52da4ab5af4e8",
+          "homology": [
+            [
+              0,
+              4
+            ],
+            [
+              12
+            ]
+          ],
+          "cells": [
+            2,
+            2,
+            1
+          ]
+        },
+        "GL": {
+          "seconds": 14.61170833,
+          "magma_complex_sha256": "a203c1e790ea2272d3275bcd939f152074b7eacfa448b0709ab5e05e279cb3ea",
+          "homology": [
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              12
+            ]
+          ],
+          "cells": [
+            1,
+            2,
+            1
+          ]
+        }
+      },
+      "exact_form_isometries": [
+        1
+      ],
+      "enumeration_seconds": 2.012856424,
+      "rank": 2,
+      "discriminant": -7,
+      "status": "passed",
+      "magma_seconds": 0.636821608,
+      "perfect_forms": 1,
+      "stabilizer_orders": [
+        12
+      ],
+      "magma_forms_sha256": "beec4a4620d29e7619a602c115cb59571991cb3da511c6ee318ba51f31d2a5bc",
+      "hap_version": "1.78",
+      "scope": "Exact form isometries, cell counts, all cell stabilizer orders, H1/H2, and Magma GL presentation abelianization"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "groups": {},
+      "exact_form_isometries": [
+        1,
+        2
+      ],
+      "enumeration_seconds": 5.499949227,
+      "rank": 4,
+      "discriminant": 1,
+      "status": "passed",
+      "magma_seconds": 0.520396417,
+      "perfect_forms": 2,
+      "stabilizer_orders": [
+        1152,
+        240
+      ],
+      "magma_forms_sha256": "7a841834d85feddb6bcf8c27fa15e18f2c9d76c56d04184e9875d85cdd5f7573",
+      "scope": "Enumeration only"
+    },
+    {
+      "rank": 3,
+      "discriminant": 5,
+      "exact_form_isometries": [
+        1,
+        2,
+        3,
+        5,
+        4,
+        6,
+        7
+      ],
+      "status": "passed",
+      "perfect_forms": 7,
+      "magma_forms_sha256": "089e89bc0d81404e9b9db943831f3261a43cc996bb385e6558374be293437cdb",
+      "groups": {},
+      "scope": "Perfect-form enumeration and exact K-linear isometry bijection only",
+      "stabilizer_orders": [
+        120,
+        20,
+        20,
+        20,
+        48,
+        16,
+        120
+      ],
+      "magma_version": [
+        2,
+        30,
+        1
+      ]
+    },
+    {
+      "homology_degree": 1,
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "groups": {
+        "SL": {
+          "seconds": 90.225096276,
+          "magma_complex_sha256": "a64a4b60cbba1552c0cfd50bcd2021413bca0a7a0401a5c119b75922ba02ef6f",
+          "homology": [
+            []
+          ],
+          "cells": [
+            1,
+            1,
+            3,
+            5,
+            4,
+            3,
+            2
+          ]
+        },
+        "GL": {
+          "seconds": 85.280184388,
+          "magma_complex_sha256": "267b5e8960aa5ce198a4fa43f444baaaf86565ab33caf4f127777bbf656ff686",
+          "homology": [
+            [
+              4
+            ]
+          ],
+          "hap_stored_homology": [
+            [
+              4
+            ]
+          ],
+          "cells": [
+            1,
+            1,
+            3,
+            5,
+            4,
+            3,
+            2
+          ]
+        }
+      },
+      "exact_form_isometries": [
+        1
+      ],
+      "enumeration_seconds": 39.833727989,
+      "rank": 3,
+      "discriminant": -4,
+      "status": "passed",
+      "magma_seconds": 78.867322438,
+      "perfect_forms": 1,
+      "stabilizer_orders": [
+        384
+      ],
+      "magma_forms_sha256": "afc1c00319cea53ac4f567fd7a29e6444d30197245900afcd419e78c9774c44e",
+      "hap_version": "1.80",
+      "scope": "Exact form isometry, cell counts, all cell stabilizer orders, H1, Magma GL presentation abelianization, and HAP stored GL H1"
+    }
+  ],
+  "source_snapshot_sha256": {
+    "src/ArithmeticVoronoi.jl": "8893b205793ed41630ad863e766d3969f94cf423840c8b24a0c39e86e5bfcd59",
+    "src/Backend.jl": "874f613702091307fb84c4c93107ec5f552d5359a58a6b836e73ed245d3c465f",
+    "src/Dataset.jl": "690b1e21a1726b317b5e63aebb28796f3f6ebaf27bb61b2f75f174abdb07fe5b",
+    "src/FieldPipeline.jl": "65fcc4d824bf852930e28926d886bde7b5708eba587bf2185e80bad8fc145a96",
+    "src/Fields.jl": "cc63416b3b00ab1cef6b91c5e9d74ab72180f24fdf120d448671fd492a44e3f4",
+    "src/HAP.jl": "9990f27158fcb43fe9573bffad08dcb0b2d7deea7d8db8bc9feb385218c5306a",
+    "src/Literature.jl": "eed7960211328bcfd7279bc4e602b989452465f57d13402a7b18547faf085474",
+    "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+    "src/Presentations.jl": "44fe8d37fae3368ea2eece99300bb4dc84b544e9b0b8975649aa63a08b03bd13",
+    "src/Projective.jl": "6c825c64c6b6f15fb902af73647516848fd98a7aa64f0f127ca6d150b916bf75",
+    "src/Requests.jl": "888275033c2f2d8e2cd4bb90d2f4842d327d7b40bffc305f9783d2a30a26d40e",
+    "src/SLExtraction.jl": "e93e2569ecfd51523b9d3aafc889b27b241bc3b9cf6cfd764c4b3ec4b0c397ba",
+    "src/Simplification.jl": "c52e563abd53bd5cff209b853949ebb8207bc84948519ae42041af5041f3ac6d",
+    "src/TwoCells.jl": "0390539b4bc99cbc513f2ee6ab3c81285d538d4de7449945a2978ead605ec79e",
+    "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+    "src/Words.jl": "d28a9e45b130ec745166c87ef3e9263e3aa82518d257c29e242a46430476433c",
+    "gap/ArithmeticVoronoi.g": "69f15518742e31ca159ab545842f4a2449c8fe42b808bd32d6b940281ac32d09",
+    "gap/VoronoiBackends.g": "de359f647b5f84f77767f4757cf09b8ae1ae8b28d63cd0dde85a29e93afed274"
+  },
+  "limitations": [
+    "GL/SL/PSL presentation pipeline and C++ request adapter remain rank two.",
+    "No homology or cell-complex comparison for real quadratic rank three or rational rank four.",
+    "No claim of practical computation at arbitrary input rank."
+  ],
+  "extended_checks": {
+    "gaussian_rank3_GL_SL_H2": {
+      "status": "incomplete",
+      "reason": "Stopped manually during the HAP H2 computation of the fresh Magma complexes; no complete H2 comparison result.",
+      "native_SL3_H2_observed": [
+        2,
+        2
+      ],
+      "hap_stored_GL3_H2_observed": [
+        2,
+        2
+      ],
+      "magma_boundary_square_through_degree_3": {
+        "GL": "passed",
+        "SL": "passed"
+      },
+      "rerun": "Append --extended to scripts/compare_magma_higher_rank.jl",
+      "observed_delay": "HAP homology; the Magma enumeration and complex export completed."
+    }
+  }
+}

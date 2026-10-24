@@ -60,3 +60,38 @@ jobs:
         run: cmake --install build/perfect-forms
       - name: Julia tests
         run: julia --startup-file=no --project=. test/runtests.jl
+
+  hap:
+    name: HAP integration (bundled and upstream)
+    runs-on: ubuntu-latest
+    env:
+      JULIA_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check out HAP with the merged provider interface
+        uses: actions/checkout@v7
+        with:
+          repository: gap-packages/hap
+          ref: fa63c46f5974d15d26e27359e5f515a421fd186c
+          path: hap-upstream
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1.13.2'
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: 'false'
+      - name: Install Julia dependencies
+        run: >-
+          julia --startup-file=no --project=.
+          -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+      - name: Precompile Julia provider
+        run: >-
+          julia --startup-file=no --project=.
+          -e 'using Pkg; Pkg.precompile("ArithmeticVoronoi"; strict=true, timing=true)'
+      - name: Test bundled HAP and compatibility adapter
+        run: julia --startup-file=no --project=. test/hap.jl
+      - name: Test merged upstream HAP without replacing its entry points
+        env:
+          ARITHMETIC_VORONOI_HAP_ROOT: ${{ github.workspace }}/hap-upstream
+        run: julia --startup-file=no --project=. test/hap.jl

@@ -105,7 +105,7 @@ function coherent_lifts(ctx,graph)
     (;lifts,tree,labels)
 end
 
-function finite_group_record(P,all_elements;preferred=nothing)
+function finite_group_record(P,all_elements;preferred=nothing,with_table=true)
     I=identity_matrix(P.field,P.rank);identity_key=matrix_key(encode_matrix(P,I))
     elements=Any[I];seen=Set([identity_key])
     for g in all_elements
@@ -127,8 +127,11 @@ function finite_group_record(P,all_elements;preferred=nothing)
         end
         (;values,words,known)
     end
-    generators=isnothing(preferred) ? Any[-I] : Any[preferred...]
-    -I in generators || push!(generators,-I)
+    generators=isnothing(preferred) ? Any[] : Any[preferred...]
+    # In odd rank, -I is not in SL; orientation kernels may also omit it.
+    if haskey(keys,matrix_key(encode_matrix(P,-I))) && !(-I in generators)
+        push!(generators,-I)
+    end
     filter!(g->g!=I,generators);unique!(generators)
     enumeration=closure(generators)
     for g in elements
@@ -139,7 +142,7 @@ function finite_group_record(P,all_elements;preferred=nothing)
     end
     ensure(length(enumeration.values)==length(elements),"finite group generators are incomplete")
     words=[enumeration.words[enumeration.known[matrix_key(encode_matrix(P,g))]] for g in elements]
-    table=[keys[matrix_key(encode_matrix(P,g*h))] for g in elements,h in elements]
+    table=with_table ? [keys[matrix_key(encode_matrix(P,g*h))] for g in elements,h in elements] : nothing
     gen_indices=[keys[matrix_key(encode_matrix(P,g))] for g in generators]
     (;elements,generators,words,keys,multiplication_table=table,generator_indices=gen_indices)
 end

@@ -32,6 +32,7 @@ __pycache__/
 !/results/imaginary_presentations.json
 !/results/page_presentations.json
 !/results/vmh_comparison.json
+!/results/higher_rank_validation.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json
 !/results/two_cell_tests.txt

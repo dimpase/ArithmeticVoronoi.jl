@@ -29,18 +29,19 @@ cell_vector_key(V)=Tuple(sort!(collect(signed_key(v) for v in V)))
 cell_image(P,g,V)=[apply_integral(encode_matrix(P,g),v) for v in V]
 
 function cell_basis(P,V)
-    isempty(V) && return nothing
-    u=field_vector(P,V[1])
-    for j in 2:length(V)
-        v=field_vector(P,V[j])
-        u[1]*v[2]!=u[2]*v[1] && return matrix(P.field,[u[1] v[1];u[2] v[2]])
+    B=zero_matrix(P.field,P.rank,0)
+    for v in V
+        next=hcat(B,matrix(P.field,P.rank,1,field_vector(P,v)))
+        rank(next)>ncols(B) || continue
+        B=next
+        ncols(B)==P.rank && return B
     end
     nothing
 end
 
 function make_voronoi_cell(P,V,F)
     vectors=[collect(v) for v in cell_vector_key(V)]
-    ensure(!isnothing(cell_basis(P,vectors)),"cell minimum set does not span K^2")
+    ensure(!isnothing(cell_basis(P,vectors)),"cell minimum set does not span K^$(P.rank)")
     rays=evaluation_rays(P,vectors)
     _,T=nullspace(rays)
     S=sum(vector_outer(P,field_vector(P,v)) for v in vectors)
@@ -52,28 +53,49 @@ function transform_cell(P,c,g)
     make_voronoi_cell(P,cell_image(P,g,c.vectors),act_form(P,c.point,inv(g)))
 end
 
-# Exhaustive rank-two transporter search: an integral linear map is determined
-# by the images of two K-independent vectors. Both signs of every target vector
-# are used; this retains all scalar units, including central -I.
+# An integral linear map is determined by the images of a K-basis. Backtracking
+# checks all source vectors as soon as their images are determined. For equal
+# minimum sets, their canonical metrics also constrain every pair of images.
+# Both signs of every target vector are retained.
 function cell_maps(P,source,target; determinant_one=false, first_only=false)
     B=cell_basis(P,source)
     ensure(!isnothing(B),"transporter source is not well rounded")
     inverse=inv(B)
-    W=Set(cell_vector_key(target))
     signed=[field_vector(P,v) for v in [target;[-v for v in target]]]
+    W=Set(Tuple(v) for v in signed)
+    coordinates=[inverse*matrix(P.field,P.rank,1,field_vector(P,v)) for v in source]
+    stages=[[c for c in coordinates if findlast(i->!iszero(c[i,1]),1:P.rank)==j] for j in 1:P.rank]
+    Y=zero_matrix(P.field,P.rank,P.rank)
+    equal_size=length(source)==length(target)
+    inner(u,M,v)=sum(form_conjugate(P,u[i])*M[i,j]*v[j] for i in 1:P.rank,j in 1:P.rank)
+    metric=equal_size ? inv(sum(vector_outer(P,field_vector(P,v)) for v in target)) : nothing
+    gram=equal_size ? form_adjoint(P,B)*inv(sum(vector_outer(P,field_vector(P,v)) for v in source))*B : nothing
     result=Any[]
-    for u in signed,v in signed
-        iszero(u[1]*v[2]-u[2]*v[1]) && continue
-        g=matrix(P.field,[u[1] v[1];u[2] v[2]])*inverse
-        delta=det(g)
-        determinant_one && delta!=1 && continue
-        (P.degree==1 ? abs(delta)==1 : abs(norm(delta))==1) || continue
-        M=encode_matrix(P,g)
-        all(x->isone(denominator(x)),M) || continue
-        all(z->signed_key(apply_integral(M,z)) in W,source) || continue
-        push!(result,g)
-        first_only && return result
+    function extend(k)
+        for v in signed
+            if equal_size
+                inner(v,metric,v)==gram[k,k] || continue
+                all(inner(Y[:,j],metric,v)==gram[j,k] for j in 1:k-1) || continue
+            end
+            Y[:,k]=v
+            rank(Y[:,1:k])==k || continue
+            all(Tuple((Y[:,1:k]*c[1:k,:])[:,1]) in W for c in stages[k]) || continue
+            if k<P.rank
+                extend(k+1) && return true
+            else
+                g=Y*inverse
+                delta=det(g)
+                determinant_one && delta!=1 && continue
+                (P.degree==1 ? abs(delta)==1 : abs(norm(delta))==1) || continue
+                all(x->isone(denominator(x)),encode_matrix(P,g)) || continue
+                all(Tuple((Y*c)[:,1]) in W for c in coordinates) || continue
+                push!(result,g)
+                first_only && return true
+            end
+        end
+        false
     end
+    extend(1)
     result
 end
 
@@ -168,8 +190,8 @@ end
     voronoi_complex(E; group=:GL, progress=false)
 
 Construct all bounded Ryshkov cells, their finite stabilizers, and signed
-equivariant boundaries from a complete rank-two perfect-form enumeration.
-Supports quadratic GL and imaginary-quadratic SL on the free lattice O^2.
+equivariant boundaries from a complete perfect-form enumeration.
+Supports rational/quadratic GL and imaginary-quadratic SL on the free lattice O^n.
 No Magma, stored complexes, or C++ exporter is used by the native enumeration.
 """
 function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=false)
@@ -182,7 +204,7 @@ function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=fals
     append!(generators,[inv(e.transporter) for e in E.neighbours])
     if group==:SL
         units=verified_units(P)
-        reps=[diagonal_matrix(P.field,[units.torsion_generator^j,one(P.field)]) for j in 0:units.torsion_order-1]
+        reps=[diagonal_matrix(P.field,[units.torsion_generator^j;fill(one(P.field),P.rank-1)]) for j in 0:units.torsion_order-1]
         split=[VoronoiCell[] for _ in cells];buckets=Dict{Any,Vector{VoronoiCell}}()
         for layer in cells,c in layer,t in reps
             add_cell_orbit!(P,split,buckets,transform_cell(P,c,t);determinant_one=true)
@@ -218,15 +240,26 @@ end
 """Check stabilizers, oriented incidences and d²=0 in the integral G-modules."""
 function validate_voronoi_complex(C::VoronoiComplex)
     P=C.enumeration.problem
+    for g in C.generators
+        check_group_matrix(P,encode_matrix(P,g))
+        C.group==:SL && ensure(det(g)==1,"SL generator has nontrivial determinant")
+    end
     for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
         group=C.stabilizers[k][i]
-        ensure(-identity_matrix(P.field,2) in group,"cell stabilizer lost central -I")
+        identity=identity_matrix(P.field,P.rank)
+        ensure(identity in group,"cell stabilizer lost its identity")
+        if C.group==:GL || iseven(P.rank)
+            ensure(-identity in group,"cell stabilizer lost central -I")
+        end
         for g in group
             check_group_matrix(P,encode_matrix(P,g))
+            C.group==:SL && ensure(det(g)==1,"SL cell stabilizer has nontrivial determinant")
             ensure(cell_vector_key(cell_image(P,g,c.vectors))==cell_vector_key(c.vectors),"invalid cell stabilizer")
             cell_orientation(P,c,g)
         end
         for (j,g) in C.boundaries[k][i]
+            check_group_matrix(P,encode_matrix(P,g))
+            C.group==:SL && ensure(det(g)==1,"SL boundary transporter has nontrivial determinant")
             lower=C.cells[k-1][abs(j)]
             ensure(issubset(Set(cell_vector_key(c.vectors)),Set(cell_vector_key(cell_image(P,g,lower.vectors)))),
                    "invalid boundary minimum-set inclusion")
@@ -248,8 +281,9 @@ function validate_voronoi_complex(C::VoronoiComplex)
 end
 
 function cell_generators(P,elements)
-    # All these groups contain -I. Reuse the verified finite-group reduction.
-    finite_group_record(P,elements).generators
+    generators=finite_group_record(P,elements;with_table=false).generators
+    # Keep the matrix identity so GAP's trivial group has the correct matrix type.
+    isempty(generators) ? Any[identity_matrix(P.field,P.rank)] : generators
 end
 
 function hap_complex(C::VoronoiComplex;resolution_length=100)
@@ -258,7 +292,7 @@ function hap_complex(C::VoronoiComplex;resolution_length=100)
     GAP.Packages.load("hap") || error("HAP is not installed; use GAP.Packages.install(\"hap\")")
     GAP.Globals.Read(GAP.GapObj(joinpath(PACKAGE_ROOT,"gap","ArithmeticVoronoi.g")))
     P=C.enumeration.problem
-    elts=Any[identity_matrix(P.field,2)]
+    elts=Any[identity_matrix(P.field,P.rank)]
     indices=Dict(matrix_key(encode_matrix(P,only(elts)))=>1)
     function index(g)
         key=matrix_key(encode_matrix(P,g))
@@ -277,14 +311,14 @@ function hap_complex(C::VoronoiComplex;resolution_length=100)
         "stabilizers"=>[[wire.(S) for S in layer] for layer in stabs],
         "evenStabilizers"=>[[wire.(S) for S in layer] for layer in evens],
         "boundaries"=>boundaries,"generators"=>wire.(C.generators),
-        "name"=>"$(C.group)(2,O), D=$(P.discriminant), native Julia",
-        "discriminant"=>P.discriminant,"groupKind"=>string(C.group))
+        "name"=>"$(C.group)($(P.rank),O), D=$(P.discriminant), native Julia",
+        "discriminant"=>P.discriminant,"rank"=>P.rank,"groupKind"=>string(C.group))
     GAP.Globals.HAPArithmeticVoronoiComplex(GAP.GapObj(data;recursive=true),resolution_length)
 end
 
 """A fresh native Julia Voronoi complex as a HAP non-free resolution object."""
-function hap_voronoi_complex(D::Int;group=:GL,resolution_length=100,progress=false)
-    hap_voronoi_complex(voronoi_request(D;group);resolution_length,progress)
+function hap_voronoi_complex(D::Int;group=:GL,rank=2,resolution_length=100,progress=false)
+    hap_voronoi_complex(voronoi_request(D;group,rank);resolution_length,progress)
 end
 
 """Construct a HAP complex from a field/order/lattice/group request record."""
