@@ -326,7 +326,7 @@ Current comparisons are:
 | Five imaginary GL/SL/PSL triples | Abelianizations agree with Page's Magma code; all exported matrix relations checked in OSCAR |
 | D = 5 and −7 | Fresh Schönnenbeck complexes imported into HAP; GL first homology agrees with our abelianizations |
 | Native complexes, D = 5 and −7 | Cell counts and GL H₂ agree with the independent VMH results; H₃ also checked for −7 |
-| GL₃(Z), GL₄(Z), GL₃(Z[i]), GL₂(O₋₇) | Explicit inverse isomorphisms with fresh Schönnenbeck/Magma presentations; HAP presentations and H₁ also checked except in rank four |
+| GL₃(Z), GL₄(Z), GL₃(Z[i]), GL₂(O₋₇) | Explicit inverse isomorphisms with fresh Schönnenbeck/Magma presentations; HAP presentations and H₁ also checked |
 
 For the real and imaginary results, complete tables and timing methodology
 are in [the real survey](docs/native_survey.md) and

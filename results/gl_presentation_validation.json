@@ -303,6 +303,38 @@
         "vmh_ZxYBTD/reference.json": "e9c8ac1e3137e873169d0281fb3026fe94c20df3f76b7e66d1abea7d8f147188",
         "vmh_ZxYBTD/presentation_maps.m": "fb6577bd19ad1cabad4387466670bd2f4b84767a2e08f58290f813dc6ef8498b",
         "vmh_ZxYBTD/maps.m": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+      },
+      "hap": {
+        "relators": 72,
+        "exact_relator_and_generator_word_checks": true,
+        "generators": 15,
+        "cells": [
+          2,
+          2,
+          2,
+          4,
+          4,
+          3,
+          1
+        ],
+        "abelianization": [
+          2
+        ]
+      },
+      "supplementary_hap_validation": {
+        "checked_utc": "2026-10-24T15:35:25.873443+00:00",
+        "julia_version": "1.13.2",
+        "oscar_version": "1.8.2",
+        "hap_version": "1.80",
+        "hap_commit": "fa63c46f5974d15d26e27359e5f515a421fd186c",
+        "hap_seconds": 31.319403912,
+        "local_results": "results/gl_hap_rank4",
+        "artifact_sha256": {
+          "results/gl_hap_rank4/summary.json": "4519cdeb34809010a4ba82b51d109a0a14fdb862f72b2b5924948e3ddc7cb883",
+          "results/gl_hap_rank4/hap_presentation.json": "b674e6bb581254ca2ad26f6575973fa5e6660b0bcfe81f45b2792f7a46cec86c",
+          "results/gl_hap_rank4/native/GL_simplified.json": "5ff7fcd20cf286f3e386246920addbcb63ff4e9770f61e247c65a9fb9e0b99bb"
+        },
+        "log_sha256": "09914811bfae6955bb9ef2c6209f0065dbc2b570c6707a86350ca56cdd42a232"
       }
     },
     {

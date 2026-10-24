@@ -255,7 +255,10 @@ than agreement of abelianizations or matrix relations.
 | GL₃(O₅) | 7 | 3 / 207 | Z × C₂ | reference calculation incomplete |
 
 HAP's independently assembled presentations and H₁ were also checked for
-GL₃(Z), GL₃(Z[i]) and the GL₂(O₋₇) regression. The new presentation tests
+GL₃(Z), GL₄(Z), GL₃(Z[i]) and the GL₂(O₋₇) regression. The GL₄ check was
+initially omitted from the runner, then completed successfully and enabled
+by default; it is recorded as a supplementary check in the receipt.
+The new presentation tests
 pass 122 assertions with each of HAP 1.78 and 1.80; the native regression
 tests pass 1,329 assertions, for 1,573 assertions in the recorded runs.
 These runs use Julia 1.13.2 and OSCAR 1.8.2.

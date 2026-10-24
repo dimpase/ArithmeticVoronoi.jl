@@ -91,7 +91,7 @@ function hap_presentation_comparison(R,directory)
 end
 
 function compare_gl_presentations(args;cases=((D=1,rank=3,hap=true),(D=-4,rank=3,hap=true),
-        (D=1,rank=4,hap=false),(D=5,rank=3,hap=false),(D=-7,rank=2,hap=true)))
+        (D=1,rank=4,hap=true),(D=5,rank=3,hap=false),(D=-7,rank=2,hap=true)))
     length(args) in (2,3) || error("provide the real and imaginary VMH checkouts, and optionally an output directory")
     roots=abspath.(args[1:2])
     output=length(args)==3 ? abspath(args[3]) : joinpath(GPAV.PACKAGE_ROOT,"results/gl_validation")
