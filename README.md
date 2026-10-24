@@ -29,7 +29,7 @@ At the Julia prompt, compute all three groups for O = Z[√3] and work with SL:
 using ArithmeticVoronoi, Oscar
 
 R = run_field_pipeline(12; backend=:native, progress=true,
-    directory="results/my_D12", reuse_baseline=false);
+    directory="results/my_D12");
 S = R.simplified[:SL];
 F = free_group(length(S.generator_matrices));
 G, toG = quo(F, [F(r) for r in S.relators]);
@@ -45,6 +45,10 @@ retain −I; PSL is SL/{I,−I}.
 Pass `backend=:native` explicitly: the API default still selects the optional
 C++ backend. The first Julia import and compilation can take several minutes.
 Saved archives and Python are optional.
+
+Recorded presentations are available through the separate
+[ArithmeticVoronoiData package](lib/ArithmeticVoronoiData/README.md), loaded explicitly.
+The computation engine does not consult that library.
 
 ## Documentation and results
 

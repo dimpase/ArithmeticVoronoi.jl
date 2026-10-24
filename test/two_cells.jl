@@ -63,7 +63,7 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
         if D==5
             batch=enumerate_two_cells(ctx;directory=joinpath(scratch,"resume"),stop_after=1)
             @test batch.ledger["status"]=="partial"
-            resumed=enumerate_two_cells(ctx;directory=joinpath(scratch,"resume"),stop_after=2)
+            resumed=enumerate_two_cells(ctx;directory=joinpath(scratch,"resume"),stop_after=2,resume=true)
             @test resumed.ledger["status"]=="partial" && resumed.ledger["cache_hits"]==2
             @test count(e->e["status"]=="complete",resumed.ledger["entries"])==2
             @test any(e->e["status"]=="pending",resumed.ledger["entries"])

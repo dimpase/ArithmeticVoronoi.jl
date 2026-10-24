@@ -82,19 +82,21 @@ Use `backend=:native` for exact Julia/Hecke/OSCAR enumeration from scratch,
 without an exporter executable or configuration. `progress=true` prints seed
 and facet traversal progress. The native path has no deadline or disk cache.
 
-The default `:polyhedral_common` uses the configured C++ exporter and validated
-checkpoints. `config`, `cache_dir`, `work_dir`, `timeout` and `force` apply to
+The default `:polyhedral_common` runs the configured C++ exporter. Pass
+`force=false` explicitly to reuse a validated checkpoint. `config`,
+`cache_dir`, `work_dir`, `timeout` and `force` apply to
 that backend. Both paths return an `ArithmeticVoronoiEnumeration`.
 """
 function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:polyhedral_common,config=nothing,
         cache_dir=joinpath(PACKAGE_ROOT,"results/cache"),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),
-        timeout=60.0,force=false,progress=false)
+        timeout=60.0,force=true,progress=false)
     backend==:native && return enumerate_native(P;progress)
     backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"choose :native or :polyhedral_common"))
     P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
     B=isnothing(config) ? default_backend(P) : config
     key=cache_key(P,B);path=joinpath(cache_dir,key*".json")
     if isfile(path) && !force
+        @info "Loading a validated perfect-form checkpoint" path
         return load_checkpoint(P,B,path)
     end
     run=run_exporter(P,B;work_dir,timeout)

@@ -88,7 +88,7 @@ At the Julia prompt:
 using ArithmeticVoronoi, Oscar
 
 R = run_field_pipeline(12; backend=:native, progress=true,
-    directory="results/my_D12", reuse_baseline=false);
+    directory="results/my_D12");
 ```
 
 This enumerates perfect forms and neighbours, computes ridge cycles,
@@ -101,7 +101,7 @@ For an imaginary quadratic field:
 
 ```julia
 Rim = run_field_pipeline(-7; backend=:native, progress=true,
-    directory="results/my_Dminus7", reuse_baseline=false);
+    directory="results/my_Dminus7");
 ```
 
 The API default remains `backend=:polyhedral_common` for compatibility with
@@ -195,7 +195,7 @@ the shortcut for our quadratic GL experiments. See
 Run a single field from the shell:
 
 ```sh
-julia --startup-file=no --project=. -e 'using ArithmeticVoronoi; run_field_pipeline(12; backend=:native, progress=true, directory="results/my_D12", reuse_baseline=false);'
+julia --startup-file=no --project=. -e 'using ArithmeticVoronoi; run_field_pipeline(12; backend=:native, progress=true, directory="results/my_D12");'
 ```
 
 The real survey covers D = 5, 8, 12, 13, 17, 21, 24, 28, 29, 33, 37, 40,
@@ -242,35 +242,48 @@ and a `D*/` directory per field:
 Inspect `R.run["presentations"]` and `R.run["geometry"]` interactively.
 An ordinary `run_field_pipeline` call does not automatically run every word
 test or literature comparison; the batch scripts add those steps.
+The [code and data guide](docs/code_and_data.md) describes the enforced
+separation of the engine, tests, comparisons and recorded-results library.
 
-`reuse_baseline=false` avoids the archived D5/D8 ridge fixtures. It does not
-disable replay of compatible ridge and simplification certificates already
-in the selected directory. Native perfect forms are enumerated afresh;
-native enumeration checkpoint loading is not implemented. Use a **new output
-directory** for a completely fresh computation and separate directories for
-different backends: representative order and generator labels can differ.
+Both presentation runners compute fresh results by default, even when the
+output directory already contains certificates. They never consult archived
+baselines or the recorded-results library. The old `reuse_baseline` option
+has been removed.
 
-The default `reuse_baseline=:auto` reuses archived fixtures only when their
-exact source data match; `true` requires a matching baseline. Completed
-certificates are validated on reuse. `--resume` acts at the batch level and
-retains fields already marked complete in its summary.
+Pass `resume=true` explicitly to replay saved attaching-loop certificates
+from the selected output directory. Presentations and their Tietze
+simplifications are always computed afresh. Reuse is announced, counted in `run.json`,
+and exactly validated; corrupt or incompatible certificates are rejected.
+Native perfect forms are always enumerated afresh. At the lower-level C++
+enumeration API, `force=false` explicitly enables validated checkpoint loading.
+Use separate output directories for different backends because representative
+order and generator labels can differ. The batch `--resume` flag explicitly
+retains completed fields and enables certificate replay for unfinished ones.
 
 ## Load saved presentations
 
-Ordinary Git includes compact bundles with 48 real-field presentations,
-15 native imaginary-field presentations, and the 15 Page presentations:
+The separate [ArithmeticVoronoiData package](lib/ArithmeticVoronoiData/README.md)
+contains 48 real-field presentations, 15 native imaginary-field presentations,
+and 15 Page presentations. It is maintained in this repository but has its
+own `Project.toml`; neither package depends on the other. It is not registered
+yet. The underlying recorded bundles are:
 
-- [Real survey bundle](results/native_presentations.json)
-- [Imaginary survey bundle](results/imaginary_presentations.json)
-- [Page comparison bundle](results/page_presentations.json)
+- [Real survey bundle](lib/ArithmeticVoronoiData/data/native_presentations.json)
+- [Imaginary survey bundle](lib/ArithmeticVoronoiData/data/imaginary_presentations.json)
+- [Page comparison bundle](lib/ArithmeticVoronoiData/data/page_presentations.json)
 
 For example, load the saved PSL group for D = −23 without recomputing geometry:
 
 ```julia
-using Oscar, JSON3
+using Pkg
+Pkg.activate(; temp=true)                  # a separate client environment
+Pkg.develop(path="lib/ArithmeticVoronoiData")
+Pkg.add(PackageSpec(name="Oscar", version="1.8.2"))
+using ArithmeticVoronoiData, Oscar
 
-data = JSON3.read(read("results/imaginary_presentations.json", String));
-entry = data.fields["-23"].groups["PSL"];
+entry = load_presentation(:native_imaginary, -23; group=:PSL);
+entry.origin                              # :recorded_library
+entry.provenance                          # file, checksum and library version
 F = free_group(length(entry.generator_matrices));
 G, toG = quo(F, [F(Int.(r)) for r in entry.relators]);
 A, toA = maximal_abelian_quotient(G);
@@ -336,6 +349,15 @@ The [higher-rank guide](docs/higher_rank.md#gl-presentation-validation) records
 the stronger presentation comparisons and the unfinished Magma comparison
 for GL₃ over Q(√5).
 
+Reference comparisons are optional tools outside the runtime package. Load
+them explicitly from the checkout root:
+
+```julia
+include("validation/KirchheimerWolfart.jl")
+using .KirchheimerWolfart
+compare_kw(R)
+```
+
 For D = 5, 8, 12 or 13, `compare_kw(R)` constructs explicit maps for the
 Kirchheimer–Wolfart comparison and saves them under `R.directory/KW/`.
 To check local copies of the recorded source transcriptions as well, use
@@ -400,7 +422,7 @@ If Julia is already running, set it inside that session:
 ENV["PERFECT_FORMS_BACKEND_CONFIG"] =
     expanduser("~/work/tmp/PerfectForms.jl/backend/config.json")
 Rcpp = run_field_pipeline(12; backend=:polyhedral_common, progress=true,
-    directory="results/my_cpp_D12", reuse_baseline=false);
+    directory="results/my_cpp_D12");
 ```
 
 One exporter handles all the real survey fields. `config.json` records its

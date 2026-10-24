@@ -5,17 +5,20 @@ function verified_units(P)
     ensure(P.degree==2,"unit verification requires a quadratic field")
     U,map=unit_group(P.order;GRH=false)
     if is_hermitian(P)
-        m=P.discriminant == -3 ? 6 : (P.discriminant == -4 ? 4 : 2)
-        z=m>2 ? P.generator : -one(P.field)
-        ensure(order(U)==m && z^m==1 && length(unique(z^k for k in 0:m-1))==m,"incorrect imaginary-quadratic unit group")
+        m=Int(order(U))
+        ensure(ngens(U)==1,"imaginary-quadratic unit group must be cyclic")
+        generator=P.field(map(U[1]))
+        candidates=[generator^k for k in 1:m if gcd(k,m)==1]
+        # Choose a reproducible generator from the computed unit group.
+        z=argmax(u->(coeff(u,1),tr(u)),candidates)
+        ensure(z^m==1 && length(unique(z^k for k in 0:m-1))==m,"incorrect imaginary-quadratic unit group")
         return (;group=U,map,rank=0,torsion_order=m,torsion_generator=z,
             epsilon=one(P.field),epsilon_exponent=BigInt(0),epsilon_torsion=0)
     end
     ensure(ngens(U)==2 && P.field(map(U[1]))==-1,"unexpected real-quadratic unit-group basis")
     generator=P.field(map(U[2]))
     # Among +/-u and +/-u^-1, positive trace and positive w coefficient select
-    # the unique unit >1 at w=(root_sum+sqrt(D))/2. This exact normalization also
-    # preserves the historical unit choices for D5, D8, D12, D13 and D40.
+    # the unique unit >1 at w=(root_sum+sqrt(D))/2.
     candidates=(generator,-generator,inv(generator),-inv(generator))
     epsilon=only(u for u in candidates if tr(u)>0 && coeff(u,1)>0)
     ensure(epsilon in P.order && abs(norm(epsilon))==1,"fundamental unit is not integral with unit norm")

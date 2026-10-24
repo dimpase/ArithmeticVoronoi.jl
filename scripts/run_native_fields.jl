@@ -8,7 +8,7 @@ const import_seconds=(time_ns()-import_started)/1e9
 const SURVEY_DISCRIMINANTS=[5,8,12,13,17,21,24,28,29,33,37,40,41,44,56,60]
 include("request_arguments.jl")
 
-function validate_words(R)
+function validate_words(R;resume=false)
     P=R.enumeration.problem;K=P.field;w=P.generator
     e=R.sl.units.rank==0 ? R.sl.units.torsion_generator : R.sl.units.epsilon
     I=identity_matrix(K,2)
@@ -23,7 +23,8 @@ function validate_words(R)
     for (label,g) in inputs,target in (:GL,:SL,:PSL)
         target!=:GL && det(g)!=1 && continue
         path=joinpath(R.directory,"words","$(label)_$target.json")
-        c=matrix_to_word(R,g;target,cache_path=path)
+        c=resume ? matrix_to_word(R,g;target,cache_path=path) : matrix_to_word(R,g;target)
+        resume || NAV.atomic_json(path,c)
         NAV.ensure(verify_word_certificate(R,g,c),"word certificate failed for $label/$target")
         push!(examples,Dict("input"=>label,"group"=>string(target),
             "word_length"=>length(c["word"]),"certificate"=>relpath(path,R.directory)))
@@ -42,12 +43,12 @@ function validate_words(R)
     validation
 end
 
-function compute_field(request,root;on_result=nothing)
+function compute_field(request,root;on_result=nothing,resume=false)
     D=request["field"]["discriminant"]
     R=run_field_pipeline(request;backend=:native,directory=joinpath(root,"D$D"),
-        reuse_baseline=false)
+        resume)
     println("D$D: checking matrix-to-word certificates");flush(stdout)
-    started=time_ns();validation=validate_words(R);seconds=(time_ns()-started)/1e9
+    started=time_ns();validation=validate_words(R;resume);seconds=(time_ns()-started)/1e9
     comparison=isnothing(on_result) ? nothing : on_result(R)
     Dict("status"=>"complete","directory"=>"D$D","request"=>request,
         "perfect_form_orbits"=>length(R.enumeration.representatives),
@@ -83,7 +84,7 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
         "julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
         "julia_threads"=>Threads.nthreads(),"blas_threads"=>LinearAlgebra.BLAS.get_num_threads(),
         "package_import_seconds"=>import_seconds,
-        "timing_note"=>"Fields run sequentially. The first field computed in each Julia session includes compilation; existing compatible two-cell and simplification certificates may be reused on reruns.")
+        "timing_note"=>"Fields run sequentially. The first field computed in each Julia session includes compilation; saved certificates are replayed only when --resume is supplied.")
     save()=NAV.atomic_json(summary_path,summary)
     save()
     for request in requests
@@ -96,7 +97,7 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
         end
         fields[string(D)]=Dict("status"=>"running","request"=>request);save()
         try
-            fields[string(D)]=compute_field(request,root;on_result)
+            fields[string(D)]=compute_field(request,root;on_result,resume)
         catch err
             err isa InterruptException && rethrow()
             fields[string(D)]=Dict("status"=>"failed","request"=>request,"error"=>sprint(showerror,err))

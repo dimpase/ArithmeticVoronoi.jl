@@ -70,7 +70,7 @@ end
 @testset "native enumeration through group presentations and words" begin
     mktempdir() do directory
         R=withenv("PERFECT_FORMS_BACKEND_CONFIG"=>"/no/such/backend/config.json") do
-            run_field_pipeline(voronoi_request(12);directory,reuse_baseline=false)
+            run_field_pipeline(voronoi_request(12);directory)
         end
         @test R.run["backend"]=="native"
         @test R.run["request"]==voronoi_request(12)
@@ -91,7 +91,7 @@ end
         partial_directory=joinpath(directory,"partial_ridges")
         partial=enumerate_two_cells(R.context;directory=partial_directory,stop_after=1)
         @test partial.ledger["status"]=="partial"
-        resumed=enumerate_two_cells(R.context;directory=partial_directory,stop_after=2)
+        resumed=enumerate_two_cells(R.context;directory=partial_directory,stop_after=2,resume=true)
         saved=JSON3.read(read(joinpath(partial_directory,"coverage.json"),String))
         @test resumed.ledger["cache_hits"]==saved.cache_hits==2
         @test saved.status=="partial" && saved.completed_oriented_loops==4

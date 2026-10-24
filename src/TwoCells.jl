@@ -335,8 +335,8 @@ end
 function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT,"results/two_cells",
         ctx.enumeration.problem.rank==2 ? "D$(ctx.enumeration.problem.discriminant)" :
         "rank$(ctx.enumeration.problem.rank)_D$(ctx.enumeration.problem.discriminant)"),stop_after=nothing,
-        reduce_orbits=false)
-    reduce_orbits && return enumerate_two_cell_orbits(ctx;directory,stop_after)
+        reduce_orbits=false,resume::Bool=false)
+    reduce_orbits && return enumerate_two_cell_orbits(ctx;directory,stop_after,resume)
     mkpath(directory);cache=joinpath(directory,"loops");mkpath(cache)
     ledger=Dict{String,Any}("schema"=>TWO_CELL_SCHEMA,"status"=>"partial","source_hash"=>ctx.source_hash,
         "problem"=>problem_descriptor(ctx.enumeration.problem),"local_ridge_counts"=>length.(ctx.ridges),
@@ -349,7 +349,8 @@ function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT
             cursor+=1;entry=ledger["entries"][cursor];based=TwoCellCertificate[];files=String[]
             for outgoing in ridge.facets
                 file=joinpath(cache,"cone$(i)_ridge$(ridge.id)_out$(outgoing).json")
-                if isfile(file)
+                if resume && isfile(file)
+                    cached==0 && (@info "Replaying saved attaching-loop certificates" directory)
                     C=read_two_cell(ctx,file);cached+=1
                 else
                     C=walk_ridge(ctx,i,ridge.id;outgoing,checkpoint=file*".partial")
@@ -436,7 +437,7 @@ function validate_ridge_coverage(ctx,flags,coverage)
     true
 end
 
-function enumerate_two_cell_orbits(ctx;directory,stop_after=nothing)
+function enumerate_two_cell_orbits(ctx;directory,stop_after=nothing,resume::Bool=false)
     mkpath(directory);cache=joinpath(directory,"loops");mkpath(cache)
     orbits=[local_ridge_orbits(ctx,i) for i in eachindex(ctx.ridges)]
     entries=[Dict{String,Any}("source"=>i,"ridge"=>o.representative,"status"=>"pending")
@@ -454,7 +455,8 @@ function enumerate_two_cell_orbits(ctx;directory,stop_after=nothing)
             pair=TwoCellCertificate[];files=String[]
             for outgoing in ridge.facets
                 file=joinpath(cache,"cone$(i)_ridge$(ridge.id)_out$(outgoing).json")
-                if isfile(file)
+                if resume && isfile(file)
+                    cached==0 && (@info "Replaying saved attaching-loop certificates" directory)
                     C=read_two_cell(ctx,file);cached+=1
                 else
                     C=walk_ridge(ctx,i,ridge.id;outgoing,checkpoint=file*".partial")

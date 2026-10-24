@@ -30,7 +30,7 @@ backend to the existing pipeline:
 
 ```julia
 R = run_field_pipeline(12; backend=:native, progress=true,
-    directory="results/native_D12", reuse_baseline=false);
+    directory="results/native_D12");
 
 S = R.simplified[:SL];
 F = free_group(length(S.generator_matrices));

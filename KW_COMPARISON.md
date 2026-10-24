@@ -11,6 +11,14 @@ The local sources read were the user's `KWeng.tex` and `KWger.tex` in
 Source hashes are retained in each comparison record. The local PDFs are
 compiled transcriptions, not an independently inspected original scan.
 
+The comparison is outside the computation package. Load it explicitly:
+
+```julia
+include("validation/KirchheimerWolfart.jl")
+using .KirchheimerWolfart
+compare_kw(R)
+```
+
 For a fresh checkout, `compare_kw(R)` uses the previously recorded hashes in
 `references/kw_sources.json` and labels them `recorded_hashes_only`. It does
 not require the original account's directories. To check your own copies,
@@ -20,7 +28,7 @@ both files must match the recorded hashes, and the result is labelled
 
 ## Reference alphabets and signs
 
-`Literature.jl` constructs the four PSL reference presentations in the common
+`validation/KirchheimerWolfart.jl` constructs the four PSL reference presentations in the common
 alphabet U=τ(1), V=τ(e), H=diag(e,e⁻¹), J=[0,1;−1,0]. It generates both
 conjugation relations directly from exact multiplication by e² in the basis
 (1,e). The coefficient pairs (α,β), for e²=α+βe, are (1,1), (1,2), (−1,4)

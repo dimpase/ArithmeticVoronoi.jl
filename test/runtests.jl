@@ -1,3 +1,5 @@
+include("engine_isolation.jl")
+include("checkpoint_opt_in.jl")
 include("model.jl")
 include("requests.jl")
 include("quadratic_units.jl")

@@ -1,0 +1,96 @@
+{
+  "schema": "av_code_data_separation_validation_v1",
+  "status": "passed_with_optional_external_check_blocked",
+  "checked_utc": "2026-10-24T16:08:52.829506+00:00",
+  "base_commit": "da6a3c6bb4e1094724308d094cfc2e27ebe12acc",
+  "julia_version": "1.13.2",
+  "oscar_version": "1.8.2",
+  "hap_version": "1.80",
+  "hap_commit": "fa63c46f5974d15d26e27359e5f515a421fd186c",
+  "guarantees": [
+    "Engine and recorded-results library have independent package dependency graphs.",
+    "Native GL3(Z) and D5 GL2/SL2/PSL2 compute with only engine source and no recorded data or reference code.",
+    "Fresh runs ignore saved answers; explicit attaching-loop replay validates every reused certificate.",
+    "Presentations and Tietze simplifications are computed afresh, including during geometric replay.",
+    "Recorded-data loading is explicit, announces its source and returns version/checksum provenance.",
+    "Future library-assisted computation must retain a complete unassisted path; no lower-rank-presentation accelerator is implemented yet."
+  ],
+  "tests": [
+    {
+      "suite": "native arithmetic, recorded-data checks and optional reference comparison",
+      "status": "passed",
+      "passed_assertions": 2192,
+      "command": "julia --startup-file=no --project=. -e 'include(\"test/model.jl\"); include(\"test/requests.jl\"); include(\"test/quadratic_units.jl\"); include(\"test/native.jl\"); include(\"test/imaginary.jl\"); include(\"test/imaginary_bundle.jl\"); include(\"test/page_comparison.jl\"); include(\"test/fields_words.jl\"); mktempdir() do directory; R=run_field_pipeline(voronoi_request(5);directory); run_fields_words_tests(Dict(5=>R)); end'",
+      "log_sha256": "3c666c17c1d2fcff0f322b44db474ba557bfe24433392a5935c25d8b20899468"
+    },
+    {
+      "suite": "source-only isolation and explicit replay",
+      "status": "passed",
+      "passed_assertions": 24,
+      "command": "julia --startup-file=no --project=. test/engine_isolation.jl",
+      "log_sha256": "1f8924d651d5d2e01938d5e126b7daab6771a6480c02e10eeb6854abaf7bac2d"
+    },
+    {
+      "suite": "HAP 1.80 and higher-rank GL",
+      "status": "passed",
+      "passed_assertions": 370,
+      "command": "ARITHMETIC_VORONOI_HAP_ROOT=/tmp/av-hap-followup julia --startup-file=no --project=. test/hap.jl",
+      "log_sha256": "6045e8ff535837eefc4f2f393f18c07a77fcc5d746ba68608439b77404959f9a"
+    },
+    {
+      "suite": "standalone data package",
+      "status": "passed",
+      "passed_assertions": 33,
+      "command": "julia --startup-file=no --project=lib/ArithmeticVoronoiData -e 'using Pkg; Pkg.test()'",
+      "log_sha256": "a4d4755e9777926cf7f8f04d1e51a7caa45db132326d13d694b80ebaef49d14a"
+    },
+    {
+      "suite": "checkpoint opt-in with a test-only export fixture",
+      "status": "passed",
+      "passed_assertions": 4,
+      "command": "julia --startup-file=no --project=. test/checkpoint_opt_in.jl",
+      "log_sha256": "f4f37e809bd1d80570ffa5b03a610eecfa0138108470b70968315c6c89c9ef13"
+    }
+  ],
+  "passed_assertions": 2623,
+  "source_sha256": {
+    "Project.toml": "f9b98ce23c2041624e72de185da76895bd574d9858e20a40962ce66ab5ab06b8",
+    "lib/ArithmeticVoronoiData/Project.toml": "c193be57a8e4e0039a5a2cbb1c77da5138d95566e424ee4ce8232c03d0cfd8e4",
+    "lib/ArithmeticVoronoiData/src/ArithmeticVoronoiData.jl": "b0f635c13dc2e5f40ace976a6ba4eed9737e2b6f09fb9d49f23c9e1ebedbc9b4",
+    "lib/ArithmeticVoronoiData/test/runtests.jl": "7f41b97e69fc5e8d75fbf89baea83eb1df2b0d3bfa45986c9ed62ff1c7a2feb3",
+    "src/ArithmeticVoronoi.jl": "b558d7a257221834a3e361728b7a802f1e8ec791db37e2521cb55881d1a50037",
+    "src/Backend.jl": "09781e1016c4a38345868289b4d1203c487fb97f2c4c2750fbb7d946ad643e6f",
+    "src/Dataset.jl": "4f7986a4f88df45814904377c5e767edbd4d711390aa076fa1f4b92bba6f802e",
+    "src/FieldPipeline.jl": "abad9fec0b8db7773f61014cec171f2e86a6147295cfd4cfbbec8afde1ff3b79",
+    "src/Fields.jl": "0fc96551ab8ea7cce37d93aadfca0b64ccb4e86edf790b879135901d683bcc66",
+    "src/GLPipeline.jl": "47be55f5dd9c0091aab3d55bd1f55e38a3e6ee848a44eb88150192685e540c27",
+    "src/HAP.jl": "9990f27158fcb43fe9573bffad08dcb0b2d7deea7d8db8bc9feb385218c5306a",
+    "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+    "src/Presentations.jl": "3357a861d086a99886a0929abcf1a24525993f0d7f2b3d0318bf011144da1169",
+    "src/Projective.jl": "6c825c64c6b6f15fb902af73647516848fd98a7aa64f0f127ca6d150b916bf75",
+    "src/Requests.jl": "7bf1f0b7f8ef5089e8e67550ba8918d695785abd3098821b9ffb51e1aaca474e",
+    "src/SLExtraction.jl": "adf59be8ced67015a1742503bb3068dbf2c7c8949f03aa8f085cc4879cb7167b",
+    "src/Simplification.jl": "c52e563abd53bd5cff209b853949ebb8207bc84948519ae42041af5041f3ac6d",
+    "src/TwoCells.jl": "f7315d0ed86c05e398622c0b4a3da138871f287fa3c135ed98cfa63d37220f1c",
+    "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+    "src/Words.jl": "dfda43fa972ff0a09104e2a85cad0cbf1a722af481399d9504275a17806b14d6",
+    "test/checkpoint_opt_in.jl": "1e4854cad3ee73c292906079fb99cf91c2134c6b3fdb602b90d52afed43bd3ca",
+    "test/engine_isolation.jl": "6af899dbfb2610ed4f3b2f32d43cd7fa496d128d56dc63a92e259f47ad85017a",
+    "test/engine_isolation_probe.jl": "2c47ea5c9ff2c39269140b0c53fb4993ea4a8dcfe08eac9bdd23757c1e57cb04",
+    "test/fixtures/cpp_D5_export.json": "6602937fa98fa230ea6e430f18cfd41eac1df21694fdb0415b792561cc394f80",
+    "validation/KirchheimerWolfart.jl": "3edc997ca5af0fd69df1be3ee6b69f7718f29827a06862aaaf6518447452f5ad"
+  },
+  "library_data_sha256": {
+    "imaginary_presentations.json": "aae02023b1ccfb14a7a287fe577b80ee10da7fe47a60cfcd6b30b5cf9ba6aa53",
+    "native_presentations.json": "6b7d05075ac3991f0ab874929ea567212514d5398f3bf990ad67e061355b5252",
+    "page_presentations.json": "45c3514b7a69806fe1e585f602237505b73f44980aac848d1c1f39e8f8abaac8"
+  },
+  "library_data_change": "Files moved byte-for-byte from results/; recorded mathematical data unchanged.",
+  "optional_cpp_integration": {
+    "status": "blocked_environment",
+    "test": "test/contracts.jl",
+    "reason": "The installed legacy exporter cannot start: libboost_serialization.so.1.90.0 is missing on this host.",
+    "log_sha256": "4d6a3303ecee0fa088211f35e823ecb0455efe82a19a6d79351e4910bc043940",
+    "scope": "This did not exercise real C++ enumeration. The separate checkpoint opt-in regression passed with a test-only exact export fixture. CI builds the exporter before running its integration tests."
+  }
+}

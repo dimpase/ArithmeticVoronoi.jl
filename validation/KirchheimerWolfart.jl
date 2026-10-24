@@ -1,3 +1,10 @@
+# Optional reference comparison tooling. Never included by ArithmeticVoronoi.
+module KirchheimerWolfart
+using ArithmeticVoronoi, Oscar, JSON3
+import ArithmeticVoronoi: ensure, evaluate_word, inverse_word, freely_reduce,
+    substitute_word, verified_units, unit_coordinates, fraction_string,
+    field_matrix_data, atomic_json, PACKAGE_ROOT, file_sha, check_projective_comparison
+
 export kw_reference, compare_kw, reference_matrix_word
 
 function letter_power(letter,n;limit=1000000)
@@ -65,23 +72,6 @@ function reference_matrix_word(P,g;max_steps=1000,division_radius=6)
             previous_lower_norm=fraction_string(abs(norm(b))),next_lower_norm=fraction_string(abs(norm(remainder)))))
     end
     error("unreachable")
-end
-
-function check_projective_comparison(reference,computed,A,B,reference_relators,computed_relators)
-    I=identity_matrix(base_ring(first(reference)),2)
-    equivalent(x,y)=x==y || x==-y
-    ensure(all(abs(k)<=length(reference) for w in B for k in w),"PSL comparison word uses a generator outside the reference alphabet")
-    for (i,g) in enumerate(reference)
-        ensure(equivalent(evaluate_word(computed,A[i]),g),"PSL reference-to-computed map failed")
-        ensure(equivalent(evaluate_word(reference,substitute_word(A[i],B)),g),"PSL reference round trip failed")
-    end
-    for (i,g) in enumerate(computed)
-        ensure(equivalent(evaluate_word(reference,B[i]),g),"PSL computed-to-reference map failed")
-        ensure(equivalent(evaluate_word(computed,substitute_word(B[i],A)),g),"PSL computed round trip failed")
-    end
-    ensure(all(equivalent(evaluate_word(computed,substitute_word(w,A)),I) for w in reference_relators),"PSL substituted reference relation failed")
-    ensure(all(equivalent(evaluate_word(reference,substitute_word(w,B)),I) for w in computed_relators),"PSL substituted computed relation failed")
-    true
 end
 
 function kw_source_hashes(source_directory=nothing)
@@ -154,4 +144,6 @@ function compare_kw(R;directory=joinpath(R.directory,"KW"),reference_source_dire
     atomic_json(joinpath(R.directory,"run.json"),R.run)
     println("D$(P.discriminant): Kirchheimer-Wolfart maps verified in both directions.");flush(stdout)
     data
+end
+
 end

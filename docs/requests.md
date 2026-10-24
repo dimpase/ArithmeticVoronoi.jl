@@ -17,7 +17,7 @@ request = voronoi_request(-7);
 
 E = enumerate_perfect_forms(request; progress=true);
 R = run_field_pipeline(request; progress=true,
-    directory="results/request_D-7", reuse_baseline=false);
+    directory="results/request_D-7");
 K = hap_voronoi_complex(request; resolution_length=3);
 ```
 

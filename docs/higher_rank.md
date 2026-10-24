@@ -35,7 +35,8 @@ of enumerating forms, stabilizers and ridges grows rapidly.
 
 The runner writes the enumeration, complete attaching-loop certificates,
 raw and simplified presentations, Tietze maps and stage timings. Compatible
-saved loops are exactly replayed on reruns. It uses the native enumerator and
+saved loops are read only when `resume=true` is supplied, and then exactly
+replayed. It uses the native enumerator and
 imposes no timeout or memory limit. `simplify=false` skips Tietze simplification;
 then use `matrix_to_word(R, g; simplified=false)`.
 

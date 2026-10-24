@@ -11,26 +11,27 @@ struct GLGroupResult
 end
 
 """
-    run_gl_pipeline(request_or_problem; directory=nothing, simplify=true, progress=true)
+    run_gl_pipeline(request_or_problem; directory=nothing, simplify=true, progress=true, resume=false)
 
 Compute a certified GL presentation in any supported rank, with exact ridge
 cycles, generator matrices and optional Tietze maps. Quadratic request records
 and rational `classical_problem(; rank=n)` models use native enumeration.
 The separate GL/SL/PSL `run_field_pipeline` retains its rank-two scope.
+Saved attaching loops are read only with `resume=true`, then exactly replayed.
 """
 function run_gl_pipeline(request::VoronoiRequestRecord;kwargs...)
     run_gl_pipeline(arithmetic_problem(enumeration_request(request));kwargs...)
 end
 run_gl_pipeline(D::Integer;rank=2,kwargs...)=run_gl_pipeline(arithmetic_problem(Int(D);rank);kwargs...)
 
-function run_gl_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,simplify=true,progress=true)
+function run_gl_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,simplify=true,progress=true,resume::Bool=false)
     label="GL$(P.rank)_D$(P.discriminant)"
     isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/gl_presentations",label))
     directory=abspath(directory);mkpath(directory)
     started=time_ns();timings=Dict{String,Any}()
     run=Dict{String,Any}("schema"=>"av_gl_run_v1","status"=>"running","problem"=>problem_descriptor(P),
         "backend"=>"native","stage_seconds"=>timings,"julia_version"=>string(VERSION),
-        "oscar_version"=>string(pkgversion(Oscar)),"started_utc"=>string(now(UTC)))
+        "oscar_version"=>string(pkgversion(Oscar)),"started_utc"=>string(now(UTC)),"resume_requested"=>resume)
     save()=atomic_json(joinpath(directory,"run.json"),run)
     function stage(name,f)
         run["current_stage"]=name;save()
@@ -46,7 +47,8 @@ function run_gl_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,simplify=
     E=stage("enumeration",()->enumerate_perfect_forms(P;backend=:native,progress))
     write_enumeration(joinpath(directory,"enumeration.json"),E)
     ctx=stage("ridges",()->TwoCellContext(E))
-    cells=stage("attaching_loops",()->enumerate_two_cells(ctx;directory=joinpath(directory,"two_cells"),reduce_orbits=P.rank>2))
+    cells=stage("attaching_loops",()->enumerate_two_cells(ctx;directory=joinpath(directory,"two_cells"),reduce_orbits=P.rank>2,resume))
+    run["replayed_loop_certificates"]=get(cells.ledger,"cache_hits",0)
     C=stage("GL_assembly",()->build_gl_presentation(ctx,cells.certificates;coverage=cells.ledger))
     atomic_json(joinpath(directory,"GL_raw.json"),presentation_data(C))
     small=Dict{Symbol,Any}()

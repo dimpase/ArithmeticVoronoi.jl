@@ -39,10 +39,11 @@ Each `D*/` directory contains `field.json`, `enumeration.json`,
 files, `two_cells/`, `words/`, `word_validation.json` and `run.json`.
 Simplified presentation files contain the exact generator matrices, relators
 and both directions of the generator maps. Results directories are ignored
-by Git; the script regenerates them. A rerun recomputes native perfect forms
-and can reuse compatible ridge and simplification certificates in its directory.
+by Git; the script regenerates them. A rerun computes fresh results by default.
 Add `--resume` to retain fields already marked complete in that batch's
-`summary.json` and continue the unfinished fields. Loop certificates are saved
+`summary.json` and replay compatible ridge and word certificates for unfinished
+fields. Native enumeration and presentation simplification are recomputed.
+Loop certificates are saved
 individually; the aggregate coverage file is refreshed about once per second
 and always on completion, a requested stop or an error.
 
@@ -54,7 +55,7 @@ For a live result with matrix-to-word operations:
 using ArithmeticVoronoi, Oscar
 
 R = run_field_pipeline(60; backend=:native,
-    directory="results/native_fields/D60", reuse_baseline=false);
+    directory="results/native_fields/D60");
 S = R.simplified[:SL];
 F = free_group(length(S.generator_matrices));
 G, toG = quo(F, [F(r) for r in S.relators]);
@@ -187,7 +188,7 @@ in this run; different valid GAP simplifications may have different sizes.
 | 56 | Z × C2 × C2 × C2 | C2 × C2 | C2 × C2 |
 | 60 | Z × C2 × C2 | C2 × C6 | C2 × C6 |
 
-The compact [presentation bundle](../results/native_presentations.json)
+The compact [presentation bundle](../lib/ArithmeticVoronoiData/data/native_presentations.json)
 contains every simplified generator matrix and relator, the exact field
 definitions, abelianizations and enumeration timings. To load one of those
 groups without rerunning the geometric computation:
@@ -195,7 +196,7 @@ groups without rerunning the geometric computation:
 ```julia
 using Oscar, JSON3
 
-bundle = JSON3.read(read("results/native_presentations.json", String));
+bundle = JSON3.read(read("lib/ArithmeticVoronoiData/data/native_presentations.json", String));
 data = bundle.fields["60"].groups.SL;
 F = free_group(length(data.generators));
 G, toG = quo(F, [F(Int.(r)) for r in data.relators]);

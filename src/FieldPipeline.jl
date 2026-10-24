@@ -1,4 +1,4 @@
-export ArithmeticGroupResult, run_field_pipeline, load_simplification
+export ArithmeticGroupResult, run_field_pipeline
 
 struct ArithmeticGroupResult
     enumeration::ArithmeticVoronoiEnumeration
@@ -12,47 +12,28 @@ struct ArithmeticGroupResult
     run::Dict{String,Any}
 end
 
-function load_simplification(P,path,matrices,relations)
-    d=JSON3.read(read(path,String),Dict{String,Any})
-    S=(;label=d["group"],projective=get(d,"projective",false),algorithm=d["algorithm"],
-      isomorphism_verified=d["isomorphism_verified"],old_generator_count=d["old_generator_count"],
-      old_relator_count=d["old_relator_count"],gap_version=d["gap_version"],
-      generator_matrices=Any[field_matrix_wire(P,g["matrix"]) for g in d["generators"]],
-      backward_generator_words=[Int.(g["word_in_old_generators"]) for g in d["generators"]],
-      forward_generator_words=[Int.(w) for w in d["old_generators_as_words_in_new"]],
-      relators=[Int.(w) for w in d["relators"]])
-    verify_simplification(matrices,relations,S)
-    S
-end
-
 function run_field_pipeline(D::Integer;backend=:polyhedral_common,kwargs...)
     run_field_pipeline(voronoi_request(D);backend,kwargs...)
 end
 
 function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
-                            simplify=true,timeout=600.0,reuse_baseline=:auto,
+                            simplify=true,timeout=600.0,resume::Bool=false,
                             backend=:native,progress=false)
     request=enumeration_request(request)
     request["rank"]==2 || throw(ArgumentError("the combined GL/SL/PSL pipeline requires rank 2; use run_gl_pipeline for higher-rank GL presentations"))
     D=request["field"]["discriminant"]
     isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"))
-    (reuse_baseline isa Bool || reuse_baseline===:auto) || throw(ArgumentError("reuse_baseline must be true, false or :auto"))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
         history=joinpath(directory,"history");mkpath(history)
         cp(joinpath(directory,"run.json"),joinpath(history,"run_$(time_ns()).json"))
-        previous=JSON3.read(read(joinpath(directory,"run.json"),String),Dict{String,Any})
-        initial=joinpath(directory,"initial_complete_run.json")
-        if !isfile(initial) && haskey(previous,"total_in_process_seconds") && all(get(previous["status"],s,"pending")=="complete" for s in ("GL","SL","PSL"))
-            cp(joinpath(directory,"run.json"),initial)
-        end
     end
     status=Dict{String,Any}("enumeration"=>"pending","two_cells"=>"pending","GL"=>"pending",
         "SL"=>"pending","PSL"=>"pending","simplification"=>Dict(k=>(simplify ? "pending" : "not_requested") for k in ("GL","SL","PSL")),"constructive_words"=>"unvalidated",
-        "literature_comparison"=>D in (5,8,12,13) ? "pending" : "not_applicable")
+        "literature_comparison"=>"not_requested")
     run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"request"=>request,"status"=>status,
         "stage_seconds"=>timings,"julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
-        "julia_threads"=>Threads.nthreads(),"started_utc"=>string(now(UTC)))
+        "julia_threads"=>Threads.nthreads(),"started_utc"=>string(now(UTC)),"resume_requested"=>resume)
     save()=atomic_json(joinpath(directory,"run.json"),run)
     stage(label,f)=begin
         println("D$D: ",label);flush(stdout)
@@ -69,30 +50,15 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
     save()
     P=arithmetic_problem(request)
     metadata=stage("field_and_unit_verification",()->field_metadata(P));atomic_json(joinpath(directory,"field.json"),metadata)
-    E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;backend,progress,timeout))
+    E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;backend,progress,timeout,force=!resume))
     run["backend"]=string(backend)
     status["enumeration"]="complete";run["enumeration_from_cache"]=E.provenance["from_cache"]
     run["backend_seconds"]=get(E.provenance,"backend_seconds",nothing)
     write_enumeration(joinpath(directory,"enumeration.json"),E);save()
     ctx=stage("ridges",()->TwoCellContext(E))
-    baseline=joinpath(PACKAGE_ROOT,"results/two_cells","D$D")
-    use_baseline=reuse_baseline===true || (reuse_baseline===:auto && compatible_two_cell_cache(ctx,baseline))
-    run["reused_baseline"]=use_baseline
-    certdir=use_baseline ? baseline : joinpath(directory,"two_cells")
-    cells=stage("two_cells_and_coverage",()->begin
-        ledgerpath=joinpath(certdir,"coverage.json")
-        saved=isfile(ledgerpath) ? JSON3.read(read(ledgerpath,String),Dict{String,Any}) : nothing
-        if use_baseline || (!isnothing(saved) && saved["status"]=="complete")
-            ledger=saved
-            ensure(!isnothing(ledger),"restore the requested baseline fixtures before using reuse_baseline=true")
-            ensure(ledger["source_hash"]==ctx.source_hash,"complete ridge cache belongs to another enumeration")
-            certificates=TwoCellCertificate[read_two_cell(ctx,joinpath(certdir,file)) for e in ledger["entries"] for file in e["certificates"]]
-            for k in 1:2:length(certificates);reverse_cycle_check(ctx,certificates[k],certificates[k+1]);end
-            (;certificates,ledger)
-        else
-            enumerate_two_cells(ctx;directory=certdir)
-        end
-    end)
+    certdir=joinpath(directory,"two_cells")
+    cells=stage("two_cells_and_coverage",()->enumerate_two_cells(ctx;directory=certdir,resume))
+    run["replayed_loop_certificates"]=get(cells.ledger,"cache_hits",0)
     status["two_cells"]="complete";run["certificate_directory"]=relpath(certdir,directory)
     C=stage("GL_assembly",()->build_gl_presentation(ctx,cells.certificates;coverage=cells.ledger))
     atomic_json(joinpath(directory,"GL_raw.json"),presentation_data(C));status["GL"]="complete";save()
@@ -104,16 +70,9 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
     for (name,object) in [(:GL,C),(:SL,S),(:PSL,Q)]
         simplify || continue
         path=joinpath(directory,string(name)*"_simplified.json")
-        original=joinpath(PACKAGE_ROOT,"results/two_cells","D$D",string(name)*"_simplified.json")
-        small[name]=stage(string(name)*"_simplification",()->begin
-            if use_baseline && name!=:PSL
-                load_simplification(P,original,object.generator_matrices,object.relators)
-            elseif isfile(path)
-                load_simplification(P,path,object.generator_matrices,object.relators)
-            else
-                simplify_matrix_presentation(object.generator_matrices,object.relators;label="$name(2,O), D$D",projective=name==:PSL)
-            end
-        end)
+        small[name]=stage(string(name)*"_simplification",()->
+            simplify_matrix_presentation(object.generator_matrices,object.relators;
+                label="$name(2,O), D$D",projective=name==:PSL))
         atomic_json(path,simplification_data(P,small[name]));status["simplification"][string(name)]="complete";save()
     end
     run["geometry"]=Dict("perfect_form_orbits"=>length(E.representatives),"stabilizer_orders"=>[r.stabilizer_order for r in E.representatives],

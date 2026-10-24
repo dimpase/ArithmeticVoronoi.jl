@@ -38,7 +38,7 @@ end
     for D in (-3,-4,-7,-15,-23)
         mktempdir() do directory
             R=withenv("PERFECT_FORMS_BACKEND_CONFIG"=>"/no/such/backend/config.json") do
-                run_field_pipeline(D;backend=:native,directory,reuse_baseline=false)
+                run_field_pipeline(D;backend=:native,directory)
             end
             P=R.enumeration.problem;K=P.field;I=identity_matrix(K,2)
             shapes=sort!([(length(unique(IAV.primitive_ray(v) for v in IAV.matrix_rows(r.evaluation_rays))),

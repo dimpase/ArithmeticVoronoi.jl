@@ -10,6 +10,19 @@ permissions:
   contents: read
 
 jobs:
+  data:
+    name: Recorded-results package (no engine dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1.13.2'
+      - name: Test ArithmeticVoronoiData independently
+        run: >-
+          julia --startup-file=no --project=lib/ArithmeticVoronoiData
+          -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
+
   test:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

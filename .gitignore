@@ -28,12 +28,10 @@ __pycache__/
 !/results/D8.json
 !/results/examples_summary.json
 !/results/contracts_summary.json
-!/results/native_presentations.json
-!/results/imaginary_presentations.json
-!/results/page_presentations.json
 !/results/vmh_comparison.json
 !/results/higher_rank_validation.json
 !/results/gl_presentation_validation.json
+!/results/code_data_separation_validation.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json
 !/results/two_cell_tests.txt
@@ -56,3 +54,5 @@ __pycache__/
 !/results/sanitizer_fields/
 /results/sanitizer_fields/*
 !/results/sanitizer_fields/summary.json
+
+/lib/ArithmeticVoronoiData/Manifest.toml

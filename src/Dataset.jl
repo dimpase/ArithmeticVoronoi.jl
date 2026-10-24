@@ -1,4 +1,21 @@
-export export_dataset, verify_dataset
+export export_dataset, verify_dataset, load_simplification
+
+# Explicit archive I/O: verifies the recorded matrix maps, not a fresh
+# abstract Tietze proof. Computation pipelines always simplify afresh.
+function load_simplification(P,path,matrices,relations)
+    d=JSON3.read(read(path,String),Dict{String,Any})
+    S=(;label=d["group"],projective=get(d,"projective",false),algorithm=d["algorithm"],
+      isomorphism_verified=d["isomorphism_verified"],old_generator_count=d["old_generator_count"],
+      old_relator_count=d["old_relator_count"],gap_version=d["gap_version"],
+      generator_matrices=Any[field_matrix_wire(P,g["matrix"]) for g in d["generators"]],
+      backward_generator_words=[Int.(g["word_in_old_generators"]) for g in d["generators"]],
+      forward_generator_words=[Int.(w) for w in d["old_generators_as_words_in_new"]],
+      relators=[Int.(w) for w in d["relators"]])
+    verify_simplification(matrices,relations,S)
+    S
+end
+
+
 
 function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset/v1"))
     mkpath(directory);artifacts=Dict{String,Any}()
@@ -74,7 +91,7 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
             computation_run_id="sha256:"*refs["run.json"]["sha256"],
             geometry=R.run["geometry"],statuses=R.run["status"],
             certificate_directory="$prefix/two_cells",word_certificate_directory="$prefix/words",
-            literature_directory=D in (5,8,12,13) ? "$prefix/KW" : nothing))
+            literature_directory=isfile(joinpath(R.directory,"KW/comparison.json")) ? "$prefix/KW" : nothing))
     end
     for file in readdir(joinpath(PACKAGE_ROOT,"src"))
         endswith(file,".jl") && copy_artifact(joinpath(PACKAGE_ROOT,"src",file),"software/src/$file")
@@ -82,7 +99,6 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
     for file in ["Project.toml","Manifest.toml"]
         copy_artifact(joinpath(PACKAGE_ROOT,file),"software/$file")
     end
-    copy_artifact(joinpath(PACKAGE_ROOT,"references/kw_sources.json"),"software/references/kw_sources.json")
     copy_artifact(joinpath(PACKAGE_ROOT,"scripts/verify_dataset.jl"),"software/scripts/verify_dataset.jl")
     for file in ["PRESENTATION_JUSTIFICATION.md","CONSTRUCTIVE_WORDS_STATUS.md","KW_COMPARISON.md","DATASET_SCHEMA.md","DATASET_PROPOSAL.md"]
         isfile(joinpath(PACKAGE_ROOT,file)) && copy_artifact(joinpath(PACKAGE_ROOT,file),"documentation/$file")
@@ -101,6 +117,23 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
     atomic_json(joinpath(directory,"dataset.json"),manifest)
     println("Dataset written to ",directory," (",length(artifacts)," hashed artifacts).");flush(stdout)
     directory
+end
+
+function check_projective_comparison(reference,computed,A,B,reference_relators,computed_relators)
+    I=identity_matrix(base_ring(first(reference)),2)
+    equivalent(x,y)=x==y || x==-y
+    ensure(all(abs(k)<=length(reference) for w in B for k in w),"PSL comparison word uses a generator outside the reference alphabet")
+    for (i,g) in enumerate(reference)
+        ensure(equivalent(evaluate_word(computed,A[i]),g),"PSL reference-to-computed map failed")
+        ensure(equivalent(evaluate_word(reference,substitute_word(A[i],B)),g),"PSL reference round trip failed")
+    end
+    for (i,g) in enumerate(computed)
+        ensure(equivalent(evaluate_word(reference,B[i]),g),"PSL computed-to-reference map failed")
+        ensure(equivalent(evaluate_word(computed,substitute_word(B[i],A)),g),"PSL computed round trip failed")
+    end
+    ensure(all(equivalent(evaluate_word(computed,substitute_word(w,A)),I) for w in reference_relators),"PSL substituted reference relation failed")
+    ensure(all(equivalent(evaluate_word(reference,substitute_word(w,B)),I) for w in computed_relators),"PSL substituted computed relation failed")
+    true
 end
 
 function dataset_path(root,reference)

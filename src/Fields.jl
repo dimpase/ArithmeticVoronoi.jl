@@ -19,7 +19,7 @@ function field_metadata(P)
       class_group_kind="ordinary",narrow_class_group=nothing,
       proof_settings="Hecke class_group(O; GRH=false), unit_group(O; GRH=false); exact maximal-order discriminant",
       lmfdb_label=nothing,lmfdb_generator_map=nothing,
-      lmfdb_status="unverified; LMFDB returned browser challenges on the D5/D8 verification probes")
+      lmfdb_status="not_requested")
 end
 
 function abelianization_invariants(generator_count,relations)

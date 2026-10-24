@@ -20,7 +20,7 @@ At the Julia prompt:
 using ArithmeticVoronoi, Oscar
 
 R = run_field_pipeline(-7; backend=:native, progress=true,
-    directory="results/my_imaginary_D7", reuse_baseline=false);
+    directory="results/my_imaginary_D7");
 
 # Make the Bianchi group PSL(2,O) as an OSCAR finitely presented group.
 S = R.simplified[:PSL];
@@ -56,8 +56,9 @@ length(E.representatives)            # 3
 
 No C++ build or backend configuration is needed. The first Julia import and
 compilation can take minutes; subsequent computations are much quicker.
-`reuse_baseline=false` starts from native enumeration; an existing compatible
-ridge/simplification cache in the selected directory can still be replayed.
+The runner computes fresh results by default. Only `resume=true` enables
+validated replay of saved ridge certificates from the selected directory.
+Native enumeration and presentation simplification always run afresh.
 Use a new directory for a fully fresh computation.
 
 ## Five-field survey
@@ -89,7 +90,7 @@ HAP is needed only by this comparison script, not by the native group pipeline.
 Use `--output=DIR` to change the destination, `--resume` to retain completed
 fields, or append a subset such as `-4 -23`.
 
-The committed [presentation bundle](../results/imaginary_presentations.json)
+The committed [presentation bundle](../lib/ArithmeticVoronoiData/data/imaginary_presentations.json)
 contains all 15 simplified presentations with exact matrices, relators,
 comparison receipts and timings. Full local certificates for this survey
 are in `results/imaginary_survey_20261021/`; the bundle does not embed them.
@@ -140,7 +141,7 @@ PGL is GL modulo **all** scalar units, and is not PSL.
 Page's unmodified KleinianGroups 1.0 was rerun with Magma 2.30-1 on this
 machine. All 15 GL/SL/PSL abelianizations for these five fields agree with
 the native results above. The separate
-[Page presentation bundle](../results/page_presentations.json) contains
+[Page presentation bundle](../lib/ArithmeticVoronoiData/data/page_presentations.json) contains
 the exact generator matrices, relators, abelian invariants and CPU timings.
 The Page entries in the original native survey bundle record the historical
 paper timings, not this rerun.
@@ -162,9 +163,9 @@ mkdir -p /tmp/av-page
 cd /tmp/av-page
 curl -fLO https://www.normalesup.org/~page/Recherche/Logiciels/KleinianGroups/KleinianGroups-1.0.tar.gz
 tar -xzf KleinianGroups-1.0.tar.gz
-magma -b "OutputFile:=$AV_REPO/results/page_presentations.json" "$AV_REPO/scripts/compare_page.m"
+magma -b "OutputFile:=/tmp/av-page/fresh_page_presentations.json" "$AV_REPO/scripts/compare_page.m"
 cd "$AV_REPO"
-julia --threads=1 --startup-file=no --project=. test/page_comparison.jl
+julia --threads=1 --startup-file=no --project=. test/page_comparison.jl /tmp/av-page/fresh_page_presentations.json
 ```
 
 Page's `BianchiOrder(d)` takes the positive radicand in `Q(sqrt(-d))`:
@@ -187,7 +188,7 @@ the project and run:
 ```julia
 using ArithmeticVoronoi, Oscar, JSON3
 
-data = JSON3.read(read("results/imaginary_presentations.json", String));
+data = JSON3.read(read("lib/ArithmeticVoronoiData/data/imaginary_presentations.json", String));
 entry = data.fields["-23"].groups["PSL"];
 F = free_group(length(entry.generator_matrices));
 G, toG = quo(F, [F(Int.(r)) for r in entry.relators]);

@@ -1,7 +1,9 @@
 using ArithmeticVoronoi,Oscar,JSON3,Test
+include(joinpath(@__DIR__,"../validation/KirchheimerWolfart.jl"))
+using .KirchheimerWolfart
 const FWAV=ArithmeticVoronoi
 
-function run_fields_words_tests(results)
+function run_fields_words_tests(results;report_path=nothing)
     observations=Dict{String,Any}()
     @testset "fields, constructive words, projective signs and literature maps" begin
         for D in sort!(collect(keys(results)))
@@ -137,5 +139,5 @@ function run_fields_words_tests(results)
         FWAV.atomic_json(joinpath(R.directory,"word_validation.json"),observations[string(D)])
         FWAV.atomic_json(joinpath(R.directory,"run.json"),R.run)
     end
-    FWAV.atomic_json(joinpath(FWAV.PACKAGE_ROOT,"results/fields_words_tests.json"),Dict("status"=>"passed","examples"=>observations))
+    isnothing(report_path) || FWAV.atomic_json(report_path,Dict("status"=>"passed","examples"=>observations))
 end

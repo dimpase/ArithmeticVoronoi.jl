@@ -62,7 +62,7 @@ end
     @test !isdir(restart_cache) || isempty(readdir(restart_cache))
     restarted=enumerate_perfect_forms(P;config=B,timeout=60.,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
     @test restarted.completion_status==:complete && !restarted.provenance["from_cache"]
-    resumed=enumerate_perfect_forms(P;config=B,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
+    resumed=enumerate_perfect_forms(P;config=B,force=false,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
     @test resumed.provenance["from_cache"] && resumed.completion_status==:complete
     OBSERVED["killed-run restart"]=Dict("status"=>"passed","policy"=>"preserve partial diagnostics; restart enumeration from scratch; only fully validated final caches are reusable")
 
@@ -116,6 +116,6 @@ end
     @test CONTRACT_AV.matrix_wire(CONTRACT_AV.matrix_strings(R))==R
     OBSERVED["arbitrary precision wire roundtrip"]=Dict("status"=>"passed","decimal_digits"=>81)
 end
-CONTRACT_AV.atomic_json(joinpath(@__DIR__,"../results/contracts_summary.json"),
+CONTRACT_AV.atomic_json(joinpath(CONTRACT_ROOT,"summary.json"),
     Dict("status"=>"passed","diagnostic_root"=>CONTRACT_ROOT,"checks"=>OBSERVED))
 println("Engineering and mathematical rejection contracts passed; diagnostics retained at ",CONTRACT_ROOT)

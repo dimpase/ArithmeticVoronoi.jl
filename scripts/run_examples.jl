@@ -13,7 +13,7 @@ for (name,P) in [("classical2",classical_problem()),("D5",arithmetic_problem(5))
     println("START ",name);flush(stdout)
     cold_seconds=@elapsed cold=enumerate_perfect_forms(P;config=backend,force=true)
     write_enumeration(joinpath(ROOT,"results",name*".json"),cold)
-    warm_seconds=@elapsed warm=enumerate_perfect_forms(P;config=backend)
+    warm_seconds=@elapsed warm=enumerate_perfect_forms(P;config=backend,force=false)
     @assert warm.completion_status==cold.completion_status==:complete
     @assert [r.trace_gram for r in warm.representatives]==[r.trace_gram for r in cold.representatives]
     @assert warm.provenance["from_cache"] && !cold.provenance["from_cache"]
