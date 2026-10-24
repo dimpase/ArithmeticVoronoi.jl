@@ -1,4 +1,4 @@
-# Higher-rank native enumeration and HAP complexes
+# Higher-rank GL presentations and HAP complexes
 
 The native enumerator and HAP provider accept ranks `n >= 2`. Quadratic
 requests describe GLₙ over a real or imaginary quadratic maximal order, or
@@ -13,6 +13,47 @@ From the checkout root, start `julia --startup-file=no --project=.`:
 
 ```julia
 using ArithmeticVoronoi, Oscar
+
+# A full presentation and constructive membership for GL(3,Z[i]).
+R = run_gl_pipeline(voronoi_request(-4; rank=3);
+    directory="results/my_GL3_gaussian");
+S = R.simplified[:GL];
+F = free_group(length(S.generator_matrices));
+G, toG = quo(F, [F(r) for r in S.relators]);
+
+P = R.enumeration.problem;
+g = identity_matrix(P.field, 3); g[1,3] = P.generator;
+c = matrix_to_word(R, g);              # GL is the default for this runner
+verify_word_certificate(R, g, c)      # true, exact geometric path replay
+R.run["presentation"]                # sizes and abelianization
+```
+
+Use `run_gl_pipeline(classical_problem(; rank=4); directory="results/my_GL4_Z")`
+for GL₄(Z), or `run_gl_pipeline(5; rank=3, directory="results/my_GL3_D5")`
+for GL₃ over the maximal order of Q(√5). The rank is not capped, but the cost
+of enumerating forms, stabilizers and ridges grows rapidly.
+
+The runner writes the enumeration, complete attaching-loop certificates,
+raw and simplified presentations, Tietze maps and stage timings. Compatible
+saved loops are exactly replayed on reruns. It uses the native enumerator and
+imposes no timeout or memory limit. `simplify=false` skips Tietze simplification;
+then use `matrix_to_word(R, g; simplified=false)`.
+
+In higher rank it walks representatives under each full vertex stabilizer.
+The saved coverage ledger includes a checked matrix and stabilizer word
+identifying every omitted ridge with its representative. It computes a
+cone's extreme rays once and restricts them to its ridge faces. These
+reductions preserve complete coverage without repeating equivalent work.
+
+Run quadratic request records in one Julia process:
+
+```sh
+julia --project=. scripts/run_gl.jl --requests=examples/higher_rank_gl_requests.json --output=results/higher_gl
+```
+
+For higher homology, construct the full equivariant complex and pass it to HAP:
+
+```julia
 import Oscar: GAP
 
 # GL(3,Z[i]); -4 is the field discriminant.
@@ -61,8 +102,10 @@ boundaries use the requested rank. All native complexes are checked for
 quotient by scalar units. In odd rank, −I is excluded from SL; other central
 roots of unity with determinant one must still be retained.
 
-The GL/SL/PSL **presentation pipeline remains rank two**, as does the optional
-C++ request adapter. They reject higher-rank requests explicitly. Rational and
+`run_gl_pipeline` constructs GLₙ presentations using the 2-skeleton in every
+supported rank. The combined GL/SL/PSL `run_field_pipeline` remains rank two,
+as does the optional C++ request adapter. They reject higher-rank requests
+explicitly. Rational and
 real-quadratic SL complexes, projective quotients, nonmaximal orders, nonfree lattices and
 fields of degree greater than two remain outside the provider's scope.
 The record adapter takes quadratic fields; use `classical_problem` for Q.
@@ -72,7 +115,51 @@ rank: the number of forms, faces and transporter candidates grows rapidly.
 HAP's finite-stabilizer resolutions and integral homology computations also
 have costs beyond constructing the cell complex.
 
+### What HAP still needs
+
+A GL presentation is sufficient for group operations and H₁, but does not
+replace the equivariant complex used by HAP's higher-homology path. That path
+needs cells in the relevant dimensions, their full finite stabilizers,
+orientation actions and boundary transporters. The native provider already
+supplies these in higher rank; no further HAP dispatcher change is needed.
+The provider does not supply a contracting homotopy for the resulting free
+resolution. Features requiring one, including some cup-product routines, need
+additional work. Generating GL presentations only requires the 2-skeleton
+and does not require computing H₂.
+
 ## Regression tests and independent comparisons
+
+The GL presentation regressions construct GL₂(Z), GL₃(Z) and GL₃(Z[i])
+from scratch, check all matrix relations, replay words for elementary,
+permutation and unit matrices, and reject damaged word certificates. For
+the rank-three cases they also compare with presentations extracted by
+HAP's `PresentationOfResolution` and with integral H₁. They are included in
+`test/hap.jl` and can be run separately with `test/gl_presentations.jl`.
+
+To compare GL presentations with fresh Magma computations:
+
+```sh
+ARITHMETIC_VORONOI_HAP_ROOT=/path/to/hap julia --startup-file=no --project=. scripts/compare_gl_presentations.jl /path/to/VMH-TotallyRealNumberFields /path/to/VMH-ImaginaryQuadraticNumberFields results/gl_validation
+```
+
+The comparison checks a bijection of the perfect forms by exact isometries
+and uses those isometries and the native coherent vertex lifts to align
+coordinates. The imaginary VMH matrices are converted by
+`h^-1 * transpose(g^-1) * h`; the real VMH code already uses column matrices
+and uses `h^-1 * g * h`. These are group automorphisms, with the field
+embedding and h saved alongside the maps.
+Exact matrix search finds short generator maps, and Julia's geometric word
+certificates are retained too. A second Magma phase
+checks that both maps respect the abstract relators and are inverse on the
+abstract generators; its completion is recorded separately from matrix
+checks. It uses derived relation rewrite rules: ordinary Magma fp-word
+equality only does free reduction. An inconclusive reduction expands the
+completion search and tries other generator orderings; it is never reported
+as a mathematical counterexample. Only positive reductions to the identity
+are accepted as proofs.
+The reference source trees are copied per case and their algorithms are
+unchanged. The tests below additionally compare
+the full equivariant complexes and homology.
 
 Run the native HAP integration tests, including the existing rank-two cases:
 
@@ -126,18 +213,14 @@ comparison is still incomplete: the validation attempts were stopped manually
 during HAP's homology computation. It is not part of the passing regression
 claim, and the scripts impose no timeout or memory limit.
 
-Completed independent enumeration comparisons include seven perfect forms
-over Q(√5) in rank three and the two rational rank-four forms, with exact
-isometries giving a bijection between the Julia and Magma representatives.
-These enumeration checks do not assert that the corresponding higher-rank
-group presentations or homology have been computed.
+The earlier [complex validation receipt](../results/higher_rank_validation.json)
+records the tested versions, source hashes and completed comparisons. That
+run passed 1,329 native assertions and 239 HAP assertions with bundled
+HAP 1.78, or 248 with the pinned upstream HAP 1.80 checkout. Its rank-four
+rational and rank-three real-quadratic checks compared perfect forms only;
+presentation validation is recorded separately below.
 
-The [local validation receipt](../results/higher_rank_validation.json) records
-the tested versions, source hashes and completed comparisons. The native
-regression suite passes 1,329 assertions; the HAP suite passes 239 with bundled
-HAP 1.78 and 248 with the pinned upstream HAP 1.80 checkout.
-
-The completed fresh Magma comparisons include:
+The completed complex and homology comparisons in that receipt are:
 
 | Group | Perfect forms | H₁ | H₂ |
 | --- | ---: | --- | --- |
@@ -147,10 +230,47 @@ The completed fresh Magma comparisons include:
 | SL₂(O₋₇) | 1 GL orbit | Z × C₄ | C₁₂ |
 | GL₃(Z[i]) | 1 | C₄ | extended comparison incomplete |
 | SL₃(Z[i]) | 1 GL orbit | trivial | extended comparison incomplete |
-| GL₃(O₅) | 7 | not computed | not computed |
-| GL₄(Z) | 2 | not computed | not computed |
+| GL₃(O₅) | 7 | outside that run | outside that run |
+| GL₄(Z) | 2 | outside that run | outside that run |
 
 Here O_D is the maximal order of the quadratic field of discriminant D, and
 C_m is cyclic of order m. The Gaussian GL₃/SL₃ cell counts, stabilizer orders
 and H₁ also agree with the fresh Magma complexes. The receipt records the
 incomplete extended H₂ comparison separately.
+
+### GL presentation validation
+
+The [presentation validation receipt](../results/gl_presentation_validation.json)
+records four fresh comparisons with Magma 2.30-1. Each checks exact perfect-form
+isometries and generator matrices, then proves reciprocal homomorphisms
+between the abstract presentations. Thus these comparisons establish more
+than agreement of abelianizations or matrix relations.
+
+| Group | Perfect forms | Simplified generators / relators | H₁ | Magma presentation isomorphism |
+| --- | ---: | ---: | --- | --- |
+| GL₃(Z) | 1 | 3 / 10 | C₂ | verified |
+| GL₄(Z) | 2 | 3 / 63 | C₂ | verified |
+| GL₃(Z[i]) | 1 | 3 / 15 | C₄ | verified |
+| GL₂(O₋₇) | 1 | 4 / 9 | C₂³ | verified |
+| GL₃(O₅) | 7 | 3 / 207 | Z × C₂ | reference calculation incomplete |
+
+HAP's independently assembled presentations and H₁ were also checked for
+GL₃(Z), GL₃(Z[i]) and the GL₂(O₋₇) regression. The new presentation tests
+pass 122 assertions with each of HAP 1.78 and 1.80; the native regression
+tests pass 1,329 assertions, for 1,573 assertions in the recorded runs.
+These runs use Julia 1.13.2 and OSCAR 1.8.2.
+
+The GL₃(O₅) Julia calculation is complete: its 11,426 local ridges reduce to
+391 stabilizer orbits and 782 oriented attaching loops, with exact coverage
+witnesses for all ridges. The pristine Magma reference independently found
+seven perfect forms but was stopped manually during its exhaustive
+attaching-loop calculation. The earlier receipt verifies the perfect-form
+bijection; no independent presentation isomorphism is claimed for this case.
+The comparison runner retains this case so it can be completed separately.
+
+To run only that supplementary comparison (it can take much longer than
+the native calculation):
+
+```sh
+ARITHMETIC_VORONOI_HAP_ROOT=/path/to/hap julia --startup-file=no --project=. -e 'include("scripts/compare_gl_presentations.jl"); compare_gl_presentations(ARGS; cases=((D=5,rank=3,hap=false),))' /path/to/VMH-TotallyRealNumberFields /path/to/VMH-ImaginaryQuadraticNumberFields results/gl_real_validation
+```

@@ -15,6 +15,8 @@ The argument below is written for real quadratic forms and the original
 five-field certificates. The current native implementation also covers the
 [16-field real survey](docs/native_survey.md) and
 [imaginary quadratic Hermitian forms](docs/imaginary_quadratic.md).
+The GL construction is now rank-independent; the changes of dimension and
+the supported arithmetic scope are specified below.
 
 The reference is Coulangeon, Nebe, Braun and Schönnenbeck,
 [*Computing in arithmetic groups with Voronoï's algorithm*](https://arxiv.org/abs/1407.6234),
@@ -22,6 +24,53 @@ version 1: Lemma 2.3 and Theorem 2.4 (perfect cones), Section 3 and
 Theorem 3.5 (the contractible well-rounded complex and duality), Theorem 4.1
 (the group-action presentation theorem), and Section 7.3 (ridge cycles).
 Below we specify how the hypotheses and path conventions are realized here.
+
+## General GL rank
+
+`run_gl_pipeline` applies the same construction to Mₙ(K) acting on Oⁿ,
+for every integer n ≥ 2, over Q or a real or imaginary quadratic field.
+The order is maximal and the lattice is free. This generalization does not
+extend the rank-two determinant-kernel and projective-quotient routines.
+
+Write m for the dimension of the rational form space: n(n+1)/2 over Q,
+n(n+1) for a real quadratic field, and n² for an imaginary quadratic field.
+Replace the dimensions six, five and four below by m, m−1 and m−2.
+The trace pairing is formed in the entire m-dimensional space. Supporting
+vectors of a positive ridge must span Kⁿ; exact column-rank computation
+records n independent vectors. Their sum of outer products is positive
+definite at every embedding (using conjugate transpose in the Hermitian
+case), and exact positivity is checked. Nonspanning ridges are boundary
+faces and are discarded: they do not define attaching 2-cells of the
+well-rounded complex. In particular, GL₂(Z) has a graph and no such 2-cells.
+
+The transverse ridge link is still a circle. Ordered crossings, reverse
+replay, complete ridge coverage, full edge stabilizers, coherent tree lifts
+and the group-action theorem are unchanged. Only the 2-skeleton is needed
+to present the group. All matrices and constructive-word denominator
+checks use the requested field and rank.
+
+The higher-rank runner walks both orientations of one ridge in each orbit
+of the full finite vertex stabilizer. For every omitted local ridge, the
+coverage ledger records a stabilizer matrix, its word in the original
+stabilizer generators, and the chosen representative. Validation replays
+the word, tests membership in the full vertex stabilizer, and checks its
+exact action on the complete supporting-vector set. The ledger must cover
+every local ridge, and each chosen representative must have both attaching
+cycles. These are translates of the same attaching disk under an already
+included vertex stabilizer, so the selected cycles still meet every global
+2-cell orbit. No global 2-cell orbit count is asserted. The historical
+rank-two runner continues to walk every local ridge individually.
+
+Extreme rays of every ridge are obtained by restricting the parent's exact
+extreme-ray set to the face. This is the face-of-a-polyhedral-cone property;
+the independent face dimension and positivity checks remain in place.
+
+Higher-rank finite stabilizers store every element, its normal-form word,
+and right multiplication by every chosen generator. The relations
+`w_x g = w_(xg)` still give a complete finite-group presentation: a full
+order-by-order multiplication table adds no relations needed for this
+argument. The serialized `generator_products` table replaces the full
+`multiplication_table` in higher-rank certificates.
 
 ## 1. Arithmetic group and complete vertices
 

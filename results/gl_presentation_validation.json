@@ -1,0 +1,459 @@
+{
+  "schema": "av_gl_presentation_validation_v1",
+  "status": "passed",
+  "checked_utc": "2026-10-24T15:28:33.696516+00:00",
+  "scope": "GL_n on free lattices over Q and real/imaginary quadratic maximal orders; n >= 2",
+  "claims": "Four completed comparison cases: fresh native presentations, full exact ridge coverage, constructive words, and reciprocal abstract isomorphisms with independent Magma presentations; HAP presentations and H1 in the indicated cases. The additional real-quadratic rank-three native result has an incomplete Magma comparison.",
+  "julia_version": "1.13.2",
+  "oscar_version": "1.8.2",
+  "hap_version": "1.80",
+  "vmh_commits": [
+    "befcfeda041781b7de922a16a37388decee2c642",
+    "b5b79a8103c648c36e90b8bd95880782a3ff0d2e"
+  ],
+  "source_sha256": {
+    "src/Literature.jl": "eed7960211328bcfd7279bc4e602b989452465f57d13402a7b18547faf085474",
+    "gap/VoronoiBackends.g": "de359f647b5f84f77767f4757cf09b8ae1ae8b28d63cd0dde85a29e93afed274",
+    "src/GLPipeline.jl": "8934f2b8f9827d772562e4e9d2c430c66a911400eb258ea9dc5e61bf69ba2df1",
+    "src/Words.jl": "dfda43fa972ff0a09104e2a85cad0cbf1a722af481399d9504275a17806b14d6",
+    "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+    "src/FieldPipeline.jl": "15b057b7a366446d1307fe4e98508d897b03dffcb04e0767c9712074b0ca98d5",
+    "src/Presentations.jl": "3357a861d086a99886a0929abcf1a24525993f0d7f2b3d0318bf011144da1169",
+    "src/ArithmeticVoronoi.jl": "44e48f1f60e99b1fd16529a447106b8c5f01bf2ae1cf39731d2880f94390d714",
+    "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+    "src/Fields.jl": "cc63416b3b00ab1cef6b91c5e9d74ab72180f24fdf120d448671fd492a44e3f4",
+    "src/Simplification.jl": "c52e563abd53bd5cff209b853949ebb8207bc84948519ae42041af5041f3ac6d",
+    "src/TwoCells.jl": "7cf4dee0adcc3b5b3db6e339f6dff1ec4d70b8abd4b4b11ffd68bdd3549c6195",
+    "gap/ArithmeticVoronoi.g": "69f15518742e31ca159ab545842f4a2449c8fe42b808bd32d6b940281ac32d09",
+    "src/Backend.jl": "874f613702091307fb84c4c93107ec5f552d5359a58a6b836e73ed245d3c465f",
+    "src/SLExtraction.jl": "e93e2569ecfd51523b9d3aafc889b27b241bc3b9cf6cfd764c4b3ec4b0c397ba",
+    "src/Requests.jl": "7bf1f0b7f8ef5089e8e67550ba8918d695785abd3098821b9ffb51e1aaca474e",
+    "src/Projective.jl": "6c825c64c6b6f15fb902af73647516848fd98a7aa64f0f127ca6d150b916bf75",
+    "src/HAP.jl": "9990f27158fcb43fe9573bffad08dcb0b2d7deea7d8db8bc9feb385218c5306a",
+    "src/Dataset.jl": "690b1e21a1726b317b5e63aebb28796f3f6ebaf27bb61b2f75f174abdb07fe5b"
+  },
+  "hap_commit": "fa63c46f5974d15d26e27359e5f515a421fd186c",
+  "comparison_scripts_sha256": {
+    "scripts/compare_gl_presentations.jl": "0c642f66cd920e35155fedacb7951fc629274f6d5c70ba8807fba38c248dc6ec",
+    "scripts/magma_gl_presentation.m": "013940cb1cf954c544baad571bf54d69d04435deaa4b7cf3bcd5dcd928dec6b7",
+    "scripts/magma_check_gl_maps.m": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+  },
+  "tests": [
+    {
+      "suite": "native regressions",
+      "passed_assertions": 1329,
+      "command": "julia --startup-file=no --project=. -e 'include(\"test/model.jl\"); include(\"test/requests.jl\"); include(\"test/native.jl\"); include(\"test/imaginary.jl\")'",
+      "log_sha256": "47b2142772d8a104fcb8a3cf5bc96a3250f02e02d342d67e74bb4a53084d4a4e"
+    },
+    {
+      "suite": "GL and HAP 1.78",
+      "passed_assertions": 122,
+      "command": "julia --startup-file=no --project=. test/gl_presentations.jl",
+      "log_sha256": "7d6ef2c0c3a3b43eddbce3df24e1b624915c4f3abf81b595af6b1ac662e75154"
+    },
+    {
+      "suite": "GL and HAP 1.80",
+      "passed_assertions": 122,
+      "command": "ARITHMETIC_VORONOI_HAP_ROOT=/tmp/av-hap-followup julia --startup-file=no --project=. test/gl_presentations.jl",
+      "log_sha256": "59c5fc3e1b42d0f869df0701508b69c730a895412b753d769c859a4edd7d8839"
+    }
+  ],
+  "passed_assertions": 1573,
+  "cases": [
+    {
+      "discriminant": 1,
+      "rank": 3,
+      "status": "passed",
+      "native_geometry": {
+        "oriented_loops": 4,
+        "local_ridge_orbits": [
+          2
+        ],
+        "local_ridges": [
+          15
+        ],
+        "perfect_form_orbits": 1,
+        "global_unoriented_edges": 1
+      },
+      "native_presentation": {
+        "raw_relators": 301,
+        "raw_generators": 10,
+        "relators": 10,
+        "generators": 3,
+        "abelianization": {
+          "free_rank": 0,
+          "torsion": [
+            "2"
+          ],
+          "method": "Smith normal form of the relator exponent-sum matrix"
+        }
+      },
+      "native_stage_seconds": {
+        "ridges": 2.900352152,
+        "attaching_loops": 7.762164934,
+        "GL_assembly": 2.558771594,
+        "enumeration": 62.256728496,
+        "abelianization": 6.4365e-05,
+        "GL_simplification": 0.196516335
+      },
+      "magma": {
+        "working_directory": "results/gl_comparison_final/GL3_D1/vmh_eIvv33",
+        "map_check_seconds": 12.855837499,
+        "version": [
+          2,
+          30,
+          1
+        ],
+        "exact_form_isometries": [
+          1
+        ],
+        "relators": 25,
+        "perfect_forms": 1,
+        "generators": 3,
+        "exact_relator_and_bidirectional_generator_word_checks": true,
+        "abelianization": [
+          2
+        ],
+        "abstract_isomorphism": "verified"
+      },
+      "magma_seconds": 0.26878365,
+      "abstract_proof_log": "Loading \"presentation_maps.m\"\nChecking both homomorphisms and inverse maps on every abstract generator\nNative presentation: relation rewriting capacity 32767\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 28/28 required identities\nReference presentation: relation rewriting capacity 32767\nWarning: Knuth Bendix only partly succeeded\nReference presentation: proved 13/13 required identities\nAbstract presentation isomorphism verified\n",
+      "local_results": "results/gl_comparison_final/GL3_D1",
+      "hap": {
+        "relators": 11,
+        "exact_relator_and_generator_word_checks": true,
+        "generators": 4,
+        "cells": [
+          1,
+          1,
+          2,
+          1
+        ],
+        "abelianization": [
+          2
+        ]
+      },
+      "artifact_sha256": {
+        "native/GL_raw.json": "85e0607bbaca64b5784df088c641fd67c059f3bfa901ce2fcb66065527165870",
+        "native/GL_simplified.json": "ad149d9285490262c088969b302e69f5266f4ecb74254571c23888cf0d0aad37",
+        "generator_maps.json": "0cc265128ef5335907095b7c6e3d4ebc89d6318545ed1bd5b2a81afaa9934e61",
+        "magma.log": "229d54e11e29592036eabc3bbf0eb27f218a971d3e652dcabf39342eb75b36e7",
+        "magma_maps.log": "7efca04307b6d261fd57b3c1093ee7e79d72b9da565202fe4d1b5cac7d3b980a",
+        "vmh_eIvv33/reference.json": "5b8b6170b5b105b32af4727c733d90c248eb85e647bbe64cf7159199d7b9ef71",
+        "vmh_eIvv33/presentation_maps.m": "f10c17574bfe5e251b59d26c3aaf01dddde09254a6b4e840286bbdc8607450b4",
+        "vmh_eIvv33/maps.m": "de6fca01b13775612a0a2937b84e503f5cd77d5e039b2d88d7082131895ab523"
+      }
+    },
+    {
+      "discriminant": -4,
+      "rank": 3,
+      "status": "passed",
+      "native_geometry": {
+        "oriented_loops": 6,
+        "local_ridge_orbits": [
+          3
+        ],
+        "local_ridges": [
+          288
+        ],
+        "perfect_form_orbits": 1,
+        "global_unoriented_edges": 1
+      },
+      "native_presentation": {
+        "raw_relators": 1599,
+        "raw_generators": 9,
+        "relators": 15,
+        "generators": 3,
+        "abelianization": {
+          "free_rank": 0,
+          "torsion": [
+            "4"
+          ],
+          "method": "Smith normal form of the relator exponent-sum matrix"
+        }
+      },
+      "native_stage_seconds": {
+        "ridges": 2.566274036,
+        "attaching_loops": 4.528610227,
+        "GL_assembly": 4.472819611,
+        "enumeration": 8.799271896,
+        "abelianization": 5.8538e-05,
+        "GL_simplification": 5.655804207
+      },
+      "magma": {
+        "working_directory": "results/gl_comparison_final/GL3_D-4/vmh_ieKqyq",
+        "map_check_seconds": 4.233147123,
+        "version": [
+          2,
+          30,
+          1
+        ],
+        "exact_form_isometries": [
+          1
+        ],
+        "relators": 1419,
+        "perfect_forms": 1,
+        "generators": 3,
+        "exact_relator_and_bidirectional_generator_word_checks": true,
+        "abelianization": [
+          4
+        ],
+        "abstract_isomorphism": "verified"
+      },
+      "magma_seconds": 19.702873985,
+      "abstract_proof_log": "Loading \"presentation_maps.m\"\nChecking both homomorphisms and inverse maps on every abstract generator\nNative presentation: relation rewriting capacity 32767\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 1422/1422 required identities\nReference presentation: relation rewriting capacity 32767\nWarning: Knuth Bendix only partly succeeded\nReference presentation: proved 18/18 required identities\nAbstract presentation isomorphism verified\n",
+      "local_results": "results/gl_comparison_final/GL3_D-4",
+      "hap": {
+        "relators": 24,
+        "exact_relator_and_generator_word_checks": true,
+        "generators": 7,
+        "cells": [
+          1,
+          1,
+          3,
+          5,
+          4,
+          3,
+          2
+        ],
+        "abelianization": [
+          4
+        ]
+      },
+      "artifact_sha256": {
+        "native/GL_raw.json": "f8ff831eb58631e2cc8cc6c8a8184e477c82184108367c0b975386bbd16445be",
+        "native/GL_simplified.json": "6bb9368c86a534a556e4a638d1357f31260566eed9a831a7f0ac884398795af2",
+        "generator_maps.json": "4656f96bebda323eba3b2fccbbe9b0a940186a1ad89a05efe3f8ad89756fd193",
+        "magma.log": "639cbf5e584ee421d7ee7dc76627a41a1f1b88f2d2e9a70eae01f99db0158473",
+        "magma_maps.log": "aecf40b29e48a892a2b932945d6ffe39d7bab520dfa93600c806e222beee888b",
+        "vmh_ieKqyq/reference.json": "f15bb0995b328df6e9b99da61d8a0fa5f178dbf71496488c19ff3cd9c8420d4c",
+        "vmh_ieKqyq/presentation_maps.m": "4e1e80fa39d97514a09a081a817eb51064950beb6a85e461c585e8f9030fda37",
+        "vmh_ieKqyq/maps.m": "de6fca01b13775612a0a2937b84e503f5cd77d5e039b2d88d7082131895ab523"
+      }
+    },
+    {
+      "discriminant": 1,
+      "rank": 4,
+      "status": "passed",
+      "native_geometry": {
+        "oriented_loops": 8,
+        "local_ridge_orbits": [
+          2,
+          2
+        ],
+        "local_ridges": [
+          288,
+          45
+        ],
+        "perfect_form_orbits": 2,
+        "global_unoriented_edges": 2
+      },
+      "native_presentation": {
+        "raw_relators": 12729,
+        "raw_generators": 27,
+        "relators": 63,
+        "generators": 3,
+        "abelianization": {
+          "free_rank": 0,
+          "torsion": [
+            "2"
+          ],
+          "method": "Smith normal form of the relator exponent-sum matrix"
+        }
+      },
+      "native_stage_seconds": {
+        "ridges": 1.441240645,
+        "attaching_loops": 5.264029217,
+        "GL_assembly": 2.702383903,
+        "enumeration": 44.082387373,
+        "abelianization": 0.000235564,
+        "GL_simplification": 3.977095697
+      },
+      "magma": {
+        "working_directory": "results/gl_comparison_q4/GL4_D1/vmh_ZxYBTD",
+        "version": [
+          2,
+          30,
+          1
+        ],
+        "exact_form_isometries": [
+          1,
+          2
+        ],
+        "relators": 949,
+        "perfect_forms": 2,
+        "generators": 3,
+        "exact_relator_and_bidirectional_generator_word_checks": true,
+        "abelianization": [
+          2
+        ],
+        "abstract_isomorphism": "verified",
+        "proof_continuation": "Reused the saved exact presentation maps; the final proof combined positive relation reductions from several generator orderings.",
+        "map_prover_sha256": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+      },
+      "magma_seconds": 48.372555573,
+      "abstract_proof_log": "Loading \"presentation_maps.m\"\nChecking both homomorphisms and inverse maps on every abstract generator\nNative presentation: relation rewriting capacity 32767, order [ 1, 2, 3 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 798/952 required identities\nNative presentation: relation rewriting capacity 32767, order [ 3, 2, 1 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 882/952 required identities\nNative presentation: relation rewriting capacity 32767, order [ 2, 3, 1 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 905/952 required identities\nNative presentation: relation rewriting capacity 32767, order [ 1, 3, 2 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 915/952 required identities\nNative presentation: relation rewriting capacity 32767, order [ 3, 1, 2 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 927/952 required identities\nNative presentation: relation rewriting capacity 32767, order [ 2, 1, 3 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 940/952 required identities\nNative presentation: relation rewriting capacity 65534, order [ 1, 2, 3 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 944/952 required identities\nNative presentation: relation rewriting capacity 65534, order [ 3, 2, 1 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 950/952 required identities\nNative presentation: relation rewriting capacity 65534, order [ 2, 3, 1 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 950/952 required identities\nNative presentation: relation rewriting capacity 65534, order [ 1, 3, 2 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 951/952 required identities\nNative presentation: relation rewriting capacity 65534, order [ 3, 1, 2 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 952/952 required identities\nReference presentation: relation rewriting capacity 32767, order [ 1, 2, 3 ]\nWarning: Knuth Bendix only partly succeeded\nReference presentation: proved 65/66 required identities\nReference presentation: relation rewriting capacity 32767, order [ 3, 2, 1 ]\nWarning: Knuth Bendix only partly succeeded\nReference presentation: proved 66/66 required identities\nAbstract presentation isomorphism verified\n",
+      "local_results": "results/gl_comparison_q4/GL4_D1",
+      "artifact_sha256": {
+        "native/GL_raw.json": "5f7d7b5172f1bf42273e9aa417cd6b417e2c19d439bc4ad97cead3b2ee6614b2",
+        "native/GL_simplified.json": "5ff7fcd20cf286f3e386246920addbcb63ff4e9770f61e247c65a9fb9e0b99bb",
+        "generator_maps.json": "55fe234fdd1165d197306222a54a092de8b9fcdd2ecfa670f8a3ea4972ee0d0d",
+        "magma.log": "98765a5369eea55fe00e942153a0e4af3b8677c33754a8b10500612de75bbbe0",
+        "magma_maps.log": "1de10c7e777b479bbc49a08af887960e4fead76a329c364f52e9495b1853049a",
+        "vmh_ZxYBTD/reference.json": "e9c8ac1e3137e873169d0281fb3026fe94c20df3f76b7e66d1abea7d8f147188",
+        "vmh_ZxYBTD/presentation_maps.m": "fb6577bd19ad1cabad4387466670bd2f4b84767a2e08f58290f813dc6ef8498b",
+        "vmh_ZxYBTD/maps.m": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+      }
+    },
+    {
+      "discriminant": -7,
+      "rank": 2,
+      "status": "passed",
+      "native_geometry": {
+        "oriented_loops": 18,
+        "local_ridge_orbits": [
+          2
+        ],
+        "local_ridges": [
+          9
+        ],
+        "perfect_form_orbits": 1,
+        "global_unoriented_edges": 2
+      },
+      "native_presentation": {
+        "raw_relators": 93,
+        "raw_generators": 9,
+        "relators": 9,
+        "generators": 4,
+        "abelianization": {
+          "free_rank": 0,
+          "torsion": [
+            "2",
+            "2",
+            "2"
+          ],
+          "method": "Smith normal form of the relator exponent-sum matrix"
+        }
+      },
+      "native_stage_seconds": {
+        "ridges": 1.131234675,
+        "attaching_loops": 4.65480523,
+        "GL_assembly": 1.873810079,
+        "enumeration": 43.759344158,
+        "abelianization": 4.4453e-05,
+        "GL_simplification": 0.135436665
+      },
+      "magma": {
+        "working_directory": "results/gl_comparison_rank2_final/GL2_D-7/vmh_dZhBvW",
+        "map_check_seconds": 6.48862621,
+        "version": [
+          2,
+          30,
+          1
+        ],
+        "exact_form_isometries": [
+          1
+        ],
+        "relators": 10,
+        "perfect_forms": 1,
+        "generators": 4,
+        "exact_relator_and_bidirectional_generator_word_checks": true,
+        "abelianization": [
+          2,
+          2,
+          2
+        ],
+        "abstract_isomorphism": "verified"
+      },
+      "magma_seconds": 0.173807292,
+      "abstract_proof_log": "Loading \"presentation_maps.m\"\nChecking both homomorphisms and inverse maps on every abstract generator\nNative presentation: relation rewriting capacity 32767, order [ 1, 2, 3, 4 ]\nWarning: Knuth Bendix only partly succeeded\nNative presentation: proved 14/14 required identities\nReference presentation: relation rewriting capacity 32767, order [ 1, 2, 3, 4 ]\nWarning: Knuth Bendix only partly succeeded\nReference presentation: proved 13/13 required identities\nAbstract presentation isomorphism verified\n",
+      "local_results": "results/gl_comparison_rank2_final/GL2_D-7",
+      "hap": {
+        "relators": 9,
+        "exact_relator_and_generator_word_checks": true,
+        "generators": 4,
+        "cells": [
+          1,
+          2,
+          1
+        ],
+        "abelianization": [
+          2,
+          2,
+          2
+        ]
+      },
+      "artifact_sha256": {
+        "native/GL_raw.json": "6dee5eee259e39c25e96ebe76e0c27a9d783220f6eac930f368f5c9249141fc3",
+        "native/GL_simplified.json": "9099b4585a7e1cf6a1f5f802a1089a102f39d86eccbc3b9e748fddaee7ef80dd",
+        "generator_maps.json": "128193d03542068eaa483a80ec255acb59cf6483906c27f3d63e66a51aaa8420",
+        "magma.log": "f20719a1a9361fc3624b7b80e38192fdf8c261e09d76f98f82b205d94792db17",
+        "magma_maps.log": "00ebf9a272ceafb0c6d58a470d029102bb9187f5d6e72cafcb0d9fcbd182a307",
+        "vmh_dZhBvW/reference.json": "a036c1aae83250ac936b0e564efdcd27d33da6bfae0b7755a2fd05b75db98b58",
+        "vmh_dZhBvW/presentation_maps.m": "3c73f203a8dd9394f993ea641f12f49f9d243af10657aadab7baa6020a15f5ed",
+        "vmh_dZhBvW/maps.m": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+      }
+    }
+  ],
+  "additional_native_cases": [
+    {
+      "discriminant": 5,
+      "rank": 3,
+      "native_status": "complete",
+      "native_geometry": {
+        "oriented_loops": 782,
+        "local_ridge_orbits": [
+          255,
+          49,
+          49,
+          12,
+          7,
+          15,
+          4
+        ],
+        "local_ridges": [
+          10536,
+          313,
+          313,
+          66,
+          66,
+          66,
+          66
+        ],
+        "perfect_form_orbits": 7,
+        "global_unoriented_edges": 34
+      },
+      "native_presentation": {
+        "raw_relators": 3949,
+        "raw_generators": 144,
+        "relators": 207,
+        "generators": 3,
+        "abelianization": {
+          "free_rank": 1,
+          "torsion": [
+            "2"
+          ],
+          "method": "Smith normal form of the relator exponent-sum matrix"
+        }
+      },
+      "native_stage_seconds": {
+        "ridges": 12.667471504,
+        "attaching_loops": 88.135233038,
+        "GL_assembly": 17.776383019,
+        "enumeration": 47.544421899,
+        "abelianization": 0.000315923,
+        "GL_simplification": 16.417537392
+      },
+      "magma_presentation_comparison": "incomplete",
+      "limitation": "The pristine Magma reference found seven perfect forms but did not finish its exhaustive attaching-loop calculation. It was stopped manually; no abstract-presentation agreement is claimed for this case.",
+      "earlier_exact_perfect_form_comparison": "results/higher_rank_validation.json",
+      "local_results": "results/gl_comparison_real_final/GL3_D5",
+      "magma_log": "Still 1 forms to treat. I have found 1 perfect forms.\nI am now treating a Voronoi domain which has 683 faces.\nStill 5 forms to treat. I have found 6 perfect forms.\nI am now treating a Voronoi domain which has 34 faces.\nStill 5 forms to treat. I have found 7 perfect forms.\nI am now treating a Voronoi domain which has 34 faces.\nStill 4 forms to treat. I have found 7 perfect forms.\nI am now treating a Voronoi domain which has 12 faces.\nStill 3 forms to treat. I have found 7 perfect forms.\nI am now treating a Voronoi domain which has 12 faces.\nStill 2 forms to treat. I have found 7 perfect forms.\nI am now treating a Voronoi domain which has 12 faces.\nStill 1 forms to treat. I have found 7 perfect forms.\nI am now treating a Voronoi domain which has 12 faces.\nVoronoi data assembled.\nNow doing perfect form number  1 . Its Voronoi domain has  10536  edges.\n",
+      "artifact_sha256": {
+        "native/GL_raw.json": "b1a5a87ed76298b72b7c64319624ffe66ecc41b9e27457a2ab91cbc654cddfe9",
+        "native/GL_simplified.json": "326d08e7ea9c62436ddf1f59a127905bfbd7a9882022c51af6636fed3b54156e",
+        "magma.log": "239b734dd0ac5e3c756bb84cb7f69bbdd342460ea0b1ed30db7844d3612fc8c9"
+      }
+    }
+  ]
+}

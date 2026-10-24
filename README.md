@@ -1,8 +1,9 @@
 # ArithmeticVoronoi
 
-Compute presentations and verified matrix-to-word expressions for **GL(2,O),
-SL(2,O) and PSL(2,O)**, where O is the maximal order of a real or imaginary
-quadratic field, acting on the free lattice O². The native backend uses
+Compute presentations and verified matrix-to-word expressions for **GL(n,O)**
+(`n ≥ 2`), and **SL(2,O), PSL(2,O)**, where O is the maximal order of a real or
+imaginary quadratic field, acting on the free lattice Oⁿ. GL(n,Z) is also
+supported. The native backend uses
 Julia, OSCAR and Hecke; no C++ build or Magma installation is needed.
 
 The implemented group algorithm is from Oliver Braun, Renaud Coulangeon,
@@ -56,7 +57,7 @@ Saved archives and Python are optional.
 - [Five imaginary quadratic fields](docs/imaginary_quadratic.md): full
   presentations and comparisons with Yasaki, HAP and Aurel Page's Magma code.
 - [Native higher homology with HAP and Schönnenbeck comparisons](docs/hap_and_vmh.md).
-- [Higher-rank enumeration and HAP complexes](docs/higher_rank.md), with Magma regression comparisons.
+- [Higher-rank GL presentations and HAP complexes](docs/higher_rank.md), with Magma regression comparisons.
 - [Shared request records and JSON experiment batches](docs/requests.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).

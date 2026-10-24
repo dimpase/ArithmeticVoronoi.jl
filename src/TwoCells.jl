@@ -32,35 +32,57 @@ struct RidgeRecord
     rays::QQMatrix
     facets::Vector{Int}
     field_rank::Int
-    rank_witness::Tuple{Int,Int}
+    rank_witness::Tuple{Vararg{Int}}
     interior_form::Any
 end
 
-"""All exact codimension-two faces, without arithmetic orbit identifications."""
+function ridge_rank_witness(P,vectors)
+    # Preserve the rank-two witness ordering in existing exact certificates.
+    if P.rank==2
+        for a in eachindex(vectors),b in 1:a-1
+            vectors[a][1]*vectors[b][2]-vectors[a][2]*vectors[b][1]!=0 && return (a,b)
+        end
+        return isempty(vectors) ? () : (1,)
+    end
+    basis=zero_matrix(P.field,P.rank,0);indices=Int[]
+    for (i,v) in enumerate(vectors)
+        candidate=hcat(basis,matrix(P.field,P.rank,1,v))
+        rank(candidate)>length(indices) || continue
+        basis=candidate;push!(indices,i)
+        length(indices)==P.rank && break
+    end
+    Tuple(indices)
+end
+
+"""All exact codimension-two faces meeting the positive cone, without orbit identifications."""
 function enumerate_ridges(E::ArithmeticVoronoiEnumeration)
     P=E.problem;dimension=length(P.form_basis);pairing=trace_pairing_matrix(P)
-    P.rank==2 || throw(ArgumentError("presentation ridge certificates currently require rank 2; use voronoi_complex for higher-rank cells"))
     result=Vector{RidgeRecord}[]
     for (i,r) in enumerate(E.representatives)
+        # Every extreme ray of a face is an extreme ray of its parent cone.
+        # Compute this once, rather than constructing a polyhedron per ridge.
+        extreme=matrix(QQ,rays(positive_hull(r.evaluation_rays)))
+        extreme_keys=Set(primitive_ray(v) for v in matrix_rows(extreme))
         seen=Dict{Tuple,Vector{Int}}()
+        examined=Set{Tuple}()
         for a in eachindex(r.facets),b in 1:a-1
             indices=intersect(r.facets[a].indices,r.facets[b].indices)
-            isempty(indices) && continue
+            length(indices)>=dimension-2 || continue
+            key=Tuple(indices);key in examined && continue;push!(examined,key)
             rank(r.evaluation_rays[indices,:])==dimension-2 || continue
-            seen[Tuple(indices)]=indices
+            seen[key]=indices
         end
         records=RidgeRecord[]
-        for (id,key) in enumerate(sort!(collect(keys(seen))))
+        for key in sort!(collect(keys(seen)))
             indices=seen[key]
             incident=findall(f->issubset(indices,f.indices),r.facets)
             ensure(length(incident)==2,"a ridge must have exactly two irredundant incident facets")
             field_vectors=[field_vector(P,r.minimal_vectors[j]) for j in indices]
-            witness=(0,0)
-            for a in eachindex(field_vectors),b in 1:a-1
-                field_vectors[a][1]*field_vectors[b][2]-field_vectors[a][2]*field_vectors[b][1]!=0 && (witness=(a,b);break)
-            end
-            kr=witness==(0,0) ? 1 : 2
-            ensure(kr==2,"ridge does not meet the positive cone: supporting vectors have K-rank one")
+            witness=ridge_rank_witness(P,field_vectors);kr=length(witness)
+            # Boundary faces do not give attaching 2-cells of the well-rounded
+            # complex. In particular the classical binary complex is a graph.
+            kr==P.rank || continue
+            id=length(records)+1
             interior=zero_matrix(P.field,P.rank,P.rank)
             for (v,j) in zip(field_vectors,indices)
                 outer=vector_outer(P,v)
@@ -70,8 +92,8 @@ function enumerate_ridges(E::ArithmeticVoronoiEnumeration)
                 interior+=outer
             end
             ensure(positive_definite(trace_gram(P,interior)),"ridge positive interior witness failed")
-            cone=positive_hull(r.evaluation_rays[indices,:])
-            extreme=matrix(QQ,rays(cone));keys=sort!(unique(primitive_ray(v) for v in matrix_rows(extreme)))
+            keys=sort!(unique(primitive_ray(v) for v in matrix_rows(r.evaluation_rays[indices,:])
+                if primitive_ray(v) in extreme_keys))
             exact_rays=matrix(QQ,length(keys),dimension,[QQ(keys[a][b]) for a in eachindex(keys) for b in 1:dimension])
             ensure(rank(exact_rays)==dimension-2,"ridge extreme-ray dimension mismatch")
             push!(records,RidgeRecord(i,id,indices,exact_rays,incident,kr,witness,interior))
@@ -172,7 +194,7 @@ struct TwoCellCertificate
     source_hash::String
 end
 
-function walk_ridge(ctx::TwoCellContext,i,ridge_id;outgoing=nothing,max_steps=1000,checkpoint=nothing)
+function walk_ridge(ctx::TwoCellContext,i,ridge_id;outgoing=nothing,max_steps=typemax(Int),checkpoint=nothing)
     E=ctx.enumeration;P=E.problem;ridge=ctx.ridges[i][ridge_id];r=E.representatives[i]
     outgoing=isnothing(outgoing) ? first(ridge.facets) : outgoing
     ensure(outgoing in ridge.facets,"initial outgoing facet is not incident to the ridge")
@@ -310,7 +332,11 @@ function local_ridge_orbits(ctx,i)
 end
 
 """Compute every local ridge in both orientations, retaining validated per-loop caches."""
-function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT,"results/two_cells","D$(ctx.enumeration.problem.discriminant)"),stop_after=nothing)
+function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT,"results/two_cells",
+        ctx.enumeration.problem.rank==2 ? "D$(ctx.enumeration.problem.discriminant)" :
+        "rank$(ctx.enumeration.problem.rank)_D$(ctx.enumeration.problem.discriminant)"),stop_after=nothing,
+        reduce_orbits=false)
+    reduce_orbits && return enumerate_two_cell_orbits(ctx;directory,stop_after)
     mkpath(directory);cache=joinpath(directory,"loops");mkpath(cache)
     ledger=Dict{String,Any}("schema"=>TWO_CELL_SCHEMA,"status"=>"partial","source_hash"=>ctx.source_hash,
         "problem"=>problem_descriptor(ctx.enumeration.problem),"local_ridge_counts"=>length.(ctx.ridges),
@@ -365,6 +391,91 @@ function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT
     catch err
         ledger["status"]="incomplete";ledger["error"]=sprint(showerror,err);atomic_json(ledger_path,ledger)
         rethrow()
+    end
+    (;certificates,ledger)
+end
+
+"""Replay full ridge coverage, including every claimed stabilizer identification."""
+function validate_ridge_coverage(ctx,flags,coverage)
+    ensure(coverage["status"]=="complete" && all(e["status"]=="complete" for e in coverage["entries"]),
+        "cannot certify a presentation with incomplete ridge coverage")
+    ensure(coverage["source_hash"]==ctx.source_hash,"ridge coverage belongs to a different source enumeration")
+    expected=Set((i,r.id) for (i,list) in enumerate(ctx.ridges) for r in list)
+    selected=Set((i,r) for (i,r,_) in flags)
+    if get(coverage,"coverage_mode","all_local_ridges")=="finite_stabilizer_orbits"
+        P=ctx.enumeration.problem;covered=Set{Tuple{Int,Int}}();representatives=Set{Tuple{Int,Int}}()
+        data=JSON3.read(JSON3.write(coverage["local_ridge_orbits"]),Vector{Any})
+        ensure(length(data)==length(ctx.ridges),"ridge-orbit coverage has the wrong number of vertices")
+        for (i,orbits) in enumerate(data)
+            r=ctx.enumeration.representatives[i]
+            for orbit in orbits
+                rep=Int(orbit["representative"]);push!(representatives,(i,rep))
+                ensure((i,rep) in selected,"ridge orbit has no attaching cycle")
+                target=Set(Tuple(r.minimal_vectors[j]) for j in ctx.ridges[i][rep].indices)
+                for member in orbit["members"]
+                    id=Int(member["ridge"]);ensure((i,id) in expected,"unknown ridge in orbit coverage")
+                    g=field_matrix_wire(P,member["to_representative"])
+                    word=Int.(member["stabilizer_word"])
+                    ensure(eval_matrix_word(ctx,MatrixLetter[(:s,i,j) for j in word])==g,
+                        "ridge identification has a corrupt stabilizer word")
+                    M=encode_matrix(P,g)
+                    ensure(haskey(ctx.groups[i].seen,matrix_key(M)),"ridge identification is outside its vertex stabilizer")
+                    image=Set(signed_key(apply_integral(M,r.minimal_vectors[j])) for j in ctx.ridges[i][id].indices)
+                    ensure(image==target,"stabilizer identification maps to the wrong ridge")
+                    push!(covered,(i,id))
+                end
+            end
+        end
+        ensure(covered==expected && selected==representatives,"stabilizer-orbit ledger does not cover every local ridge")
+    else
+        ensure(get(coverage,"coverage_mode","all_local_ridges")=="all_local_ridges","unknown ridge coverage mode")
+        ensure(selected==expected,"attaching loops do not cover every local ridge")
+    end
+    ensure(Set(flags)==Set((i,r,f) for (i,r) in selected for f in ctx.ridges[i][r].facets),
+        "attaching cycles must cover both orientations of each selected ridge")
+    true
+end
+
+function enumerate_two_cell_orbits(ctx;directory,stop_after=nothing)
+    mkpath(directory);cache=joinpath(directory,"loops");mkpath(cache)
+    orbits=[local_ridge_orbits(ctx,i) for i in eachindex(ctx.ridges)]
+    entries=[Dict{String,Any}("source"=>i,"ridge"=>o.representative,"status"=>"pending")
+        for (i,layer) in enumerate(orbits) for o in layer]
+    ledger=Dict{String,Any}("schema"=>TWO_CELL_SCHEMA,"status"=>"partial","source_hash"=>ctx.source_hash,
+        "problem"=>problem_descriptor(ctx.enumeration.problem),"coverage_mode"=>"finite_stabilizer_orbits",
+        "local_ridge_counts"=>length.(ctx.ridges),"local_ridge_orbits"=>orbits,
+        "locally_reduced_ridge_counts"=>length.(orbits),"entries"=>entries,
+        "global_two_cell_orbits"=>nothing,"global_reduction"=>"local vertex-stabilizer orbits with exact covering witnesses")
+    save()=atomic_json(joinpath(directory,"coverage.json"),ledger)
+    save();certificates=TwoCellCertificate[];cached=0;started=time_ns()
+    try
+        for (cursor,entry) in enumerate(entries)
+            i=entry["source"];ridge=ctx.ridges[i][entry["ridge"]]
+            pair=TwoCellCertificate[];files=String[]
+            for outgoing in ridge.facets
+                file=joinpath(cache,"cone$(i)_ridge$(ridge.id)_out$(outgoing).json")
+                if isfile(file)
+                    C=read_two_cell(ctx,file);cached+=1
+                else
+                    C=walk_ridge(ctx,i,ridge.id;outgoing,checkpoint=file*".partial")
+                    atomic_json(file,two_cell_data(ctx,C))
+                end
+                push!(pair,C);push!(certificates,C);push!(files,relpath(file,directory))
+            end
+            entry["reverse_frame_corrections"]=reverse_cycle_check(ctx,pair...)
+            entry["certificates"]=files;entry["length"]=length(first(pair).steps);entry["status"]="complete"
+            ledger["cache_hits"]=cached;ledger["completed_oriented_loops"]=length(certificates)
+            println("D",ctx.enumeration.problem.discriminant," ridge orbit ",cursor,"/",length(entries),
+                ": cycle length ",entry["length"]);flush(stdout)
+            if !isnothing(stop_after) && cursor>=stop_after
+                ledger["stop_reason"]="requested batch limit";save();return (;certificates,ledger)
+            end
+        end
+        ledger["elapsed_seconds"]=(time_ns()-started)/1e9;ledger["status"]="complete"
+        validate_ridge_coverage(ctx,[(c.source,c.ridge,c.initial_outgoing) for c in certificates],ledger)
+        save()
+    catch err
+        ledger["status"]="incomplete";ledger["error"]=sprint(showerror,err);save();rethrow()
     end
     (;certificates,ledger)
 end

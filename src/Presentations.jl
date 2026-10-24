@@ -160,7 +160,12 @@ struct PresentationCertificate
     half_edge_words::Vector{Vector{Int}}
     transporter_words::Vector{Vector{Int}}
     loop_count::Int
+    ridge_coverage::Any
 end
+# Historical saved rank-two contexts are reloaded for matrix-word checks;
+# their attaching-loop coverage is validated separately by the dataset reader.
+PresentationCertificate(ctx,graph,coherent,groups,matrices,origins,relations,provenance,ids,halfwords,transporters,count)=
+    PresentationCertificate(ctx,graph,coherent,groups,matrices,origins,relations,provenance,ids,halfwords,transporters,count,nothing)
 
 function finite_element_word(C::PresentationCertificate,vertex,g)
     P=C.context.enumeration.problem;group=C.vertex_groups[vertex]
@@ -170,21 +175,20 @@ function finite_element_word(C::PresentationCertificate,vertex,g)
 end
 
 function build_gl_presentation(ctx::TwoCellContext,cells;coverage)
-    ensure(coverage["status"]=="complete" && all(e["status"]=="complete" for e in coverage["entries"]),"cannot certify a presentation with incomplete ridge coverage")
-    ensure(coverage["source_hash"]==ctx.source_hash,"ridge coverage belongs to a different source enumeration")
-    expected=Set((i,r.id) for (i,list) in enumerate(ctx.ridges) for r in list)
-    ensure(Set((C.source,C.ridge) for C in cells)==expected,"attaching loops do not cover every local ridge")
+    flags=[(C.source,C.ridge,C.initial_outgoing) for C in cells]
+    validate_ridge_coverage(ctx,flags,coverage)
     for C in cells;validate_two_cell(ctx,C);end
     E=ctx.enumeration;P=E.problem;n=length(E.representatives)
     graph=graph_edges(ctx);coherent=coherent_lifts(ctx,graph)
     groups=Any[]
     for (i,r) in enumerate(E.representatives)
         a=coherent.lifts[i]
-        push!(groups,finite_group_record(P,[inv(a)*u*a for u in vertex_elements(ctx,i)];preferred=[inv(a)*u*a for u in r.stabilizer]))
+        push!(groups,finite_group_record(P,[inv(a)*u*a for u in vertex_elements(ctx,i)];
+            preferred=[inv(a)*u*a for u in r.stabilizer],with_table=P.rank==2))
     end
     for edge in graph.edges
         a=coherent.lifts[n+edge.id]
-        push!(groups,finite_group_record(P,[inv(a)*u*a for u in edge.setwise_stabilizer]))
+        push!(groups,finite_group_record(P,[inv(a)*u*a for u in edge.setwise_stabilizer];with_table=P.rank==2))
     end
     matrices=Any[];origins=Any[];vertex_ids=Vector{Int}[]
     for (vertex,group) in enumerate(groups)
@@ -204,7 +208,7 @@ function build_gl_presentation(ctx::TwoCellContext,cells;coverage)
     end
     relators=Vector{Int}[];provenance=Any[]
     C=PresentationCertificate(ctx,graph,coherent,groups,matrices,origins,relators,provenance,
-        vertex_ids,half_words,Vector{Int}[],length(cells))
+        vertex_ids,half_words,Vector{Int}[],length(cells),(;flags,ledger=coverage))
     function add_relation(word,origin)
         reduced=freely_reduce(word)
         ensure(evaluate_word(matrices,reduced)==identity_matrix(P.field,P.rank),"proposed presentation relator fails exact matrix evaluation")
@@ -212,7 +216,8 @@ function build_gl_presentation(ctx::TwoCellContext,cells;coverage)
         push!(relators,reduced);push!(provenance,origin)
     end
     for (vertex,group) in enumerate(groups),(x,element) in enumerate(group.elements),(j,g) in enumerate(group.generators)
-        y=group.multiplication_table[x,group.generator_indices[j]]
+        y=isnothing(group.multiplication_table) ? group.keys[matrix_key(encode_matrix(P,element*g))] :
+            group.multiplication_table[x,group.generator_indices[j]]
         w=[vertex_ids[vertex][k] for k in group.words[x]]
         v=[vertex_ids[vertex][k] for k in group.words[y]]
         add_relation([w;vertex_ids[vertex][j];inverse_word(v)],(;kind="finite_group_cayley_relation",vertex,element=x,generator=j,product=y))
@@ -272,18 +277,35 @@ function verify_presentation(C::PresentationCertificate)
         ensure(-I in group.generators,"finite vertex group lost the central -I generator")
     end
     for word in C.relators;ensure(evaluate_word(C.generator_matrices,word)==I,"presentation matrix relator failed");end
-    ensure(C.loop_count>=sum(length, C.context.ridges),"insufficient attaching-loop coverage")
+    if isnothing(C.ridge_coverage)
+        ensure(C.loop_count>=sum(length,C.context.ridges),"insufficient attaching-loop coverage")
+    else
+        ensure(C.loop_count==length(C.ridge_coverage.flags),"attaching-loop count differs from its coverage flags")
+        validate_ridge_coverage(C.context,C.ridge_coverage.flags,C.ridge_coverage.ledger)
+    end
     true
+end
+
+function presentation_vertex_data(C,i,g)
+    P=C.context.enumeration.problem
+    data=(;vertex=i,order=length(g.elements),elements=field_matrix_data.(Ref(P),g.elements),
+        generator_ids=C.vertex_generator_ids[i],element_words=g.words)
+    if isnothing(g.multiplication_table)
+        # The complete right Cayley graph suffices for the finite-group
+        # relations, without an order-squared table for large stabilizers.
+        products=[[g.keys[matrix_key(encode_matrix(P,x*y))] for y in g.generators] for x in g.elements]
+        return merge(data,(;generator_products=products))
+    end
+    merge(data,(;multiplication_table=[collect(row) for row in eachrow(g.multiplication_table)]))
 end
 
 function presentation_data(C::PresentationCertificate)
     ctx=C.context;P=ctx.enumeration.problem;n=length(ctx.enumeration.representatives)
-    (;schema=PRESENTATION_SCHEMA,status="certified_GL",group=P.group_constraints,source_hash=ctx.source_hash,
+    data=(;schema=PRESENTATION_SCHEMA,status="certified_GL",group=P.group_constraints,source_hash=ctx.source_hash,
       action=P.action_convention,method="Brown presentation on the edge-subdivided well-rounded complex; complete setwise edge stabilizers at new vertices",
       generators=[(;id=i,matrix=field_matrix_data(P,g),provenance=C.generator_provenance[i]) for (i,g) in enumerate(C.generator_matrices)],
       relators=[(;word=w,provenance=C.relator_provenance[i]) for (i,w) in enumerate(C.relators)],
-      vertex_groups=[(;vertex=i,order=length(g.elements),elements=field_matrix_data.(Ref(P),g.elements),
-          generator_ids=C.vertex_generator_ids[i],element_words=g.words,multiplication_table=[collect(row) for row in eachrow(g.multiplication_table)]) for (i,g) in enumerate(C.vertex_groups)],
+      vertex_groups=[presentation_vertex_data(C,i,g) for (i,g) in enumerate(C.vertex_groups)],
       global_original_edges=[(;id=e.id,source=e.source,target=e.target,transporter=field_matrix_data(P,e.transporter),
           midpoint=field_matrix_data(P,e.midpoint),local_directed_orbits=e.darts,oriented_stabilizer=field_matrix_data.(Ref(P),e.oriented_stabilizer),
           setwise_stabilizer=field_matrix_data.(Ref(P),e.setwise_stabilizer),endpoint_reversals=field_matrix_data.(Ref(P),e.reversals),
@@ -294,7 +316,11 @@ function presentation_data(C::PresentationCertificate)
           word=C.half_edge_words[d.id],original_transporter_word=C.transporter_words[d.id]) for d in C.graph.darts],
       coherent_vertex_lifts=field_matrix_data.(Ref(P),C.coherent.lifts),tree_half_edges=sort!(collect(C.coherent.tree)),
       attaching_loop_count=C.loop_count,all_relators_verified=true,simplification="raw presentation retained; no generator elimination yet")
+    P.rank>2 ? merge(data,(;ridge_coverage=C.ridge_coverage)) : data
 end
+
+matrix_coefficient_denominator(P,A)=foldl(lcm,
+    (denominator(P.degree==1 ? QQ(x) : QQ(coeff(x,k))) for x in A for k in 0:P.degree-1);init=ZZ(1))
 
 """Constructive word by exact Voronoi-cone descent toward an interior target.
 
@@ -315,8 +341,8 @@ function matrix_to_word(C::PresentationCertificate,g;max_cones=10000,timeout=120
     pairing=trace_pairing_matrix(P);i=1;a=identity_matrix(P.field,P.rank);word=Int[];start=time_ns();steps=Any[]
     objective(F)=sum(form_coordinates(P,F)[k]*pairing[k,l]*form_coordinates(P,fixed)[l] for k in 1:nrows(pairing),l in 1:ncols(pairing))
     lookup=Dict((d.source,d.local_orbit)=>d.id for d in C.graph.darts)
-    denominator_forms=foldl(lcm,(denominator(QQ(coeff(F.form[x,y],k))) for F in E.representatives for x in 1:P.rank for y in 1:P.rank for k in 0:P.degree-1);init=ZZ(1))
-    denominator_target=foldl(lcm,(denominator(QQ(coeff(fixed[x,y],k))) for x in 1:P.rank for y in 1:P.rank for k in 0:P.degree-1);init=ZZ(1))
+    denominator_forms=foldl(lcm,(matrix_coefficient_denominator(P,r.form) for r in E.representatives);init=ZZ(1))
+    denominator_target=matrix_coefficient_denominator(P,fixed)
     objective_denominator=denominator_forms*denominator_target
     function incomplete(reason)
         isnothing(checkpoint) || atomic_json(checkpoint,(;schema="av_word_path_v1",status="incomplete",reason,

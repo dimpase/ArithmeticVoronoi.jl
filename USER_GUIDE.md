@@ -1,8 +1,8 @@
 # ArithmeticVoronoi user guide
 
 ArithmeticVoronoi computes perfect forms, finite presentations and verified
-matrix words for GL(2,O), SL(2,O) and PSL(2,O). Here O is a maximal quadratic
-order and the lattice is the free module O². Both real and imaginary fields
+matrix words for GL(n,O) (n ≥ 2), SL(2,O) and PSL(2,O). Here O is a maximal quadratic
+order and the lattice is the free module Oⁿ; GL(n,Z) is also supported. Both real and imaginary fields
 are supported by the native Julia backend. Inputs are not restricted to the
 fields already in our surveys.
 
@@ -50,11 +50,35 @@ Pass a **fundamental field discriminant**, not a square-root radicand:
 | −4 | Q(i) | i |
 | −7 | Q(√−7) | (1+√−7)/2 |
 
-The action is K-linear. GL includes all scalar units, and GL and SL retain
-−I. PSL is the separate quotient SL/{I,−I}; its matrices are determinant-one
+The action is K-linear. GL includes all scalar units. In the rank-two
+GL/SL/PSL pipeline, GL and SL retain −I and PSL is the separate quotient
+SL/{I,−I}; its matrices are determinant-one
 lifts. PGL, the quotient of GL by all scalar units, is a different group and
-is not an output of this pipeline. Other lattices, nonmaximal orders and
-higher ranks are outside the current native group interface.
+is not an output of this pipeline. Other lattices and nonmaximal orders
+remain outside the current native group interface.
+
+## GL presentations in higher rank
+
+Use the native GL-only runner for arbitrary rank n ≥ 2:
+
+```julia
+using ArithmeticVoronoi, Oscar
+R = run_gl_pipeline(voronoi_request(-4; rank=3);
+    directory="results/my_GL3_gaussian");
+S = R.simplified[:GL];
+P = R.enumeration.problem;
+g = identity_matrix(P.field, 3); g[1,3] = P.generator;
+certificate = matrix_to_word(R, g);
+verify_word_certificate(R, g, certificate)
+```
+
+For GLₙ(Z), pass `classical_problem(; rank=n)`. For a real quadratic order,
+use, for example, `run_gl_pipeline(5; rank=3, directory="results/my_GL3_D5")`.
+`R.gl` is the raw presentation; `R.simplified[:GL]` includes the Tietze maps.
+This runner defaults to GL for word reduction and uses native enumeration.
+The combined runner below still computes GL₂/SL₂/PSL₂.
+See [higher-rank computations](docs/higher_rank.md) for batches, HAP and
+independent Magma checks.
 
 ## Compute presentations from scratch
 
@@ -287,8 +311,9 @@ The [HAP and Schönnenbeck guide](docs/hap_and_vmh.md) explains the package
 layers, native higher homology, an optional Julia provider for HAP's own
 Voronoi entry points, and independent comparisons with fresh Magma complexes.
 Native complexes also accept higher rank through `voronoi_request(D; rank=n)`:
-quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. The presentation pipeline
-above remains rank two. See [higher-rank computations and validation](docs/higher_rank.md).
+quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. `run_gl_pipeline` also
+constructs GLₙ presentations; the combined GL/SL/PSL pipeline remains rank two.
+See [higher-rank computations and validation](docs/higher_rank.md).
 Cup products require additional contracting-homotopy data.
 
 Current comparisons are:
@@ -301,11 +326,15 @@ Current comparisons are:
 | Five imaginary GL/SL/PSL triples | Abelianizations agree with Page's Magma code; all exported matrix relations checked in OSCAR |
 | D = 5 and −7 | Fresh Schönnenbeck complexes imported into HAP; GL first homology agrees with our abelianizations |
 | Native complexes, D = 5 and −7 | Cell counts and GL H₂ agree with the independent VMH results; H₃ also checked for −7 |
+| GL₃(Z), GL₄(Z), GL₃(Z[i]), GL₂(O₋₇) | Explicit inverse isomorphisms with fresh Schönnenbeck/Magma presentations; HAP presentations and H₁ also checked except in rank four |
 
 For the real and imaginary results, complete tables and timing methodology
 are in [the real survey](docs/native_survey.md) and
 [the imaginary survey](docs/imaginary_quadratic.md). Matching abelianizations
 and matrix relations alone does not certify an isomorphism of presentations.
+The [higher-rank guide](docs/higher_rank.md#gl-presentation-validation) records
+the stronger presentation comparisons and the unfinished Magma comparison
+for GL₃ over Q(√5).
 
 For D = 5, 8, 12 or 13, `compare_kw(R)` constructs explicit maps for the
 Kirchheimer–Wolfart comparison and saves them under `R.directory/KW/`.

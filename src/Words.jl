@@ -10,6 +10,7 @@ Base.showerror(io::IO,e::WordReductionError)=print(io,e.kind,": ",e.message)
 function word_input(R,g,target)
     P=R.enumeration.problem
     target in (:GL,:SL,:PSL) || throw(WordReductionError(:invalid_input,"target must be GL, SL or PSL",nothing))
+    R isa GLGroupResult && target!=:GL && throw(WordReductionError(:invalid_input,"this result contains only a GL presentation",nothing))
     try
         value=size(g)==(P.rank*P.degree,P.rank*P.degree) ? decode_matrix(P,g) : matrix(P.field,g)
         check_group_matrix(P,encode_matrix(P,value))
@@ -54,8 +55,8 @@ function replay_word_path(C,g,data)
     Q=reduction_target(C,g);i=1;a=identity_matrix(P.field,P.rank);word=Int[]
     lookup=Dict((d.source,d.local_orbit)=>d.id for d in C.graph.darts)
     objective(F)=sum(form_coordinates(P,F)[k]*pairing[k,l]*form_coordinates(P,Q)[l] for k in 1:nrows(pairing),l in 1:ncols(pairing))
-    nf=foldl(lcm,(denominator(QQ(coeff(F.form[x,y],k))) for F in E.representatives for x in 1:P.rank for y in 1:P.rank for k in 0:P.degree-1);init=ZZ(1))
-    nq=foldl(lcm,(denominator(QQ(coeff(Q[x,y],k))) for x in 1:P.rank for y in 1:P.rank for k in 0:P.degree-1);init=ZZ(1))
+    nf=foldl(lcm,(matrix_coefficient_denominator(P,r.form) for r in E.representatives);init=ZZ(1))
+    nq=matrix_coefficient_denominator(P,Q)
     ensure(parse(BigInt,data["objective_denominator"])==nf*nq,"corrupt objective denominator bound")
     for step in data["steps"]
         ensure(step["source"]==i && field_matrix_wire(P,step["source_frame"])==a,"word path has a corrupt source frame")
@@ -103,10 +104,13 @@ function verify_word_certificate(R,g,data)
 end
 
 """A verified (not canonical or shortest) GL/SL/PSL word and optional path certificate."""
-function matrix_to_word(R::ArithmeticGroupResult,g;target=:SL,simplified=true,certificate=true,
-                        cache_path=nothing,max_steps=10000,timeout=120.0)
-    max_steps isa Integer && max_steps>=0 && timeout isa Real && isfinite(timeout) && timeout>=0 ||
-        throw(WordReductionError(:invalid_input,"nonnegative finite search budgets are required",nothing))
+function matrix_to_word(R::Union{ArithmeticGroupResult,GLGroupResult},g;
+                        target=R isa GLGroupResult ? :GL : :SL,simplified=true,certificate=true,
+                        cache_path=nothing,max_steps=R isa GLGroupResult ? typemax(Int) : 10000,
+                        timeout=R isa GLGroupResult ? Inf : 120.0)
+    max_steps isa Integer && max_steps>=0 && timeout isa Real && timeout>=0 &&
+        (R isa GLGroupResult || isfinite(timeout)) ||
+        throw(WordReductionError(:invalid_input,"nonnegative search budgets are required; finite for the legacy field runner",nothing))
     g=word_input(R,g,target);P=R.enumeration.problem;alphabet=word_alphabet(R,target,simplified)
     if !isnothing(cache_path) && isfile(cache_path)
         data=JSON3.read(read(cache_path,String),Dict{String,Any})

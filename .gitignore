@@ -33,6 +33,7 @@ __pycache__/
 !/results/page_presentations.json
 !/results/vmh_comparison.json
 !/results/higher_rank_validation.json
+!/results/gl_presentation_validation.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json
 !/results/two_cell_tests.txt
