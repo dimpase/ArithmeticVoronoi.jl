@@ -18,7 +18,7 @@ Use Julia 1.13; the tested installation uses Julia 1.13.2, OSCAR 1.8.2 and
 Hecke 0.39.22. Run shell commands from the checkout root, beside `Project.toml`:
 
 ```sh
-GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/dimpase/arithmetic_voronoi.git
+git clone https://github.com/dimpase/arithmetic_voronoi.git
 cd arithmetic_voronoi
 julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 julia --startup-file=no --project=.
@@ -33,7 +33,8 @@ The native path needs no separately installed GAP, Magma, C++ compiler or
 backend configuration. OSCAR brings GAP.jl and its GAP runtime. PerfectForms
 remains a Julia dependency for the optional C++ interface; the pinned revision
 does not build C++ during installation. Network access is needed to download
-dependencies. Saved datasets and Git LFS are optional for new computations.
+dependencies. Git LFS is used only in the separate data repository; this
+checkout and its default tests need no recorded datasets.
 
 ## Fields and group conventions
 
@@ -262,22 +263,22 @@ retains completed fields and enables certificate replay for unfinished ones.
 
 ## Load saved presentations
 
-The separate [ArithmeticVoronoiData package](lib/ArithmeticVoronoiData/README.md)
+The separate [ArithmeticVoronoiData repository](https://github.com/dimpase/ArithmeticVoronoiData.jl)
 contains 48 real-field presentations, 15 native imaginary-field presentations,
-and 15 Page presentations. It is maintained in this repository but has its
-own `Project.toml`; neither package depends on the other. It is not registered
-yet. The underlying recorded bundles are:
+and 15 Page presentations. It is an independent Julia package; neither package
+depends on the other. It is not registered yet. The small presentation bundles
+use ordinary Git, so loading them does not require the LFS archives:
 
-- [Real survey bundle](lib/ArithmeticVoronoiData/data/native_presentations.json)
-- [Imaginary survey bundle](lib/ArithmeticVoronoiData/data/imaginary_presentations.json)
-- [Page comparison bundle](lib/ArithmeticVoronoiData/data/page_presentations.json)
+- [Real survey bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/native_presentations.json)
+- [Imaginary survey bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/imaginary_presentations.json)
+- [Page comparison bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/page_presentations.json)
 
 For example, load the saved PSL group for D = −23 without recomputing geometry:
 
 ```julia
 using Pkg
 Pkg.activate(; temp=true)                  # a separate client environment
-Pkg.develop(path="lib/ArithmeticVoronoiData")
+Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoiData.jl.git")
 Pkg.add(PackageSpec(name="Oscar", version="1.8.2"))
 using ArithmeticVoronoiData, Oscar
 
@@ -444,19 +445,33 @@ exact checks. See [DEPENDENCIES.txt](DEPENDENCIES.txt) for source attribution.
 
 ## Tests
 
-These checks need neither a C++ executable nor the optional archives:
+The default suite computes fresh results using Julia/OSCAR. It needs no Git
+LFS, data repository, HAP, Magma or C++ executable:
 
 ```sh
-julia --startup-file=no --project=. test/native.jl
-julia --startup-file=no --project=. test/quadratic_units.jl
-julia --startup-file=no --project=. test/imaginary.jl
-julia --startup-file=no --project=. test/imaginary_bundle.jl
-julia --startup-file=no --project=. test/page_comparison.jl
+julia --startup-file=no --project=. -e 'using Pkg; Pkg.test()'
+# Equivalent direct runner:
+julia --startup-file=no --project=. test/runtests.jl
 ```
 
-The last command replays the committed Page export in OSCAR; it does not
-launch Magma. To regenerate that export, follow the imaginary-field guide.
-With C++ configured, compare fresh enumerations:
+HAP comparisons run separately and do not need recorded datasets:
+
+```sh
+julia --startup-file=no --project=. test/hap.jl
+```
+
+To check the recorded catalogue, first clone the data repository beside the
+engine checkout. These small JSON bundles do not need LFS downloads:
+
+```sh
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/dimpase/ArithmeticVoronoiData.jl.git ../ArithmeticVoronoiData.jl
+julia --startup-file=no --project=. test/imaginary_bundle.jl ../ArithmeticVoronoiData.jl/data/imaginary_presentations.json
+julia --startup-file=no --project=. test/page_comparison.jl ../ArithmeticVoronoiData.jl/data/page_presentations.json ../ArithmeticVoronoiData.jl/data/imaginary_presentations.json
+```
+
+The second check replays Page's export in OSCAR; it does not launch Magma.
+To regenerate that export, follow the imaginary-field guide.
+With the optional C++ backend configured, compare fresh enumerations:
 
 ```sh
 julia --startup-file=no --project=. test/native_comparison.jl
@@ -464,47 +479,40 @@ julia --startup-file=no --project=. test/native_comparison.jl
 julia --startup-file=no --project=. test/native_comparison.jl 13 40
 ```
 
-The full historical regression suite also needs C++ and the D5/D8 fixtures:
+The historical C++ integration suite can also use the D5/D8 geometric
+certificates from the data repository. From the engine checkout:
 
 ```sh
-git lfs install --local
-git lfs pull
-python3 scripts/restore_fixtures.py
-julia --startup-file=no --project=. test/runtests.jl
+git -C ../ArithmeticVoronoiData.jl lfs install --local
+git -C ../ArithmeticVoronoiData.jl lfs pull
+python3 scripts/restore_fixtures.py --data-root ../ArithmeticVoronoiData.jl
+julia --startup-file=no --project=. test/cpp.jl
 ctest --test-dir build/perfect-forms --output-on-failure
 ```
 
 Fixture restoration requires Python 3.12+, checks hashes and refuses to
-overwrite different data. Tests create local scratch results and can update
-tracked reports. The [CI workflow](.github/workflows/ci.yml) builds and tests
-the C++ and Julia paths on Linux and macOS.
+overwrite different data. C++ tests retain diagnostic results and can update
+historical reports. [Routine CI](.github/workflows/ci.yml) runs native tests
+on Linux/macOS and a separate HAP job. The optional
+[integration workflow](.github/workflows/integration.yml) is run manually;
+it pins a data repository revision and builds C++ before running its tests.
 
 ## Optional historical archives
 
-Git LFS stores the sealed five-field dataset and the original D5/D8 regression
-fixtures. They describe the historical C++ delivery, not the current native
-survey bundles. Install Git LFS and run `git lfs pull` when you need them.
-A small file beginning with `version https://git-lfs` is a pointer whose
-archive payload has not yet been downloaded.
+The sealed five-field dataset and original D5/D8 certificates now live in
+[ArithmeticVoronoiData.jl](https://github.com/dimpase/ArithmeticVoronoiData.jl/tree/main/archives).
+Only that repository uses Git LFS. Its [archive guide](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/archives/README.md)
+gives download, checksum and extraction commands. Archive payloads and
+manifests are unchanged from the original delivery; historical receipts
+retain the paths used then.
 
 [The dataset report](results/FIELDS_WORDS_DATA_REPORT.txt) records the original
-counts and timings. Verify and unpack its archive from the checkout root:
+counts and timings. After extracting the archive in the data checkout, use
+its pinned software snapshot, or verify it with this engine:
 
 ```sh
-python3 -c 'import hashlib,json,pathlib; p=pathlib.Path("results/dataset"); m=json.loads((p/"archive_manifest.json").read_text()); assert hashlib.sha256((p/m["archive"]).read_bytes()).hexdigest()==m["sha256"]; print("archive checksum OK")'
-tar -xzf results/dataset/arithmetic_groups_dataset_v1.tar.gz -C results/dataset
-```
-
-The extracted `results/dataset/arithmetic_groups_dataset_v1/` contains field
-presentations, maps, geometric and word certificates, `dataset.json`, and the
-software snapshot that verified that delivery. Use its own environment:
-
-```sh
-julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-  -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-  results/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
-  results/dataset/arithmetic_groups_dataset_v1
+julia --startup-file=no --project=. scripts/verify_dataset.jl \
+  ../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1
 ```
 
 Add `--complete` to replay the geometric construction and Tietze maps.

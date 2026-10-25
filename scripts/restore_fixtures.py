@@ -1,4 +1,4 @@
-"""Restore the frozen D5/D8 regression fixtures after git lfs pull.
+"""Restore frozen D5/D8 regression fixtures from an explicit data checkout.
 
 Existing files with different contents are never overwritten. Use --check
 to verify an already restored directory without writing anything.
@@ -16,12 +16,12 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def restore(directory, check_only=False):
-    manifest_path = PROJECT / "test/fixtures/two_cells_v1.json"
+def restore(data_root, directory, check_only=False):
+    manifest_path = data_root / "archives/fixtures/two_cells_v1.json"
     manifest = json.loads(manifest_path.read_text())
     archive = manifest_path.parent / manifest["archive"]
     if not archive.is_file() or digest(archive.read_bytes()) != manifest["sha256"]:
-        raise ValueError("Fixture archive is missing or has the wrong hash. Run git lfs pull first.")
+        raise ValueError("Fixture archive is missing or has the wrong hash. Run git lfs pull in the selected ArithmeticVoronoiData.jl checkout.")
     directory = directory.resolve()
     with tarfile.open(archive) as source:
         members = source.getmembers()
@@ -49,11 +49,13 @@ def restore(directory, check_only=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data-root", type=Path, required=True,
+                        help="checkout of https://github.com/dimpase/ArithmeticVoronoiData.jl")
     parser.add_argument("--directory", type=Path, default=PROJECT / "results/two_cells")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     try:
-        restore(args.directory, args.check)
+        restore(args.data_root, args.directory, args.check)
     except (OSError, ValueError, tarfile.TarError) as error:
         parser.exit(1, f"{error}\n")
 

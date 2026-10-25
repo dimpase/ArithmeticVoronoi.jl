@@ -90,7 +90,7 @@ HAP is needed only by this comparison script, not by the native group pipeline.
 Use `--output=DIR` to change the destination, `--resume` to retain completed
 fields, or append a subset such as `-4 -23`.
 
-The committed [presentation bundle](../lib/ArithmeticVoronoiData/data/imaginary_presentations.json)
+The committed [presentation bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/imaginary_presentations.json)
 contains all 15 simplified presentations with exact matrices, relators,
 comparison receipts and timings. Full local certificates for this survey
 are in `results/imaginary_survey_20261021/`; the bundle does not embed them.
@@ -141,7 +141,7 @@ PGL is GL modulo **all** scalar units, and is not PSL.
 Page's unmodified KleinianGroups 1.0 was rerun with Magma 2.30-1 on this
 machine. All 15 GL/SL/PSL abelianizations for these five fields agree with
 the native results above. The separate
-[Page presentation bundle](../lib/ArithmeticVoronoiData/data/page_presentations.json) contains
+[Page presentation bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/page_presentations.json) contains
 the exact generator matrices, relators, abelian invariants and CPU timings.
 The Page entries in the original native survey bundle record the historical
 paper timings, not this rerun.
@@ -150,7 +150,9 @@ The comparison driver, [scripts/compare_page.m](../scripts/compare_page.m),
 uses the entry points in Page's own `example.m`: `BianchiOrder`,
 `NormalizedBasis`, `Presentation`, `LiftPresentation` and `QuatToMatrix`.
 Each independent computation constructs a fresh order and resets the random
-seed to 1 for reproducibility.
+seed to 1 for reproducibility. Clone the data repository beside this engine
+checkout as shown in the [test instructions](../USER_GUIDE.md#tests) to supply
+the explicitly selected native comparison bundle.
 The driver prints the results and exports JSON in the same matrix and word
 encoding as our native bundle. With a licensed Magma installation, download the
 [unmodified KleinianGroups 1.0 archive](https://www.normalesup.org/~page/Recherche/Logiciels/KleinianGroups/KleinianGroups-1.0.tar.gz)
@@ -165,7 +167,7 @@ curl -fLO https://www.normalesup.org/~page/Recherche/Logiciels/KleinianGroups/Kl
 tar -xzf KleinianGroups-1.0.tar.gz
 magma -b "OutputFile:=/tmp/av-page/fresh_page_presentations.json" "$AV_REPO/scripts/compare_page.m"
 cd "$AV_REPO"
-julia --threads=1 --startup-file=no --project=. test/page_comparison.jl /tmp/av-page/fresh_page_presentations.json
+julia --threads=1 --startup-file=no --project=. test/page_comparison.jl /tmp/av-page/fresh_page_presentations.json ../ArithmeticVoronoiData.jl/data/imaginary_presentations.json
 ```
 
 Page's `BianchiOrder(d)` takes the positive radicand in `Q(sqrt(-d))`:
@@ -182,14 +184,14 @@ the native enumeration-only timings above.
 
 ## Load a saved presentation
 
-To use the compact bundle without recomputing its geometry, start Julia in
-the project and run:
+To use the compact bundle without recomputing its geometry, install the data
+package in a client environment as shown in the [user guide](../USER_GUIDE.md#load-saved-presentations),
+then run:
 
 ```julia
-using ArithmeticVoronoi, Oscar, JSON3
+using ArithmeticVoronoiData, Oscar
 
-data = JSON3.read(read("lib/ArithmeticVoronoiData/data/imaginary_presentations.json", String));
-entry = data.fields["-23"].groups["PSL"];
+entry = load_presentation(:native_imaginary, -23; group=:PSL);
 F = free_group(length(entry.generator_matrices));
 G, toG = quo(F, [F(Int.(r)) for r in entry.relators]);
 A, toA = maximal_abelian_quotient(G);
@@ -216,7 +218,7 @@ case. PSL is formed only after SL and its central `-I` have been verified.
 
 ```sh
 julia --startup-file=no --project=. test/imaginary.jl
-julia --startup-file=no --project=. test/imaginary_bundle.jl
+julia --startup-file=no --project=. test/imaginary_bundle.jl ../ArithmeticVoronoiData.jl/data/imaginary_presentations.json
 julia --startup-file=no --project=. test/native.jl
 julia --startup-file=no --project=. test/quadratic_units.jl
 ```

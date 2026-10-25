@@ -1,4 +1,4 @@
-name: Build and test
+name: Native tests and HAP integration
 
 "on":
   push:
@@ -10,23 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  data:
-    name: Recorded-results package (no engine dependencies)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: julia-actions/setup-julia@v3
-        with:
-          version: '1.13.2'
-      - name: Test ArithmeticVoronoiData independently
-        run: >-
-          julia --startup-file=no --project=lib/ArithmeticVoronoiData
-          -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
-
-  test:
-    name: ${{ matrix.os }}
+  native:
+    name: Native Julia (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -34,45 +20,18 @@ jobs:
     env:
       JULIA_NUM_THREADS: '1'
       OPENBLAS_NUM_THREADS: '1'
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v7
-        with:
-          lfs: true
-      - name: Install Linux build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build pkg-config libgmp-dev libeigen3-dev libboost-serialization-dev libnauty-dev
-      - name: Install macOS build dependencies
-        if: runner.os == 'macOS'
-        run: |
-          brew install cmake ninja pkgconf gmp eigen@3 boost nauty
-          echo "CMAKE_PREFIX_PATH=$(brew --prefix eigen@3):$(brew --prefix)" >> "$GITHUB_ENV"
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1.13.2'
-      - name: Install Julia dependencies and fixtures
-        run: |
-          julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-          python3 scripts/restore_fixtures.py
-          echo "PERFECT_FORMS_SOURCE=$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')" >> "$GITHUB_ENV"
-          echo "PERFECT_FORMS_BACKEND_CONFIG=$PWD/backend-install/config.json" >> "$GITHUB_ENV"
-      - name: Configure backend package
-        run: >-
-          cmake -S "$PERFECT_FORMS_SOURCE" -B build/perfect-forms -G Ninja
-          -DCMAKE_BUILD_TYPE=Release '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG'
-          -DCMAKE_INSTALL_PREFIX="$PWD/backend-install"
-      - name: Build
-        run: cmake --build build/perfect-forms --parallel 1
-      - name: Native tests
-        run: ctest --test-dir build/perfect-forms --output-on-failure
-      - name: Install
-        run: cmake --install build/perfect-forms
-      - name: Julia tests
-        run: julia --startup-file=no --project=. test/runtests.jl
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: 'false'
+      - name: Install Julia dependencies
+        run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+      - name: Native engine tests (no LFS, data checkout, C++ or HAP)
+        run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.test()'
 
   hap:
     name: HAP integration (bundled and upstream)

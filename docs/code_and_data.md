@@ -1,14 +1,16 @@
 # Computation, comparisons and recorded results
 
 The computation engine and recorded-results library are separate Julia
-packages. Neither depends on the other. Their boundaries are:
+packages in separate Git repositories. Neither depends on the other. The
+[data repository](https://github.com/dimpase/ArithmeticVoronoiData.jl) owns the
+LFS archives; a current engine checkout has no LFS-managed files. Their boundaries are:
 
 | Location | Purpose | Loaded by the engine? |
 | --- | --- | --- |
 | `src/` | Arithmetic algorithms, certificate checks and explicit archive I/O | Yes |
 | `test/` | Expected values, regression fixtures and corruption tests | No |
 | `validation/` and comparison scripts | Published reference presentations and independent comparisons | No |
-| `lib/ArithmeticVoronoiData/` | Explicitly loaded, versioned precomputed presentations | No |
+| [ArithmeticVoronoiData.jl](https://github.com/dimpase/ArithmeticVoronoiData.jl) | Explicitly loaded, versioned precomputed presentations and historical LFS archives | No |
 | `results/` | Run outputs, comparison receipts and diagnostic logs | Only user-selected checkpoints or archives, through explicit input |
 
 The engine derives presentation relations, stabilizers, units and homology
@@ -65,9 +67,13 @@ results in that copy. It computes GL₃(Z) and the real-quadratic D=5 groups,
 and checks that deliberately corrupt archived answers do not influence
 fresh computation. Explicit replay must reject corrupt loop certificates.
 
-`ArithmeticVoronoiData` has its own tests and CI job, without the engine or
-OSCAR installed as dependencies. The existing native, HAP and reference
-comparison tests remain separate from runtime code. Changes to library data
+`ArithmeticVoronoiData` has its own tests and CI, without the engine or
+OSCAR installed as dependencies. The default engine suite (`Pkg.test()` or
+`test/runtests.jl`) uses native computation and a small ordinary-Git fixture;
+it needs no data checkout, HAP or C++ executable. HAP runs in a separate CI
+job. C++/archive comparisons use the manually dispatched
+[integration workflow](../.github/workflows/integration.yml), which pins the
+data repository revision. Local bundle checks require explicit paths. Changes to library data
 should be reviewed together with independent validation receipts; a test
 expectation must never become a special-case answer in the engine.
 

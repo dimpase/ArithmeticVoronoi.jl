@@ -71,27 +71,28 @@ null and the exact source artifact hashes identify the implementation.
 
 ## Verification entry points and strength
 
-From the repository root, after `git lfs pull` and unpacking the dataset as
-shown in [the user guide](USER_GUIDE.md#optional-historical-archives), install this checkout's Julia dependencies and run:
+From the engine repository root, after downloading and unpacking the dataset
+in the separate data checkout as shown in [the user guide](USER_GUIDE.md#optional-historical-archives),
+install this checkout's Julia dependencies and run:
 
 ```sh
 julia --startup-file=no --project=. \
   -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 julia --startup-file=no --project=. scripts/verify_dataset.jl \
-  results/dataset/arithmetic_groups_dataset_v1
+  ../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1
 
 julia --startup-file=no --project=. scripts/verify_dataset.jl \
-  results/dataset/arithmetic_groups_dataset_v1 --complete
+  ../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1 --complete
 ```
 
 To use the software pinned inside the bundle instead of this checkout:
 
 ```sh
-julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
+julia --startup-file=no --project=../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1/software \
   -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-julia --startup-file=no --project=results/dataset/arithmetic_groups_dataset_v1/software \
-  results/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
-  results/dataset/arithmetic_groups_dataset_v1 --complete
+julia --startup-file=no --project=../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1/software \
+  ../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1/software/scripts/verify_dataset.jl \
+  ../ArithmeticVoronoiData.jl/archives/dataset/arithmetic_groups_dataset_v1 --complete
 ```
 
 Dependencies must be installed from the included pinned Manifest; no backend

@@ -20,8 +20,8 @@ __pycache__/
 *.py[cod]
 *.partial
 
-# Keep frozen LFS archives and selected receipts. Expanded fixtures/datasets,
-# current field runs, backend caches and test scratch stay local.
+# Keep selected validation receipts. Recorded datasets and archives live in
+# ArithmeticVoronoiData.jl; local field runs, caches and test scratch stay local.
 /results/*
 !/results/classical2.json
 !/results/D5.json
@@ -44,15 +44,9 @@ __pycache__/
 !/results/fields_dataset_complete_verification.json
 !/results/fields_portable_verification.json
 !/results/fields_portable_verification.log
-!/results/dataset/
-/results/dataset/*
-!/results/dataset/archive_manifest.json
-!/results/dataset/arithmetic_groups_dataset_v1.tar.gz
 !/results/sanitizer/
 /results/sanitizer/*
 !/results/sanitizer/summary.json
 !/results/sanitizer_fields/
 /results/sanitizer_fields/*
 !/results/sanitizer_fields/summary.json
-
-/lib/ArithmeticVoronoiData/Manifest.toml

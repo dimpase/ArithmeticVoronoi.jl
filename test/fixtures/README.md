@@ -10,6 +10,8 @@ from explicitly requested replay. Replay still performs the full exact
 arithmetic validation of the stored export. This control-flow test does not
 replace the real-exporter integration tests in `test/contracts.jl`.
 
-`two_cells_v1.tar.gz` and its manifest are historical geometric certificates
-used by the explicit regression-fixture restoration script. Production
-pipelines do not automatically select those archived certificates.
+The larger historical geometric certificates and their manifest live under
+`archives/fixtures/` in [ArithmeticVoronoiData.jl](https://github.com/dimpase/ArithmeticVoronoiData.jl).
+Only the optional C++ integration suite uses them, after explicit restoration
+with `scripts/restore_fixtures.py --data-root /path/to/ArithmeticVoronoiData.jl`.
+The default tests use only the small JSON fixture above; they need no Git LFS.

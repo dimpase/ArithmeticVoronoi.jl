@@ -3,9 +3,10 @@
 # to replay this check; see docs/imaginary_quadratic.md to regenerate its input.
 using ArithmeticVoronoi, Oscar, JSON3, Test
 const PCAV = ArithmeticVoronoi
-page_path = isempty(ARGS) ? joinpath(@__DIR__, "../lib/ArithmeticVoronoiData/data/page_presentations.json") : only(ARGS)
+length(ARGS)==2 || error("Usage: julia --project=. test/page_comparison.jl /path/to/page_presentations.json /path/to/imaginary_presentations.json")
+page_path, native_path = abspath.(ARGS)
 page = JSON3.read(read(page_path, String), Dict{String,Any})
-native = JSON3.read(read(joinpath(@__DIR__, "../lib/ArithmeticVoronoiData/data/imaginary_presentations.json"), String), Dict{String,Any})
+native = JSON3.read(read(native_path, String), Dict{String,Any})
 
 @testset "Page presentations and native abelianizations" begin
     @test page["schema"] == "av_page_presentations_v1"

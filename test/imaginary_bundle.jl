@@ -1,6 +1,7 @@
 using ArithmeticVoronoi, Oscar, JSON3, Test
 const IBAV=ArithmeticVoronoi
-path=isempty(ARGS) ? joinpath(@__DIR__,"../lib/ArithmeticVoronoiData/data/imaginary_presentations.json") : only(ARGS)
+length(ARGS)==1 || error("Usage: julia --project=. test/imaginary_bundle.jl /path/to/imaginary_presentations.json")
+path=abspath(only(ARGS))
 bundle=JSON3.read(read(path,String),Dict{String,Any})
 
 @testset "portable imaginary presentations in OSCAR" begin

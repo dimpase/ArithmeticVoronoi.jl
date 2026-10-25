@@ -188,17 +188,17 @@ in this run; different valid GAP simplifications may have different sizes.
 | 56 | Z × C2 × C2 × C2 | C2 × C2 | C2 × C2 |
 | 60 | Z × C2 × C2 | C2 × C6 | C2 × C6 |
 
-The compact [presentation bundle](../lib/ArithmeticVoronoiData/data/native_presentations.json)
+The compact [presentation bundle](https://github.com/dimpase/ArithmeticVoronoiData.jl/blob/main/data/native_presentations.json)
 contains every simplified generator matrix and relator, the exact field
 definitions, abelianizations and enumeration timings. To load one of those
-groups without rerunning the geometric computation:
+groups without rerunning the geometric computation, first install the data
+package in a client environment as shown in the [user guide](../USER_GUIDE.md#load-saved-presentations):
 
 ```julia
-using Oscar, JSON3
+using ArithmeticVoronoiData, Oscar
 
-bundle = JSON3.read(read("lib/ArithmeticVoronoiData/data/native_presentations.json", String));
-data = bundle.fields["60"].groups.SL;
-F = free_group(length(data.generators));
+data = load_presentation(:native_real, 60; group=:SL);
+F = free_group(length(data.generator_matrices));
 G, toG = quo(F, [F(Int.(r)) for r in data.relators]);
 ```
 

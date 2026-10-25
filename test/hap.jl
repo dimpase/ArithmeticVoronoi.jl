@@ -131,3 +131,4 @@ end
 
 include("higher_rank.jl")
 include("gl_presentations.jl")
+test_gl_presentations(;with_hap=true)

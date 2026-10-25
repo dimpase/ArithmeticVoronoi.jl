@@ -3,7 +3,7 @@
 This directory contains reference constructions and comparison tools. It is
 not loaded by `using ArithmeticVoronoi`, and the engine never calls into it.
 Numerical expectations belong in `test/`; recorded presentation data belongs
-in the separate `lib/ArithmeticVoronoiData` package. Comparison receipts and
+in the separate [ArithmeticVoronoiData.jl repository](https://github.com/dimpase/ArithmeticVoronoiData.jl). Comparison receipts and
 logs belong in `results/`.
 
 To compare a newly computed result with Kirchheimer–Wolfart, explicitly load

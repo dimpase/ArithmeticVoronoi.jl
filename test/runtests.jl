@@ -1,14 +1,15 @@
-include("engine_isolation.jl")
-include("checkpoint_opt_in.jl")
-include("model.jl")
-include("requests.jl")
-include("quadratic_units.jl")
-include("native.jl")
-include("imaginary.jl")
-include("imaginary_bundle.jl")
-include("page_comparison.jl")
-include("contracts.jl")
-include("two_cells.jl")
-include("fields_words.jl")
-FIELD_WORD_RESULTS=Dict(D=>run_field_pipeline(D) for D in (5,8,12,13,40))
-run_fields_words_tests(FIELD_WORD_RESULTS)
+# Default suite: native computations and small, ordinary-Git test fixtures.
+# No data repository, LFS payloads, HAP or C++ executable is required.
+using Test
+
+@testset "ArithmeticVoronoi native engine" begin
+    include("engine_isolation.jl")
+    include("checkpoint_opt_in.jl")
+    include("model.jl")
+    include("requests.jl")
+    include("quadratic_units.jl")
+    include("native.jl")
+    include("imaginary.jl")
+    include("gl_presentations.jl")
+    test_gl_presentations()
+end

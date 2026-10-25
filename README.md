@@ -17,7 +17,7 @@ finite presentation and constructive membership algorithm.
 Use Julia 1.13 (tested with 1.13.2). From a new checkout:
 
 ```sh
-GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/dimpase/arithmetic_voronoi.git
+git clone https://github.com/dimpase/arithmetic_voronoi.git
 cd arithmetic_voronoi
 julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 julia --startup-file=no --project=.
@@ -47,8 +47,9 @@ C++ backend. The first Julia import and compilation can take several minutes.
 Saved archives and Python are optional.
 
 Recorded presentations are available through the separate
-[ArithmeticVoronoiData package](lib/ArithmeticVoronoiData/README.md), loaded explicitly.
-The computation engine does not consult that library.
+[ArithmeticVoronoiData repository](https://github.com/dimpase/ArithmeticVoronoiData.jl),
+loaded explicitly. Git LFS is used only there; the engine and its default
+tests need neither that repository nor its data.
 
 ## Documentation and results
 
