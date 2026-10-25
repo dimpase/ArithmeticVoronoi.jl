@@ -12,7 +12,7 @@ struct ArithmeticGroupResult
     run::Dict{String,Any}
 end
 
-function run_field_pipeline(D::Integer;backend=:polyhedral_common,kwargs...)
+function run_field_pipeline(D::Integer;backend=:native,kwargs...)
     run_field_pipeline(voronoi_request(D);backend,kwargs...)
 end
 
@@ -22,7 +22,7 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
     request=enumeration_request(request)
     request["rank"]==2 || throw(ArgumentError("the combined GL/SL/PSL pipeline requires rank 2; use run_gl_pipeline for higher-rank GL presentations"))
     D=request["field"]["discriminant"]
-    isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"))
+    isnothing(directory) && (directory=joinpath(pwd(),"results/fields","D$D"))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
         history=joinpath(directory,"history");mkpath(history)

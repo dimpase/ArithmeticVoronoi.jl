@@ -15,7 +15,21 @@ for the group-action argument see
 ## Install and start Julia
 
 Use Julia 1.13; the tested installation uses Julia 1.13.2, OSCAR 1.8.2 and
-Hecke 0.39.22. Run shell commands from the checkout root, beside `Project.toml`:
+Hecke 0.39.22. Until registration in General is merged, install with:
+
+```julia
+using Pkg
+Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoi.jl.git")
+Pkg.add("Oscar") # for the group operations in this guide
+using ArithmeticVoronoi
+```
+
+After registration use `Pkg.add("ArithmeticVoronoi")` instead. Computations
+write under `results/` in your current working directory unless you provide
+`directory=...`; the installed package directory is not used for output.
+
+For development, scripts and optional C++ comparisons, use a checkout.
+Run shell commands from its root, beside `Project.toml`:
 
 ```sh
 git clone https://github.com/dimpase/ArithmeticVoronoi.jl.git
@@ -31,9 +45,8 @@ minutes before computation progress appears.
 
 The native path needs no separately installed GAP, Magma, C++ compiler or
 backend configuration. OSCAR brings GAP.jl and its GAP runtime. PerfectForms
-remains a Julia dependency for the optional C++ interface; the pinned revision
-does not build C++ during installation. Network access is needed to download
-dependencies. Git LFS is used only in the separate data repository; this
+is installed only in the separate optional C++ comparison environment below.
+Network access is needed to download dependencies. Git LFS is used only in the separate data repository; this
 checkout and its default tests need no recorded datasets.
 
 ## Fields and group conventions
@@ -105,10 +118,9 @@ Rim = run_field_pipeline(-7; backend=:native, progress=true,
     directory="results/my_Dminus7");
 ```
 
-The API default remains `backend=:polyhedral_common` for compatibility with
-older computations. Use `backend=:native` in new Julia-only runs, including
-imaginary fields. The optional C++ comparison path currently covers the real
-quadratic examples.
+All enumeration and field-pipeline entry points default to `backend=:native`.
+The optional C++ comparison path must be selected explicitly and currently
+covers the real quadratic examples.
 
 ### Work with the group in OSCAR
 
@@ -385,11 +397,13 @@ brew install cmake ninja pkgconf gmp eigen@3 boost nauty
 export CMAKE_PREFIX_PATH="$(brew --prefix eigen@3):$(brew --prefix)"
 ```
 
-After instantiating this Julia project, build its pinned PerfectForms source
-from the checkout root:
+Install the comparison environment, which pins the C++ adapter separately
+from the registered engine, then build its PerfectForms source. From the
+checkout root:
 
 ```sh
-perfect_forms_source="$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')"
+julia --startup-file=no --project=integrations/perfect_forms -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+perfect_forms_source="$(julia --startup-file=no --project=integrations/perfect_forms -e 'using PerfectForms; print(pkgdir(PerfectForms))')"
 cmake -S "$perfect_forms_source" -B build/perfect-forms \
   -DCMAKE_BUILD_TYPE=Release '-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG' \
   -DCMAKE_INSTALL_PREFIX="$PWD/backend-install"
@@ -417,9 +431,15 @@ The configuration variable must contain the **absolute path to the installed
 export PERFECT_FORMS_BACKEND_CONFIG="$HOME/work/tmp/PerfectForms.jl/backend/config.json"
 ```
 
-If Julia is already running, set it inside that session:
+Start Julia with `julia --startup-file=no --project=integrations/perfect_forms`,
+then explicitly load the adapter. Its `BackendConfig`, `BackendError`,
+`default_backend`, `run_exporter`, `cache_key` and `load_checkpoint` names are
+provided by `PerfectFormsAdapter`, rather than by the native engine:
 
 ```julia
+using ArithmeticVoronoi
+include("integrations/perfect_forms/adapter.jl")
+using .PerfectFormsAdapter
 ENV["PERFECT_FORMS_BACKEND_CONFIG"] =
     expanduser("~/work/tmp/PerfectForms.jl/backend/config.json")
 Rcpp = run_field_pipeline(12; backend=:polyhedral_common, progress=true,
@@ -433,7 +453,8 @@ C++ enumeration caches. `BackendConfig(absolute_executable_path)` remains
 available for explicit configurations.
 
 The older `scripts/run_fields.jl 12` and `scripts/word_example.jl 12` select
-the default C++ backend and require this configuration. The native batch
+the C++ backend explicitly; run them with
+`--project=integrations/perfect_forms` and this configuration. The native batch
 scripts are the recommended commands for Julia-only runs.
 
 The C++ process runner has deadline/memory controls; Linux uses `prlimit`
@@ -474,9 +495,9 @@ To regenerate that export, follow the imaginary-field guide.
 With the optional C++ backend configured, compare fresh enumerations:
 
 ```sh
-julia --startup-file=no --project=. test/native_comparison.jl
+julia --startup-file=no --project=integrations/perfect_forms test/native_comparison.jl
 # Or select a subset:
-julia --startup-file=no --project=. test/native_comparison.jl 13 40
+julia --startup-file=no --project=integrations/perfect_forms test/native_comparison.jl 13 40
 ```
 
 The historical C++ integration suite can also use the D5/D8 geometric
@@ -486,7 +507,7 @@ certificates from the data repository. From the engine checkout:
 git -C ../ArithmeticVoronoiData.jl lfs install --local
 git -C ../ArithmeticVoronoiData.jl lfs pull
 python3 scripts/restore_fixtures.py --data-root ../ArithmeticVoronoiData.jl
-julia --startup-file=no --project=. test/cpp.jl
+julia --startup-file=no --project=integrations/perfect_forms test/cpp.jl
 ctest --test-dir build/perfect-forms --output-on-failure
 ```
 
@@ -528,7 +549,7 @@ native enumerations; use the native survey bundles for those results.
 | Symptom | Action |
 | --- | --- |
 | Long pause at the first `using` or computation | Allow for Julia/OSCAR import and compilation; subsequent calls in the same session are faster |
-| `missing_executable` on a native computation | Pass `backend=:native` explicitly; the API default still selects C++ |
+| Missing optional C++ adapter | Use `backend=:native` (the default), or load the adapter in the separate comparison environment above |
 | `config.json needs an absolute path` | Set the C++ configuration to an absolute file path, using `expanduser` in Julia if needed |
 | Configuration points to `.../backend` | Append `/config.json`; the directory itself is not a configuration file |
 | A cached result no longer matches | Use a new output directory; regenerate configuration after changing the C++ executable |

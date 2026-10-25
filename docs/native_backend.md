@@ -69,15 +69,13 @@ PerfectForms' arbitrary T-spaces or higher ranks.
 
 The computation uses Hecke's exact lattice routines, Nemo arithmetic and
 OSCAR's exact polyhedral geometry. It requires no Dutour exporter executable,
-CMake build or backend configuration. The project retains the PerfectForms
-Julia dependency for the existing C++ interface and comparison tests; it has
-not yet been split into an optional extension. The pinned dependency does not
-build C++ during installation.
+CMake build or backend configuration. The PerfectForms C++ adapter and its
+unregistered dependency live in `integrations/perfect_forms/`, loaded only
+for explicitly requested comparisons. See the [user guide](../USER_GUIDE.md#optional-c-backend).
 
-The older problem-object and discriminant APIs retain
-`backend=:polyhedral_common` as their default. The
-[record-based API](requests.md) defaults to `backend=:native` and is used by
-the native experiment runners. Native enumeration runs afresh,
+All enumeration and field-pipeline APIs, including the
+[record-based API](requests.md), default to `backend=:native`.
+Native enumeration runs afresh,
 and has no process deadline or memory limit. `config`, `cache_dir`, `work_dir`,
 `timeout` and `force` are C++-backend options. `write_enumeration(path, E)` can
 save a native result for inspection; native checkpoint loading is not

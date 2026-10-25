@@ -19,6 +19,7 @@
 __pycache__/
 *.py[cod]
 *.partial
+/integrations/perfect_forms/Manifest.toml
 
 # Keep selected validation receipts. Recorded datasets and archives live in
 # ArithmeticVoronoiData.jl; local field runs, caches and test scratch stay local.
