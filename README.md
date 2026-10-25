@@ -14,14 +14,16 @@ finite presentation and constructive membership algorithm.
 
 ## Start a computation
 
-Use Julia 1.13 (tested with 1.13.2). From a new checkout:
+Use Julia 1.13 (tested with 1.13.2). While General registration is pending:
 
-```sh
-git clone https://github.com/dimpase/ArithmeticVoronoi.jl.git
-cd ArithmeticVoronoi.jl
-julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-julia --startup-file=no --project=.
+```julia
+using Pkg
+Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoi.jl.git")
+Pkg.add("Oscar") # for the group operations below
 ```
+
+After registration, use `Pkg.add("ArithmeticVoronoi")`. See the
+[user guide](USER_GUIDE.md#install-and-start-julia) for a development checkout.
 
 At the Julia prompt, compute all three groups for O = Z[√3] and work with SL:
 
@@ -42,8 +44,8 @@ and `-4` means Q(i). Change the discriminant and output directory together.
 Select `:GL` or `:PSL` to use the other computed presentations. GL and SL
 retain −I; PSL is SL/{I,−I}.
 
-Pass `backend=:native` explicitly: the API default still selects the optional
-C++ backend. The first Julia import and compilation can take several minutes.
+Native Julia computation is the default. The first Julia import and compilation
+can take several minutes.
 Saved archives and Python are optional.
 
 Recorded presentations are available through the separate
@@ -69,3 +71,6 @@ compatibility copy used by HAP.
 - [Shared request records and JSON experiment batches](docs/requests.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).
+
+Parts of the implementation, tests and documentation were developed with
+OpenAI Codex assistance; see the [validation guides](docs/higher_rank.md).

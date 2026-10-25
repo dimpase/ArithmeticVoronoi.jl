@@ -26,7 +26,7 @@ run_gl_pipeline(D::Integer;rank=2,kwargs...)=run_gl_pipeline(arithmetic_problem(
 
 function run_gl_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,simplify=true,progress=true,resume::Bool=false)
     label="GL$(P.rank)_D$(P.discriminant)"
-    isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/gl_presentations",label))
+    isnothing(directory) && (directory=joinpath(pwd(),"results/gl_presentations",label))
     directory=abspath(directory);mkpath(directory)
     started=time_ns();timings=Dict{String,Any}()
     run=Dict{String,Any}("schema"=>"av_gl_run_v1","status"=>"running","problem"=>problem_descriptor(P),

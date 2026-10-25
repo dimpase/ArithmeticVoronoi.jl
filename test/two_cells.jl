@@ -6,7 +6,7 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
 @testset "exact two-cells, group-action presentations and SL extraction" begin
     for D in (5,8)
         P=arithmetic_problem(D);I=identity_matrix(P.field,2)
-        E=enumerate_perfect_forms(P);ctx=TwoCellContext(E)
+        E=enumerate_perfect_forms(P;backend=:polyhedral_common);ctx=TwoCellContext(E)
         directory=joinpath(TCROOT,"results/two_cells","D$D")
         if !TCAV.compatible_two_cell_cache(ctx,directory)
             # Frozen certificates refer to exact generator and facet labels.

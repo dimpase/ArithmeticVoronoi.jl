@@ -18,10 +18,10 @@ end
 
 @testset "external boundary, failure behaviour and exact cache contracts" begin
     P=arithmetic_problem(5);B=default_backend()
-    @test BackendConfig===CONTRACT_AV.PerfectForms.BackendConfig
-    @test run_exporter===CONTRACT_AV.PerfectForms.run_exporter
-    @test enumerate_perfect_forms===CONTRACT_AV.PerfectForms.enumerate_perfect_forms
-    E=enumerate_perfect_forms(P;config=B)
+    @test BackendConfig===PerfectFormsAdapter.PerfectForms.BackendConfig
+    @test run_exporter===PerfectFormsAdapter.PerfectForms.run_exporter
+    @test applicable(ArithmeticVoronoi.enumerate_external,P,Val(:polyhedral_common))
+    E=enumerate_perfect_forms(P;backend=:polyhedral_common,config=B)
     @test E.completion_status==:complete
     @test isempty(E.pending_facets)
     @test all(c["unresolved_facets"]==0 for c in E.provenance["closure"])
@@ -42,7 +42,7 @@ end
     spaced=joinpath(CONTRACT_ROOT,"backend directory with spaces");mkpath(spaced)
     copy_path=joinpath(spaced,"exact exporter");cp(B.executable,copy_path);chmod(copy_path,0o700)
     spaced_backend=BackendConfig(copy_path;expected_sha256=B.executable_sha256)
-    repeated=enumerate_perfect_forms(P;config=spaced_backend,force=true,
+    repeated=enumerate_perfect_forms(P;backend=:polyhedral_common,config=spaced_backend,force=true,
         cache_dir=joinpath(CONTRACT_ROOT,"repeat cache"),work_dir=CONTRACT_ROOT)
     @test repeated.completion_status==:complete
     orbit_map=Int[]
@@ -57,12 +57,12 @@ end
     # Actual backend interruption, then restart with the same problem/build key.
     restart_cache=joinpath(CONTRACT_ROOT,"killed run cache")
     expect_backend_error("killed-run deadline",:timeout) do
-        enumerate_perfect_forms(P;config=B,timeout=.005,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
+        enumerate_perfect_forms(P;backend=:polyhedral_common,config=B,timeout=.005,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
     end
     @test !isdir(restart_cache) || isempty(readdir(restart_cache))
-    restarted=enumerate_perfect_forms(P;config=B,timeout=60.,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
+    restarted=enumerate_perfect_forms(P;backend=:polyhedral_common,config=B,timeout=60.,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
     @test restarted.completion_status==:complete && !restarted.provenance["from_cache"]
-    resumed=enumerate_perfect_forms(P;config=B,force=false,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
+    resumed=enumerate_perfect_forms(P;backend=:polyhedral_common,config=B,force=false,cache_dir=restart_cache,work_dir=CONTRACT_ROOT)
     @test resumed.provenance["from_cache"] && resumed.completion_status==:complete
     OBSERVED["killed-run restart"]=Dict("status"=>"passed","policy"=>"preserve partial diagnostics; restart enumeration from scratch; only fully validated final caches are reusable")
 

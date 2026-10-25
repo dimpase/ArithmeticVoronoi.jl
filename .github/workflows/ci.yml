@@ -32,6 +32,8 @@ jobs:
         run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
       - name: Native engine tests (no LFS, data checkout, C++ or HAP)
         run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.test()'
+      - name: Install without the repository manifest or unregistered dependencies
+        run: julia --startup-file=no --project=. test/registry_install.jl
 
   hap:
     name: HAP integration (bundled and upstream)

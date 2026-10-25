@@ -1,4 +1,5 @@
 using ArithmeticVoronoi, JSON3, SHA, Test
+using .PerfectFormsAdapter
 const COAV=ArithmeticVoronoi
 
 @testset "C++ checkpoint loading requires explicit input" begin
@@ -14,17 +15,17 @@ const COAV=ArithmeticVoronoi
         COAV.atomic_json(joinpath(cache,key*".json"),(;
             schema="av_checkpoint_v1",completed=true,problem=COAV.problem_descriptor(P),
             backend_commit=B.commit,executable_sha256=B.executable_sha256,
-            options=COAV.backend_options(P),cache_key=key,
+            options=PerfectFormsAdapter.backend_options(P),cache_key=key,
             raw_export_json=raw,raw_export_sha256=bytes2hex(sha256(raw))))
         err=try
-            enumerate_perfect_forms(P;config=B,cache_dir=cache,work_dir=directory)
+            enumerate_perfect_forms(P;backend=:polyhedral_common,config=B,cache_dir=cache,work_dir=directory)
             nothing
         catch caught
             caught
         end
         @test err isa BackendError
         @test err.kind==:child_exit
-        E=enumerate_perfect_forms(P;config=B,cache_dir=cache,work_dir=directory,force=false)
+        E=enumerate_perfect_forms(P;backend=:polyhedral_common,config=B,cache_dir=cache,work_dir=directory,force=false)
         @test E.provenance["from_cache"] && E.completion_status==:complete
         @test isempty(E.pending_facets)
     end

@@ -1,5 +1,7 @@
+include(joinpath(@__DIR__,"../integrations/perfect_forms/adapter.jl"))
+using .PerfectFormsAdapter
 # Optional independent comparison with a freshly run C++ exporter.
-# julia --project=. test/native_comparison.jl [discriminants...]
+# julia --project=integrations/perfect_forms test/native_comparison.jl [discriminants...]
 using ArithmeticVoronoi, Oscar, Test
 const NCAV=ArithmeticVoronoi
 

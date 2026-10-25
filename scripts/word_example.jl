@@ -1,3 +1,5 @@
+include(joinpath(@__DIR__,"../integrations/perfect_forms/adapter.jl"))
+using .PerfectFormsAdapter
 # Run from the package root: julia --startup-file=no --project=. scripts/word_example.jl 12
 using ArithmeticVoronoi, Oscar
 

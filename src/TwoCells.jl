@@ -332,7 +332,7 @@ function local_ridge_orbits(ctx,i)
 end
 
 """Compute every local ridge in both orientations, retaining validated per-loop caches."""
-function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(PACKAGE_ROOT,"results/two_cells",
+function enumerate_two_cells(ctx::TwoCellContext;directory=joinpath(pwd(),"results/two_cells",
         ctx.enumeration.problem.rank==2 ? "D$(ctx.enumeration.problem.discriminant)" :
         "rank$(ctx.enumeration.problem.rank)_D$(ctx.enumeration.problem.discriminant)"),stop_after=nothing,
         reduce_orbits=false,resume::Bool=false)
@@ -511,7 +511,7 @@ function two_cell_data(ctx,C)
       attaching_word=matrix_word_data(C.attaching_word),closed_geometrically=true,matrix_relation_verified=true)
 end
 
-function write_first_two_cell(ctx,C;directory=joinpath(PACKAGE_ROOT,"results/two_cells","D$(ctx.enumeration.problem.discriminant)"))
+function write_first_two_cell(ctx,C;directory=joinpath(pwd(),"results/two_cells","D$(ctx.enumeration.problem.discriminant)"))
     mkpath(directory);atomic_json(joinpath(directory,"first_two_cell.json"),two_cell_data(ctx,C))
     P=ctx.enumeration.problem;r=ctx.ridges[C.source][C.ridge]
     open(joinpath(directory,"FIRST_TWO_CELL.txt"),"w") do io

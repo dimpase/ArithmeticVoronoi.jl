@@ -1,4 +1,5 @@
-ArithmeticVoronoi uses PerfectForms.jl for perfect-form enumeration:
+ArithmeticVoronoi computes perfect forms natively with Julia/Hecke/OSCAR.
+The separately installed C++ comparison environment uses PerfectForms.jl:
 https://github.com/dimpase/PerfectForms.jl
 
 PerfectForms owns the exporter originally developed here, the CMake build,

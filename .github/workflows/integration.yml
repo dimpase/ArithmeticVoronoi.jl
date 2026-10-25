@@ -71,9 +71,9 @@ jobs:
           version: '1.13.2'
       - name: Install Julia dependencies and fixtures
         run: |
-          julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
+          julia --startup-file=no --project=integrations/perfect_forms -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
           python3 scripts/restore_fixtures.py --data-root recorded-data
-          echo "PERFECT_FORMS_SOURCE=$(julia --startup-file=no --project=. -e 'using PerfectForms; print(pkgdir(PerfectForms))')" >> "$GITHUB_ENV"
+          echo "PERFECT_FORMS_SOURCE=$(julia --startup-file=no --project=integrations/perfect_forms -e 'using PerfectForms; print(pkgdir(PerfectForms))')" >> "$GITHUB_ENV"
           echo "PERFECT_FORMS_BACKEND_CONFIG=$PWD/backend-install/config.json" >> "$GITHUB_ENV"
       - name: Configure backend package
         run: >-
@@ -87,4 +87,4 @@ jobs:
       - name: Install
         run: cmake --install build/perfect-forms
       - name: Historical C++ integration tests
-        run: julia --startup-file=no --project=. test/cpp.jl
+        run: julia --startup-file=no --project=integrations/perfect_forms test/cpp.jl
