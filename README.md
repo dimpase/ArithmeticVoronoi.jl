@@ -5,6 +5,8 @@ Compute presentations and verified matrix-to-word expressions for **GL(n,O)**
 imaginary quadratic field, acting on the free lattice Oⁿ. GL(n,Z) is also
 supported. The native backend uses
 Julia, OSCAR and Hecke; no C++ build or Magma installation is needed.
+Installing this package does not install PerfectForms or build C++. The optional
+C++ comparison environment requires a separate, explicit setup.
 
 The implemented group algorithm is from Oliver Braun, Renaud Coulangeon,
 Gabriele Nebe and Sebastian Schönnenbeck,
