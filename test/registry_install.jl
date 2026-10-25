@@ -17,7 +17,7 @@ using ArithmeticVoronoi
             R=run_field_pipeline(-4;simplify=false)
             @test R.run["backend"]=="native"
             @test !R.enumeration.provenance["from_cache"]
-            @test R.directory==joinpath(output,"results","fields","D-4")
+            @test realpath(R.directory)==joinpath(realpath(output),"results","fields","D-4")
             @test isfile(joinpath(R.directory,"run.json"))
         end
     end
