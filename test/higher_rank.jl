@@ -27,7 +27,7 @@ const HRAV=ArithmeticVoronoi
     @test arithmetic_problem(voronoi_request(-4;rank=3)).rank==3
     @test_throws ArgumentError voronoi_request(-4;rank=1)
     @test_throws ArgumentError classical_problem(;rank=true)
-    @test_throws ArgumentError enumerate_perfect_forms(arithmetic_problem(-4;rank=3))
+    @test enumerate_perfect_forms(arithmetic_problem(-4;rank=3)).completion_status==:complete
 end
 
 @testset "odd-rank special-linear stabilizers retain their actual centre" begin
