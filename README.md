@@ -17,8 +17,8 @@ finite presentation and constructive membership algorithm.
 Use Julia 1.13 (tested with 1.13.2). From a new checkout:
 
 ```sh
-git clone https://github.com/dimpase/arithmetic_voronoi.git
-cd arithmetic_voronoi
+git clone https://github.com/dimpase/ArithmeticVoronoi.jl.git
+cd ArithmeticVoronoi.jl
 julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 julia --startup-file=no --project=.
 ```
@@ -50,6 +50,9 @@ Recorded presentations are available through the separate
 [ArithmeticVoronoiData repository](https://github.com/dimpase/ArithmeticVoronoiData.jl),
 loaded explicitly. Git LFS is used only there; the engine and its default
 tests need neither that repository nor its data.
+
+The [repository transition](docs/repository_transition.md) records the temporary
+compatibility copy used by HAP.
 
 ## Documentation and results
 

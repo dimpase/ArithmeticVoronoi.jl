@@ -10,6 +10,21 @@ implemented in the Julia provider; see [examples and validation](../../docs/high
 No further HAP API patch is needed for it. The original patch and its validation
 record below are retained for reference.
 
+The separate `0002-update-julia-provider-repository.patch` changes HAP's CI
+checkout URL to `dimpase/ArithmeticVoronoi.jl`, preserving its pinned provider
+commit `007df75debde04c7469124891ac78d555d5de20b`. It applies to the current
+HAP workflow (blob `b9022ef40dc907165094629f1f6920b69b0490f6`). This patch is
+prepared for review and has not been submitted upstream. Keep the original
+repository available until the change lands and HAP's Julia CI passes;
+see [the repository transition](../../docs/repository_transition.md).
+
+To check and apply only this URL update in a HAP checkout:
+
+```sh
+git apply --check /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
+git apply /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
+```
+
 `0001-optional-voronoi-backends.patch` is prepared against
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).
 It loads the Voronoi entry points at package startup, adds a general record

@@ -1,0 +1,11 @@
+--- a/.github/workflows/CI.yml
++++ b/.github/workflows/CI.yml
+@@ -57,7 +57,7 @@
+       - name: Check out the Julia provider and its pinned environment
+         uses: actions/checkout@v7
+         with:
+-          repository: dimpase/arithmetic_voronoi
++          repository: dimpase/ArithmeticVoronoi.jl
+           ref: 007df75debde04c7469124891ac78d555d5de20b
+           path: arithmetic-voronoi
+       - uses: julia-actions/setup-julia@v3

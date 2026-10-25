@@ -18,8 +18,8 @@ Use Julia 1.13; the tested installation uses Julia 1.13.2, OSCAR 1.8.2 and
 Hecke 0.39.22. Run shell commands from the checkout root, beside `Project.toml`:
 
 ```sh
-git clone https://github.com/dimpase/arithmetic_voronoi.git
-cd arithmetic_voronoi
+git clone https://github.com/dimpase/ArithmeticVoronoi.jl.git
+cd ArithmeticVoronoi.jl
 julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
 julia --startup-file=no --project=.
 ```
