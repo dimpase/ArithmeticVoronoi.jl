@@ -12,17 +12,28 @@ struct ArithmeticGroupResult
     run::Dict{String,Any}
 end
 
-function run_field_pipeline(D::Integer;backend=:polyhedral_common,kwargs...)
-    run_field_pipeline(voronoi_request(D);backend,kwargs...)
-end
+"""
+    run_field_pipeline(D_or_request_or_problem; rank=2, directory=nothing, ...)
 
-function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
-                            simplify=true,timeout=600.0,resume::Bool=false,
-                            backend=:native,progress=false)
+Compute GL, SL and PSL presentations and constructive word maps on the free
+lattice O^n. Use a quadratic discriminant/request, or `classical_problem(rank=n)`
+for Z. PSL quotients by the entire scalar centre of SL. Enumeration and loop
+construction run afresh unless explicit checkpoint replay is requested.
+"""
+function run_field_pipeline(D::Integer;rank=2,kwargs...)
+    run_field_pipeline(voronoi_request(D;rank);kwargs...)
+end
+function run_field_pipeline(request::VoronoiRequestRecord;kwargs...)
     request=enumeration_request(request)
-    request["rank"]==2 || throw(ArgumentError("the combined GL/SL/PSL pipeline requires rank 2; use run_gl_pipeline for higher-rank GL presentations"))
-    D=request["field"]["discriminant"]
-    isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/fields","D$D"))
+    run_field_pipeline(arithmetic_problem(request);kwargs...)
+end
+function run_field_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,
+                            simplify=true,backend=:native,timeout=backend==:native ? Inf : 600.0,
+                            resume::Bool=false,progress=false)
+    D=P.discriminant
+    request=P.degree==1 ? nothing : voronoi_request(D;rank=P.rank)
+    label=P.rank==2 ? "D$D" : "rank$(P.rank)/D$D"
+    isnothing(directory) && (directory=joinpath(pwd(),"results/fields",label))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()
     if isfile(joinpath(directory,"run.json"))
         history=joinpath(directory,"history");mkpath(history)
@@ -31,7 +42,7 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
     status=Dict{String,Any}("enumeration"=>"pending","two_cells"=>"pending","GL"=>"pending",
         "SL"=>"pending","PSL"=>"pending","simplification"=>Dict(k=>(simplify ? "pending" : "not_requested") for k in ("GL","SL","PSL")),"constructive_words"=>"unvalidated",
         "literature_comparison"=>"not_requested")
-    run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"request"=>request,"status"=>status,
+    run=Dict{String,Any}("schema"=>"av_field_run_v1","discriminant"=>D,"rank"=>P.rank,"request"=>request,"status"=>status,
         "stage_seconds"=>timings,"julia_version"=>string(VERSION),"oscar_version"=>string(pkgversion(Oscar)),
         "julia_threads"=>Threads.nthreads(),"started_utc"=>string(now(UTC)),"resume_requested"=>resume)
     save()=atomic_json(joinpath(directory,"run.json"),run)
@@ -48,7 +59,6 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
         end
     end
     save()
-    P=arithmetic_problem(request)
     metadata=stage("field_and_unit_verification",()->field_metadata(P));atomic_json(joinpath(directory,"field.json"),metadata)
     E=stage("perfect_enumeration_and_validation",()->enumerate_perfect_forms(P;backend,progress,timeout,force=!resume))
     run["backend"]=string(backend)
@@ -57,7 +67,7 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
     write_enumeration(joinpath(directory,"enumeration.json"),E);save()
     ctx=stage("ridges",()->TwoCellContext(E))
     certdir=joinpath(directory,"two_cells")
-    cells=stage("two_cells_and_coverage",()->enumerate_two_cells(ctx;directory=certdir,resume))
+    cells=stage("two_cells_and_coverage",()->enumerate_two_cells(ctx;directory=certdir,reduce_orbits=P.rank>2,resume))
     run["replayed_loop_certificates"]=get(cells.ledger,"cache_hits",0)
     status["two_cells"]="complete";run["certificate_directory"]=relpath(certdir,directory)
     C=stage("GL_assembly",()->build_gl_presentation(ctx,cells.certificates;coverage=cells.ledger))
@@ -72,7 +82,7 @@ function run_field_pipeline(request::VoronoiRequestRecord;directory=nothing,
         path=joinpath(directory,string(name)*"_simplified.json")
         small[name]=stage(string(name)*"_simplification",()->
             simplify_matrix_presentation(object.generator_matrices,object.relators;
-                label="$name(2,O), D$D",projective=name==:PSL))
+                label="$name($(P.rank),O), D$D",projective=name==:PSL))
         atomic_json(path,simplification_data(P,small[name]));status["simplification"][string(name)]="complete";save()
     end
     run["geometry"]=Dict("perfect_form_orbits"=>length(E.representatives),"stabilizer_orders"=>[r.stabilizer_order for r in E.representatives],

@@ -27,7 +27,7 @@ const HRAV=ArithmeticVoronoi
     @test arithmetic_problem(voronoi_request(-4;rank=3)).rank==3
     @test_throws ArgumentError voronoi_request(-4;rank=1)
     @test_throws ArgumentError classical_problem(;rank=true)
-    @test_throws ArgumentError enumerate_perfect_forms(arithmetic_problem(-4;rank=3))
+    @test enumerate_perfect_forms(arithmetic_problem(-4;rank=3)).completion_status==:complete
 end
 
 @testset "odd-rank special-linear stabilizers retain their actual centre" begin
@@ -55,6 +55,11 @@ end
     chain=GAP.Globals.TensorWithIntegers(R)
     @test sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(chain,1))))==[2]
     @test sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(chain,2))))==[2,2]
+    S=voronoi_complex(E;group=:SL)
+    @test validate_voronoi_complex(S)
+    @test all(det(g)==1 for layer in S.stabilizers for stabilizer in layer for g in stabilizer)
+    Rsl=GAP.Globals.FreeGResolution(hap_complex(S;resolution_length=2),2)
+    @test isempty(GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(Rsl),1)))
     # A4 and D4: independent classical perfect-form and automorphism counts.
     E4=enumerate_perfect_forms(classical_problem(;rank=4);backend=:native)
     @test length(E4.representatives)==2

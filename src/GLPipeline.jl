@@ -16,7 +16,7 @@ end
 Compute a certified GL presentation in any supported rank, with exact ridge
 cycles, generator matrices and optional Tietze maps. Quadratic request records
 and rational `classical_problem(; rank=n)` models use native enumeration.
-The separate GL/SL/PSL `run_field_pipeline` retains its rank-two scope.
+Use `run_field_pipeline` to compute SL and PSL presentations as well.
 Saved attaching loops are read only with `resume=true`, then exactly replayed.
 """
 function run_gl_pipeline(request::VoronoiRequestRecord;kwargs...)
@@ -26,7 +26,7 @@ run_gl_pipeline(D::Integer;rank=2,kwargs...)=run_gl_pipeline(arithmetic_problem(
 
 function run_gl_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,simplify=true,progress=true,resume::Bool=false)
     label="GL$(P.rank)_D$(P.discriminant)"
-    isnothing(directory) && (directory=joinpath(PACKAGE_ROOT,"results/gl_presentations",label))
+    isnothing(directory) && (directory=joinpath(pwd(),"results/gl_presentations",label))
     directory=abspath(directory);mkpath(directory)
     started=time_ns();timings=Dict{String,Any}()
     run=Dict{String,Any}("schema"=>"av_gl_run_v1","status"=>"running","problem"=>problem_descriptor(P),

@@ -1,23 +1,25 @@
-export BackendConfig, BackendError, default_backend, run_exporter, cache_key,
-       enumerate_perfect_forms, load_checkpoint, write_enumeration, enumeration_data
-
-import PerfectForms
-import PerfectForms: BackendConfig, BackendError, default_backend, run_exporter,
-                     enumerate_perfect_forms, BACKEND_COMMIT, file_sha, atomic_json
+export enumerate_perfect_forms, write_enumeration, enumeration_data
 
 const PACKAGE_ROOT=normpath(joinpath(@__DIR__,".."))
 
-# Preserve the problem-based API; executable discovery and process control belong
-# to PerfectForms, which has no dependency on our arithmetic types.
-default_backend(::ArithmeticVoronoiProblem)=default_backend()
-function run_exporter(P::ArithmeticVoronoiProblem,B::BackendConfig;
-                      input_text=namelist(P),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),kwargs...)
-    run_exporter(input_text,B;work_dir,kwargs...)
+file_sha(path)=bytes2hex(open(SHA.sha256,path))
+function atomic_json(path,data)
+    mkpath(dirname(path));temporary,io=mktemp(dirname(path);cleanup=false)
+    try
+        JSON3.pretty(io,data);println(io);flush(io);close(io)
+        Base.Filesystem.rename(temporary,path)
+    catch
+        isopen(io) && close(io)
+        isfile(temporary) && rm(temporary)
+        rethrow()
+    end
+    path
 end
 
 fraction_string(q)=begin
     q=QQ(q);d=denominator(q);isone(d) ? string(numerator(q)) : string(numerator(q),"/",d)
 end
+field_scalar_data(P,a)=[fraction_string(P.degree==1 ? a : coeff(a,k)) for k in 0:P.degree-1]
 matrix_strings(A)=[[fraction_string(A[i,j]) for j in 1:ncols(A)] for i in 1:nrows(A)]
 field_matrix_data(P,A)=[[[fraction_string(P.degree==1 ? A[i,j] : coeff(A[i,j],k)) for k in 0:P.degree-1] for j in 1:ncols(A)] for i in 1:nrows(A)]
 function problem_descriptor(P)
@@ -29,96 +31,32 @@ function problem_descriptor(P)
       multiplication=matrix_strings(P.multiplication),form_basis=matrix_strings.(P.form_basis),
       group=P.group_constraints,action=P.action_convention)
 end
-backend_options(P)=(;arithmetic="gmp",ListComm=P.degree==1 ? "Trivial" : "Use_realimag",PtGroupMethod="Trivial (-I)",
-    seed=1,computed_levels=["perfect_forms","facet_orbits","labelled_neighbours"],schema="av_polyhedral_export_v1")
-function cache_key(P,B::BackendConfig)
-    descriptor=(;schema=SCHEMA,problem=problem_descriptor(P),backend_commit=B.commit,
-                executable_sha256=B.executable_sha256,options=backend_options(P))
-    bytes2hex(sha256(JSON3.write(descriptor)))
-end
-function namelist(P;arithmetic="gmp")
-    P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
-    PerfectForms.perfect_form_request(P.discriminant;arithmetic)
-end
-
-function load_checkpoint(P,B,path)
-    checkpoint=try JSON3.read(read(path,String),Dict{String,Any}) catch err
-        throw(BackendError(:truncated_cache,sprint(showerror,err)))
-    end
-    get(checkpoint,"schema",nothing)=="av_checkpoint_v1" || throw(BackendError(:incompatible_schema,"unsupported cache version"))
-    get(checkpoint,"completed",false)===true || throw(BackendError(:incomplete_cache,"cache was not atomically committed after validation"))
-    required=("problem","backend_commit","executable_sha256","options","cache_key","raw_export_json","raw_export_sha256")
-    all(haskey(checkpoint,k) for k in required) && checkpoint["problem"] isa AbstractDict && checkpoint["raw_export_json"] isa AbstractString ||
-        throw(BackendError(:incompatible_cache,"missing or malformed cache envelope fields"))
-    expected=JSON3.read(JSON3.write(problem_descriptor(P)),Dict{String,Any})
-    problem=checkpoint["problem"]
-    get(problem,"discriminant",nothing)==P.discriminant && get(problem,"degree",nothing)==P.degree || throw(BackendError(:wrong_field,"cache belongs to a different number field"))
-    get(problem,"group",nothing)==P.group_constraints && get(problem,"action",nothing)==P.action_convention || throw(BackendError(:wrong_subgroup,"cache group/action constraints differ"))
-    problem==expected || throw(BackendError(:incompatible_problem,"order, basis or lattice data differ"))
-    checkpoint["backend_commit"]==B.commit && checkpoint["executable_sha256"]==B.executable_sha256 || throw(BackendError(:incompatible_backend,"cache comes from a different backend build"))
-    checkpoint["options"]==JSON3.read(JSON3.write(backend_options(P)),Dict{String,Any}) || throw(BackendError(:incompatible_options,"cache options or commuting constraints differ"))
-    checkpoint["cache_key"]==cache_key(P,B) || throw(BackendError(:incompatible_cache,"cache key mismatch"))
-    raw=checkpoint["raw_export_json"]
-    bytes2hex(sha256(raw))==checkpoint["raw_export_sha256"] || throw(BackendError(:corrupt_cache,"export checksum mismatch"))
-    data=try JSON3.read(raw,Dict{String,Any}) catch err
-        throw(BackendError(:truncated_cache,sprint(showerror,err)))
-    end
-    get(data,"backend_commit",nothing)==B.commit || throw(BackendError(:incompatible_backend,"raw cached output declares a different backend commit"))
-    start=time_ns()
-    E=try validate_export(P,data) catch err
-        throw(BackendError(:arithmetic_validation,sprint(showerror,err)))
-    end
-    E.provenance["from_cache"]=true;E.provenance["cache_key"]=cache_key(P,B)
-    E.provenance["executable_sha256"]=B.executable_sha256
-    E.provenance["validation_seconds"]=(time_ns()-start)/1e9
-    E
-end
-
 """
-    enumerate_perfect_forms(P::ArithmeticVoronoiProblem; backend=:polyhedral_common, progress=false, ...)
+    enumerate_perfect_forms(P::ArithmeticVoronoiProblem; backend=:native, progress=false, ...)
 
-Compute perfect forms, complete K-linear stabilizers and labelled neighbours.
-Use `backend=:native` for exact Julia/Hecke/OSCAR enumeration from scratch,
-without an exporter executable or configuration. `progress=true` prints seed
-and facet traversal progress. The native path has no deadline or disk cache.
+Compute perfect forms, complete K-linear stabilizers and labelled neighbours
+from scratch using Julia/Hecke/OSCAR. `progress=true` prints seed and facet
+traversal progress. Native enumeration has no deadline or disk cache.
 
-The default `:polyhedral_common` runs the configured C++ exporter. Pass
-`force=false` explicitly to reuse a validated checkpoint. `config`,
-`cache_dir`, `work_dir`, `timeout` and `force` apply to
-that backend. Both paths return an `ArithmeticVoronoiEnumeration`.
+The optional C++ comparison backend requires explicitly loading
+`integrations/perfect_forms/adapter.jl` from its separate Julia environment;
+then select `backend=:polyhedral_common`. `config`, `cache_dir`, `work_dir`,
+`timeout` and `force` apply only to that backend. Its checkpoint loading
+requires `force=false`. Both paths return an `ArithmeticVoronoiEnumeration`.
 """
-function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:polyhedral_common,config=nothing,
-        cache_dir=joinpath(PACKAGE_ROOT,"results/cache"),work_dir=joinpath(PACKAGE_ROOT,"results/runs"),
+function enumerate_perfect_forms(P::ArithmeticVoronoiProblem;backend=:native,config=nothing,
+        cache_dir=joinpath(pwd(),"results/cache"),work_dir=joinpath(pwd(),"results/runs"),
         timeout=60.0,force=true,progress=false)
     backend==:native && return enumerate_native(P;progress)
-    backend==:polyhedral_common || throw(BackendError(:unsupported_backend,"choose :native or :polyhedral_common"))
-    P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
-    B=isnothing(config) ? default_backend(P) : config
-    key=cache_key(P,B);path=joinpath(cache_dir,key*".json")
-    if isfile(path) && !force
-        @info "Loading a validated perfect-form checkpoint" path
-        return load_checkpoint(P,B,path)
-    end
-    run=run_exporter(P,B;work_dir,timeout)
-    start=time_ns()
-    E=try validate_export(P,run.data) catch err
-        report=run.process_info;report["status"]="arithmetic_validation_failed";report["error"]=sprint(showerror,err)
-        atomic_json(joinpath(run.run_directory,"process.json"),report)
-        throw(BackendError(:arithmetic_validation,sprint(showerror,err),run.run_directory))
-    end
-    E.provenance["from_cache"]=false;E.provenance["cache_key"]=key
-    E.provenance["executable_sha256"]=B.executable_sha256
-    E.provenance["run_directory"]=run.run_directory
-    E.provenance["backend_seconds"]=run.process_info["elapsed_seconds"]
-    E.provenance["validation_seconds"]=(time_ns()-start)/1e9
-    checkpoint=(;schema="av_checkpoint_v1",completed=true,cache_key=key,problem=problem_descriptor(P),
-        backend_commit=B.commit,executable_sha256=B.executable_sha256,options=backend_options(P),
-        raw_export_sha256=bytes2hex(sha256(run.raw)),raw_export_json=run.raw,
-        validated_utc=string(now(UTC)),validation=E.provenance)
-    atomic_json(path,checkpoint)
-    report=run.process_info;report["completed"]=true;report["status"]="validated_complete"
-    report["cache_path"]=path;atomic_json(joinpath(run.run_directory,"process.json"),report)
-    E
+    enumerate_external(P,Val(backend);config,cache_dir,work_dir,timeout,force,progress)
+end
+
+# Optional adapters add methods for their backend tag without changing the
+# registered package's dependencies or replacing existing methods.
+function enumerate_external(P,backend;kwargs...)
+    backend==Val(:polyhedral_common) && throw(ArgumentError(
+        "load integrations/perfect_forms/adapter.jl from its Julia environment before selecting backend=:polyhedral_common; see USER_GUIDE.md"))
+    throw(ArgumentError("unsupported enumeration backend: $backend"))
 end
 
 function enumeration_data(E)

@@ -328,7 +328,7 @@ The fixed positive target is g^-1*B*g^-t, where B is a positive sum of every
 root-cone evaluation generator. Crossing a separating facet strictly decreases
 Tr(F_current*target). Values have a fixed denominator, so descent terminates.
 """
-function matrix_to_word(C::PresentationCertificate,g;max_cones=10000,timeout=120.0,checkpoint=nothing)
+function matrix_to_word(C::PresentationCertificate,g;max_cones=typemax(Int),timeout=Inf,checkpoint=nothing)
     ctx=C.context;E=ctx.enumeration;P=E.problem;check_group_matrix(P,encode_matrix(P,g))
     ensure(C.coherent.lifts[1]==identity_matrix(P.field,P.rank),"word routine requires the root lift to be identity")
     base=zero_matrix(P.field,P.rank,P.rank)

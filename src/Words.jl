@@ -34,7 +34,7 @@ function translated_word(R,raw_word,target,simplified)
     word=raw_word
     if target!=:GL
         rewrite=schreier_rewrite(R.sl,raw_word)
-        ensure(rewrite.coset==0,"determinant-one word has a nontrivial determinant-square coset")
+        ensure(rewrite.coset==0,"determinant-one word has a nontrivial determinant quotient coset")
         word=rewrite.word
     end
     simplified && (word=substitute_word(word,R.simplified[target].forward_generator_words))
@@ -90,27 +90,30 @@ end
 function verify_word_certificate(R,g,data)
     target=Symbol(data["target"]);simplified=Bool(data["simplified"]);P=R.enumeration.problem
     g=word_input(R,g,target);alphabet=word_alphabet(R,target,simplified)
-    ensure(data["schema"]=="av_constructive_word_v1" && data["status"]=="complete","incomplete or incompatible word certificate")
+    ensure(data["schema"] in ("av_constructive_word_v1","av_constructive_word_v2") && data["status"]=="complete","incomplete or incompatible word certificate")
     ensure(data["source_hash"]==R.context.source_hash && data["alphabet_fingerprint"]==alphabet.fingerprint,"word certificate has a different source or alphabet")
     ensure(field_matrix_wire(P,data["input_matrix"])==g,"word certificate belongs to another input matrix")
     replay_word_path(R.gl,g,data["raw_GL_path"])
     word=translated_word(R,Int.(data["raw_GL_path"]["word"]),target,simplified)
     ensure(word==Int.(data["word"]),"word certificate alphabet translation is corrupt")
     I=identity_matrix(P.field,P.rank);value=evaluate_word(alphabet.matrices,word)
-    sign=value==g ? 1 : -1
-    ensure(value==sign*g && (target==:PSL || sign==1),"word certificate evaluates to the wrong matrix or central sign")
-    ensure(data["SL_lift_sign"]==sign,"word certificate central lift sign is corrupt")
+    scalar=target==:PSL ? projective_scalar(value,g) : (value==g ? one(P.field) : nothing)
+    ensure(!isnothing(scalar),"word certificate evaluates to the wrong matrix or scalar centre element")
+    if data["schema"]=="av_constructive_word_v2"
+        ensure(data["SL_lift_scalar"]==field_scalar_data(P,scalar),"word certificate central lift scalar is corrupt")
+    else
+        ensure(!isnothing(scalar_sign(scalar)),"legacy word certificate cannot encode this central scalar")
+    end
+    ensure(data["SL_lift_sign"]==scalar_sign(scalar),"word certificate central lift sign is corrupt")
     true
 end
 
 """A verified (not canonical or shortest) GL/SL/PSL word and optional path certificate."""
 function matrix_to_word(R::Union{ArithmeticGroupResult,GLGroupResult},g;
                         target=R isa GLGroupResult ? :GL : :SL,simplified=true,certificate=true,
-                        cache_path=nothing,max_steps=R isa GLGroupResult ? typemax(Int) : 10000,
-                        timeout=R isa GLGroupResult ? Inf : 120.0)
-    max_steps isa Integer && max_steps>=0 && timeout isa Real && timeout>=0 &&
-        (R isa GLGroupResult || isfinite(timeout)) ||
-        throw(WordReductionError(:invalid_input,"nonnegative search budgets are required; finite for the legacy field runner",nothing))
+                        cache_path=nothing,max_steps=typemax(Int),timeout=Inf)
+    max_steps isa Integer && max_steps>=0 && timeout isa Real && timeout>=0 ||
+        throw(WordReductionError(:invalid_input,"nonnegative search budgets are required",nothing))
     g=word_input(R,g,target);P=R.enumeration.problem;alphabet=word_alphabet(R,target,simplified)
     if !isnothing(cache_path) && isfile(cache_path)
         data=JSON3.read(read(cache_path,String),Dict{String,Any})
@@ -129,12 +132,13 @@ function matrix_to_word(R::Union{ArithmeticGroupResult,GLGroupResult},g;
         throw(WordReductionError(kind,message,checkpoint))
     end
     word=translated_word(R,path.word,target,simplified)
-    value=evaluate_word(alphabet.matrices,word);sign=value==g ? 1 : -1
-    ensure(value==sign*g && (target==:PSL || sign==1),"translated word does not evaluate to the input matrix")
-    data=JSON3.read(JSON3.write((;schema="av_constructive_word_v1",status="complete",source_hash=R.context.source_hash,
+    value=evaluate_word(alphabet.matrices,word)
+    scalar=target==:PSL ? projective_scalar(value,g) : (value==g ? one(P.field) : nothing)
+    ensure(!isnothing(scalar),"translated word does not evaluate to the input matrix modulo the requested centre")
+    data=JSON3.read(JSON3.write((;schema="av_constructive_word_v2",status="complete",source_hash=R.context.source_hash,
         target=string(target),simplified,alphabet_fingerprint=alphabet.fingerprint,input_matrix=field_matrix_data(P,g),
-        word,SL_lift_sign=sign,raw_GL_path=path,cache_replay=false,
-        guarantee="exact input matrix for GL/SL; input SL lift modulo +/-I for PSL; no canonical or shortest word guarantee")),Dict{String,Any})
+        word,SL_lift_scalar=field_scalar_data(P,scalar),SL_lift_sign=scalar_sign(scalar),raw_GL_path=path,cache_replay=false,
+        guarantee="exact input matrix for GL/SL; input SL lift modulo the full scalar centre for PSL; no canonical or shortest word guarantee")),Dict{String,Any})
     verify_word_certificate(R,g,data)
     isnothing(cache_path) || atomic_json(cache_path,data)
     certificate ? data : word

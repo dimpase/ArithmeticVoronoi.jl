@@ -4,7 +4,7 @@ using Test
 
 @testset "ArithmeticVoronoi native engine" begin
     include("engine_isolation.jl")
-    include("checkpoint_opt_in.jl")
+    include("backend_selection.jl")
     include("model.jl")
     include("requests.jl")
     include("quadratic_units.jl")
@@ -12,4 +12,6 @@ using Test
     include("imaginary.jl")
     include("gl_presentations.jl")
     test_gl_presentations()
+    include("sl_presentations.jl")
+    test_sl_presentations()
 end

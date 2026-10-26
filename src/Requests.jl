@@ -7,9 +7,9 @@ const VoronoiRequestRecord = Union{NamedTuple,AbstractDict}
 
 Describe a group over the maximal order of the quadratic field with
 fundamental discriminant `D`, on the free lattice O^rank. The returned record can
-be passed to `enumerate_perfect_forms` and `run_gl_pipeline` (GL), `hap_voronoi_complex` (GL, or
-imaginary-quadratic SL), and serialized as JSON. `run_field_pipeline` still
-requires rank-two GL.
+be passed to `enumerate_perfect_forms` and both presentation pipelines (GL),
+`hap_voronoi_complex` (GL, or imaginary-quadratic SL), and serialized as JSON.
+`run_field_pipeline` derives GL, SL and PSL from a GL request in any supported rank.
 """
 function voronoi_request(D::Integer;group=:GL,rank=2)
     normalize_voronoi_request((;group,rank,
@@ -79,7 +79,7 @@ end
 
 function enumeration_request(request)
     r=normalize_voronoi_request(request)
-    r["group"]=="GL" || throw(ArgumentError("perfect-form enumeration and presentation pipelines require a GL request; run_field_pipeline also derives rank-two SL and PSL presentations"))
+    r["group"]=="GL" || throw(ArgumentError("perfect-form enumeration and presentation pipelines require a GL request; run_field_pipeline also derives SL and PSL presentations"))
     r
 end
 

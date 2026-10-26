@@ -1,0 +1,657 @@
+{
+  "schema": "av_sl_presentation_validation_v1",
+  "status": "passed_with_documented_comparison_limits",
+  "checked_utc": "2026-10-26T06:02:32.962346+00:00",
+  "scope": "SL_n and full-centre PSL_n on the free lattice O^n, n >= 2, over Q or maximal quadratic orders",
+  "claims": "Native exact certificates and known abelianizations passed. Independent Magma abstract presentation isomorphisms are verified for rational rank three and four and Gaussian rank three. Eisenstein rank three has exact matrix maps, centre and H1 comparisons only; its optional abstract isomorphism check remains inconclusive. Real quadratic D=5 rank three has native tests only.",
+  "julia_version": "1.13.2",
+  "oscar_version": "1.8.2",
+  "hap_version": "1.78",
+  "vmh_commits": [
+    "befcfeda041781b7de922a16a37388decee2c642",
+    "b5b79a8103c648c36e90b8bd95880782a3ff0d2e"
+  ],
+  "batch_summary_sha256": "83a1b5dea6e02a552363c182b28ec056f674bfdee6469687b23421511491c44f",
+  "batch_audit_log_sha256": "89bcf86f241d05c52e2236d4ea483c88125155537e42fe328cf46f666017ab8f",
+  "batch_audit_note": "Both computations and explicit resume completed. The first post-run audit compared JSON3 Symbol keys with String keys; the corrected Dict{String,Any} audit passed.",
+  "source_snapshots": {
+    "native_suite": {
+      "gap/VoronoiBackends.g": "de359f647b5f84f77767f4757cf09b8ae1ae8b28d63cd0dde85a29e93afed274",
+      "src/GLPipeline.jl": "e2544b99568baa7ad37e29e8f525da5086045a9fad741a63a5c1308c01db0cc6",
+      "src/Words.jl": "b5bea1946fa1e3c639f0b91a76f30364ef02b4305c8729cf597f211a5da3854e",
+      "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+      "src/FieldPipeline.jl": "68e0c9550f0a371147347aaa02d171fdef23724a20b762c713fc4cd4570682be",
+      "src/Presentations.jl": "b3d781e1d9e1bf6d27b41df9235b0aeb7ab652209a24d69517406f3879e96d51",
+      "src/ArithmeticVoronoi.jl": "b558d7a257221834a3e361728b7a802f1e8ec791db37e2521cb55881d1a50037",
+      "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+      "src/Fields.jl": "0a1cc156e74f1a13dae384f8bae8549048df9940f68cfd988360a21d27cb3d20",
+      "src/Simplification.jl": "3548b9cf71a5b0cf03504f0acf6d96982b7e5635943c2e3e2f4091af29c71b25",
+      "src/TwoCells.jl": "01ca5bca8a0728455cb2def648c2c1233cbb4c2f2f5cd34d2e5da05f4fd36dc3",
+      "gap/ArithmeticVoronoi.g": "69f15518742e31ca159ab545842f4a2449c8fe42b808bd32d6b940281ac32d09",
+      "src/Backend.jl": "29b82250f12f50b872884d6114a57042364835e60a0b7d4048f85bd76cebad7f",
+      "src/SLExtraction.jl": "6d34ea42f4fbfb5c012d287b0a5229da02400693a10ab0194ec0c43b2e4f9d6d",
+      "src/Requests.jl": "1db492bf1086a9886cbe55455a2f428eb7d5938039a1223a4ef516bc37f79bc4",
+      "src/Projective.jl": "f4d5e1d01771ec691e7bcc431199ef4058023ee9d578c718a61fcc8b5eefaaca",
+      "src/HAP.jl": "dd84dfb5e16631c56acf64340a8d909a59fc1a3934b0a7f3a0299c964c156f23",
+      "src/Dataset.jl": "18fa9b55914bea3d5c5fe272c688ec7b6333575902d6a21e0b5ea72caf1098af"
+    },
+    "final": {
+      "gap/VoronoiBackends.g": "de359f647b5f84f77767f4757cf09b8ae1ae8b28d63cd0dde85a29e93afed274",
+      "src/GLPipeline.jl": "e2544b99568baa7ad37e29e8f525da5086045a9fad741a63a5c1308c01db0cc6",
+      "src/Words.jl": "b5bea1946fa1e3c639f0b91a76f30364ef02b4305c8729cf597f211a5da3854e",
+      "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+      "src/FieldPipeline.jl": "68e0c9550f0a371147347aaa02d171fdef23724a20b762c713fc4cd4570682be",
+      "src/Presentations.jl": "b3d781e1d9e1bf6d27b41df9235b0aeb7ab652209a24d69517406f3879e96d51",
+      "src/ArithmeticVoronoi.jl": "b558d7a257221834a3e361728b7a802f1e8ec791db37e2521cb55881d1a50037",
+      "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+      "src/Fields.jl": "0a1cc156e74f1a13dae384f8bae8549048df9940f68cfd988360a21d27cb3d20",
+      "src/Simplification.jl": "3548b9cf71a5b0cf03504f0acf6d96982b7e5635943c2e3e2f4091af29c71b25",
+      "src/TwoCells.jl": "01ca5bca8a0728455cb2def648c2c1233cbb4c2f2f5cd34d2e5da05f4fd36dc3",
+      "gap/ArithmeticVoronoi.g": "69f15518742e31ca159ab545842f4a2449c8fe42b808bd32d6b940281ac32d09",
+      "src/Backend.jl": "29b82250f12f50b872884d6114a57042364835e60a0b7d4048f85bd76cebad7f",
+      "src/SLExtraction.jl": "6d34ea42f4fbfb5c012d287b0a5229da02400693a10ab0194ec0c43b2e4f9d6d",
+      "src/Requests.jl": "1db492bf1086a9886cbe55455a2f428eb7d5938039a1223a4ef516bc37f79bc4",
+      "src/Projective.jl": "f4d5e1d01771ec691e7bcc431199ef4058023ee9d578c718a61fcc8b5eefaaca",
+      "src/HAP.jl": "dd84dfb5e16631c56acf64340a8d909a59fc1a3934b0a7f3a0299c964c156f23",
+      "src/Dataset.jl": "0e5446a52589951d2cb68ba5a6029282f7ee3b12f4de07b265d8e6edf472101c"
+    }
+  },
+  "final_source_sha256": {
+    "src/ArithmeticVoronoi.jl": "b558d7a257221834a3e361728b7a802f1e8ec791db37e2521cb55881d1a50037",
+    "src/Backend.jl": "29b82250f12f50b872884d6114a57042364835e60a0b7d4048f85bd76cebad7f",
+    "src/Dataset.jl": "0e5446a52589951d2cb68ba5a6029282f7ee3b12f4de07b265d8e6edf472101c",
+    "src/FieldPipeline.jl": "68e0c9550f0a371147347aaa02d171fdef23724a20b762c713fc4cd4570682be",
+    "src/Fields.jl": "0a1cc156e74f1a13dae384f8bae8549048df9940f68cfd988360a21d27cb3d20",
+    "src/GLPipeline.jl": "e2544b99568baa7ad37e29e8f525da5086045a9fad741a63a5c1308c01db0cc6",
+    "src/HAP.jl": "dd84dfb5e16631c56acf64340a8d909a59fc1a3934b0a7f3a0299c964c156f23",
+    "src/NativeBackend.jl": "3116595f400836d4edefc89a1e81be530b39d85c7e0050236b0dde88cd40787f",
+    "src/Presentations.jl": "b3d781e1d9e1bf6d27b41df9235b0aeb7ab652209a24d69517406f3879e96d51",
+    "src/Projective.jl": "f4d5e1d01771ec691e7bcc431199ef4058023ee9d578c718a61fcc8b5eefaaca",
+    "src/Requests.jl": "1db492bf1086a9886cbe55455a2f428eb7d5938039a1223a4ef516bc37f79bc4",
+    "src/SLExtraction.jl": "6d34ea42f4fbfb5c012d287b0a5229da02400693a10ab0194ec0c43b2e4f9d6d",
+    "src/Simplification.jl": "3548b9cf71a5b0cf03504f0acf6d96982b7e5635943c2e3e2f4091af29c71b25",
+    "src/TwoCells.jl": "01ca5bca8a0728455cb2def648c2c1233cbb4c2f2f5cd34d2e5da05f4fd36dc3",
+    "src/Validation.jl": "1b6222e1d4f596154a7a4c82e9e707ac07d41442a86449d09b066c39b4c09c44",
+    "src/Words.jl": "b5bea1946fa1e3c639f0b91a76f30364ef02b4305c8729cf597f211a5da3854e",
+    "gap/ArithmeticVoronoi.g": "69f15518742e31ca159ab545842f4a2449c8fe42b808bd32d6b940281ac32d09",
+    "gap/VoronoiBackends.g": "de359f647b5f84f77767f4757cf09b8ae1ae8b28d63cd0dde85a29e93afed274"
+  },
+  "source_note": "The full native and HAP suites and the preliminary comparisons preceded the legacy dataset export guard. Its six rejection assertions passed in the subsequent 411-assertion unit test set; the final comparisons, mixed-rank batch and installation used the guarded engine.",
+  "comparison_scripts_sha256": {
+    "scripts/compare_sl_presentations.jl": "14605029766cb640711416e3771de649671146cde3a4ecc3c18dc4b0025ab0a6",
+    "scripts/compare_gl_presentations.jl": "a3f30c8ac81c4c7ee1dcd8d385517c47709b10337222e02a70e6e9ce0c2d3ac8",
+    "scripts/magma_sl_presentations.m": "b322463712273682dffb1fc8f0006561d8a303fb8ac93678851391e3df1f95db",
+    "scripts/magma_check_gl_maps.m": "aea4cd2855af6c95c8e5cdc82c66cfbb15fffd7f301208c5e50de66caf5f5214"
+  },
+  "reference_method": "Fresh per-case git archive of the recorded VMH revisions. Imaginary SL uses VMH SL mode; rational SL uses Magma determinant-kernel rewriting of VMH GL. For rational central words, adjoin its verified finite-stabilizer word to the kernel generators before rewriting, then apply forward Tietze maps. Simplified subgroup generators are lifted by the canonical subgroup inclusions. No VMH algorithm source is patched. PSL kills a generator of all nth roots of unity in K.",
+  "timing_note": "Validation jobs overlapped on the host. Timings are observations, not a controlled performance comparison.",
+  "tests": [
+    {
+      "suite": "full native suite",
+      "command": "julia --startup-file=no --project=. test/runtests.jl",
+      "status": "passed",
+      "log_sha256": "64c8b90e7d572bfcb8cce9144629a546b2c6249023decb64c0f3125d32c6c3d1",
+      "passed_assertions": 180786
+    },
+    {
+      "suite": "native source-isolation/replay subprocess",
+      "command": "invoked by test/runtests.jl",
+      "status": "passed",
+      "log_sha256": "64c8b90e7d572bfcb8cce9144629a546b2c6249023decb64c0f3125d32c6c3d1",
+      "passed_assertions": 23
+    },
+    {
+      "suite": "bundled HAP regressions",
+      "command": "julia --startup-file=no --project=. test/hap.jl",
+      "status": "passed",
+      "log_sha256": "cab99f22732a02ab822ca110e0d8d78c82f14ffac3185e3fe10ea631f6ed018a",
+      "passed_assertions": 364
+    },
+    {
+      "suite": "determinant quotient, projective scalars and archive guards",
+      "command": "include(\"test/sl_presentations.jl\")",
+      "status": "passed",
+      "log_sha256": "ed86925f7d6f4c41672bb3ee7da22b78267c9564d4c2000d42c46b3628346085",
+      "passed_assertions": 411
+    },
+    {
+      "suite": "real quadratic D=5 rank-three native SL/PSL",
+      "command": "julia --startup-file=no --project=. -e 'include(\"test/sl_presentations.jl\"); test_sl_presentations(cases=((5,3),))'",
+      "status": "passed",
+      "log_sha256": "ed86925f7d6f4c41672bb3ee7da22b78267c9564d4c2000d42c46b3628346085",
+      "passed_assertions": 47475
+    },
+    {
+      "suite": "mixed-rank Gaussian batch and explicit resume",
+      "command": "scripts/run_native_fields.jl with rank-two and rank-three GL requests for D=-4, then --resume",
+      "status": "passed",
+      "log_sha256": "682bca2f3785ee64eef395f9957eab57e444d5ddc60288ae08608fa85002d226"
+    },
+    {
+      "suite": "fresh environment without PerfectForms or ArithmeticVoronoiData",
+      "command": "julia --startup-file=no --project=. test/registry_install.jl",
+      "status": "passed",
+      "log_sha256": "f768e8c43319a9162eb1b1f0d7a30e9baca40375573acffe8f69c18176fc3817",
+      "passed_assertions": 6
+    }
+  ],
+  "cases": [
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "rank": 3,
+      "discriminant": 1,
+      "abstract_isomorphism_requested": true,
+      "hap": {
+        "SL_relators": 7,
+        "SL_generators": 3,
+        "SL_homology": [],
+        "matrix_relators_and_words": true
+      },
+      "center_order": 1,
+      "status": "passed",
+      "magma_seconds": 0.234067231,
+      "magma": {
+        "SL": {
+          "relators": 17,
+          "homology": [],
+          "generators": 2,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        },
+        "PSL": {
+          "relators": 16,
+          "homology": [],
+          "generators": 2,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        }
+      },
+      "source_snapshot": "final",
+      "native_geometry": {
+        "inverted_edges": 1,
+        "oriented_loops": 4,
+        "local_directed_facet_orbits": 1,
+        "local_ridges": [
+          15
+        ],
+        "perfect_form_orbits": 1,
+        "stabilizer_orders": [
+          48
+        ],
+        "global_two_cell_reduction": "not performed; exhaustive redundant local coverage",
+        "global_unoriented_edges": 1,
+        "locally_reduced_ridges": [
+          2
+        ],
+        "global_two_cell_orbits": null
+      },
+      "native_presentations": {
+        "SL": {
+          "raw_relators": 602,
+          "simplified_relators": 8,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 19,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "raw_relators": 301,
+          "simplified_relators": 10,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 10,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "raw_relators": 602,
+          "simplified_relators": 8,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 19,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "native_stage_seconds": {
+        "two_cells_and_coverage": 4.10468936,
+        "ridges": 1.761299809,
+        "GL_assembly": 1.907555163,
+        "SL_extraction": 0.270295529,
+        "SL_simplification": 0.020289133,
+        "abelianizations": 0.442184896,
+        "PSL_simplification": 0.018965605,
+        "GL_simplification": 0.159210877,
+        "field_and_unit_verification": 0.007431211,
+        "PSL_quotient": 0.320007441,
+        "perfect_enumeration_and_validation": 37.395865532
+      },
+      "native_total_seconds": 55.845407525,
+      "artifact_sha256": {
+        "native/SL_raw.json": "b58bc4a9125cfe76a0763558b1e47073cedee0b1482ea2f5e23ba3e37f45a33c",
+        "native/PSL_raw.json": "479dd32fd227b5b85cb02282b2d29eb1ed8850a5ef6f22d2bfb0a52fd4ef4ad5",
+        "native/SL_simplified.json": "55e3e64176e124319399ee662b9083024aef8c8fae240c9da82b83bfcfaf2aa1",
+        "native/PSL_simplified.json": "f250aaebacf2068683c650213421728bcd358c31fa8346394aa40acdff5e50c7",
+        "hap_sl.json": "1e819f0d82c65cad67f99f7babf333c0a769401a3f31c4123c2b3625230a35d8",
+        "SL_maps.json": "a98c0442915a51df08cb8b0c40015b9091f4f5bc982299fc1d61c7822de35eb0",
+        "PSL_maps.json": "d4cbaea0191a105b1d0ec47bf7b5f93a02fd556fec5691724c69685220f823a0",
+        "magma.log": "4885b95b9dd0eddbebdeec427d78192203b9fc725db1fea15633e5415f80a0db",
+        "magma_SL_maps.log": "f0678675dcb2062a78f794aea50357195f2cbf9d4ae4673ffc74a70f5c5bed45",
+        "magma_PSL_maps.log": "261282e7e379842c9310c63a267f2aede953e62c6ef1ba7c3fa746fe7ed7643d"
+      },
+      "reference_script_sha256": "4daaf3906e31bfb40bc2c34f66a246dd4a2fc3bacd74eb0c2f54e3e54943df84"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "rank": 3,
+      "discriminant": -4,
+      "abstract_isomorphism_requested": true,
+      "hap": {
+        "SL_relators": 14,
+        "SL_generators": 5,
+        "SL_homology": [],
+        "matrix_relators_and_words": true
+      },
+      "center_order": 1,
+      "status": "passed",
+      "magma_seconds": 31.79314872,
+      "magma": {
+        "SL": {
+          "relators": 935,
+          "homology": [],
+          "generators": 2,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        },
+        "PSL": {
+          "relators": 586,
+          "homology": [],
+          "generators": 2,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        }
+      },
+      "source_snapshot": "final",
+      "native_geometry": {
+        "inverted_edges": 1,
+        "oriented_loops": 6,
+        "local_directed_facet_orbits": 1,
+        "local_ridges": [
+          288
+        ],
+        "perfect_form_orbits": 1,
+        "stabilizer_orders": [
+          384
+        ],
+        "global_two_cell_reduction": "not performed; exhaustive redundant local coverage",
+        "global_unoriented_edges": 1,
+        "locally_reduced_ridges": [
+          3
+        ],
+        "global_two_cell_orbits": null
+      },
+      "native_presentations": {
+        "SL": {
+          "raw_relators": 6396,
+          "simplified_relators": 12,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 33,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "raw_relators": 1599,
+          "simplified_relators": 15,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 9,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "4"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "raw_relators": 6396,
+          "simplified_relators": 12,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 33,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "native_stage_seconds": {
+        "two_cells_and_coverage": 4.063934768,
+        "ridges": 1.510952383,
+        "GL_assembly": 2.862244325,
+        "SL_extraction": 2.990310105,
+        "SL_simplification": 1.700786884,
+        "abelianizations": 0.038703376,
+        "PSL_simplification": 1.374425904,
+        "GL_simplification": 0.231422148,
+        "field_and_unit_verification": 2.976282645,
+        "PSL_quotient": 2.399803597,
+        "perfect_enumeration_and_validation": 4.782483523
+      },
+      "native_total_seconds": 26.344980734,
+      "artifact_sha256": {
+        "native/SL_raw.json": "a7217f4f97a18a067ff7ef070c1e135bb23f56cb047d88adad7e30646a9058ea",
+        "native/PSL_raw.json": "59325603b7b1f119a883aac5ef2e0714fc281a5de0729ba5cdefe0143599d25d",
+        "native/SL_simplified.json": "dfeed4e63c387b67edb7edc3502acf15c65cdb1188354fcded09341a1b7baf79",
+        "native/PSL_simplified.json": "ee5f6201862cdaec66d3df8e6347dd29a3d7bf34a5a302df0792194d59b826b2",
+        "hap_sl.json": "8849987fabf465ac8956783f7923cfd7dfc72d729f55d83b966902953a9f901a",
+        "SL_maps.json": "60b0878cf33579a831ee7306f557a5b309370bc3699dcda177b8ffbb39126136",
+        "PSL_maps.json": "132590bccabc424c6c779093bc4136bd00e68930c81af936c279604f408c5286",
+        "magma.log": "c4527fc63f1e447e96211bce7ccb2e58abd7ce24ea7f5bbfb29afbc4cf57518b",
+        "magma_SL_maps.log": "b5739f31f8efd21712d7dfa2cef661ee8cc708ac622506a311a45ad2cabf718a",
+        "magma_PSL_maps.log": "85d660bc8bedca8590636ae05a404d8855713eba3e77436c18027a53d665c1c8"
+      },
+      "reference_script_sha256": "4daaf3906e31bfb40bc2c34f66a246dd4a2fc3bacd74eb0c2f54e3e54943df84"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "rank": 4,
+      "discriminant": 1,
+      "abstract_isomorphism_requested": true,
+      "hap": {
+        "SL_relators": 47,
+        "SL_generators": 12,
+        "SL_homology": [],
+        "matrix_relators_and_words": true
+      },
+      "center_order": 2,
+      "status": "passed",
+      "magma_seconds": 42.983736523,
+      "magma": {
+        "SL": {
+          "relators": 1610,
+          "homology": [],
+          "generators": 3,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        },
+        "PSL": {
+          "relators": 1592,
+          "homology": [],
+          "generators": 3,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "verified"
+        }
+      },
+      "source_snapshot": "final",
+      "native_geometry": {
+        "inverted_edges": 1,
+        "oriented_loops": 8,
+        "local_directed_facet_orbits": 3,
+        "local_ridges": [
+          288,
+          45
+        ],
+        "perfect_form_orbits": 2,
+        "stabilizer_orders": [
+          1152,
+          240
+        ],
+        "global_two_cell_reduction": "not performed; exhaustive redundant local coverage",
+        "global_unoriented_edges": 2,
+        "locally_reduced_ridges": [
+          2,
+          2
+        ],
+        "global_two_cell_orbits": null
+      },
+      "native_presentations": {
+        "SL": {
+          "raw_relators": 25458,
+          "simplified_relators": 43,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 53,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "raw_relators": 12729,
+          "simplified_relators": 63,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 27,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "2"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "raw_relators": 25459,
+          "simplified_relators": 43,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 53,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "native_stage_seconds": {
+        "two_cells_and_coverage": 3.606616002,
+        "ridges": 1.548107793,
+        "GL_assembly": 3.176108281,
+        "SL_extraction": 1.143656729,
+        "SL_simplification": 1.347909351,
+        "abelianizations": 0.33949064,
+        "PSL_simplification": 1.226720055,
+        "GL_simplification": 0.53298035,
+        "field_and_unit_verification": 0.005402768,
+        "PSL_quotient": 0.760791189,
+        "perfect_enumeration_and_validation": 25.457997946
+      },
+      "native_total_seconds": 49.381820738,
+      "artifact_sha256": {
+        "native/SL_raw.json": "a9a9208ed0c2e7799e05dbebfcb6c2379621e27b52d34490729842716096404c",
+        "native/PSL_raw.json": "d6e65708fd67cb3b5f62717738c283e0c2b1b4d9339e0567c402ba5f48fab068",
+        "native/SL_simplified.json": "8e4520ffbf1903698fb988382dc104b81e54f65b4689cb416afa09355d7286ec",
+        "native/PSL_simplified.json": "631170a4108f3addf18f3fc4de3d45b7df453fdec5a00193269a4ba6a6a2d9ce",
+        "hap_sl.json": "665e833d1f3d8f097568cfad90d02b76503c0485364a4b0022ffb9adc4f6fef1",
+        "SL_maps.json": "7648efd107d1f083c969603f0bfa4c881c8ae2912083666b788d3768dee7a976",
+        "PSL_maps.json": "64497f00d9ef864aa99f897309d473d7fb40a44deb52fa4ee00c7d6d536a5f53",
+        "magma.log": "cc14569540166a5d338dccaa69329e70d382cf9cf479d756148b5cfb1d8cfe15",
+        "magma_SL_maps.log": "f61e9a64f598fcd10b4bdc24acc689e97e0b5cc3cb712acfa5b5a6be5bfd48f7",
+        "magma_PSL_maps.log": "a27615a10a1df4972c3acadb54cc704db4a6f90cc4e7f5cfd71e3ab0a9dae6e3"
+      },
+      "reference_script_sha256": "b322463712273682dffb1fc8f0006561d8a303fb8ac93678851391e3df1f95db"
+    },
+    {
+      "magma_version": [
+        2,
+        30,
+        1
+      ],
+      "rank": 3,
+      "discriminant": -3,
+      "abstract_isomorphism_requested": false,
+      "hap": {
+        "SL_relators": 41,
+        "SL_generators": 11,
+        "SL_homology": [],
+        "matrix_relators_and_words": true
+      },
+      "center_order": 3,
+      "status": "passed",
+      "magma_seconds": 31.381442578,
+      "magma": {
+        "SL": {
+          "relators": 1199,
+          "homology": [],
+          "generators": 3,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "not_requested"
+        },
+        "PSL": {
+          "relators": 204,
+          "homology": [],
+          "generators": 3,
+          "matrix_relators_and_bidirectional_words": true,
+          "abstract_isomorphism": "not_requested"
+        }
+      },
+      "source_snapshot": "final",
+      "native_geometry": {
+        "inverted_edges": 1,
+        "oriented_loops": 8,
+        "local_directed_facet_orbits": 3,
+        "local_ridges": [
+          324,
+          36
+        ],
+        "perfect_form_orbits": 2,
+        "stabilizer_orders": [
+          1296,
+          1296
+        ],
+        "global_two_cell_reduction": "not performed; exhaustive redundant local coverage",
+        "global_unoriented_edges": 2,
+        "locally_reduced_ridges": [
+          3,
+          1
+        ],
+        "global_two_cell_orbits": null
+      },
+      "native_presentations": {
+        "SL": {
+          "raw_relators": 82026,
+          "simplified_relators": 21,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 109,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "GL": {
+          "raw_relators": 13671,
+          "simplified_relators": 36,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 19,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [
+              "6"
+            ],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        },
+        "PSL": {
+          "raw_relators": 82027,
+          "simplified_relators": 13,
+          "abelianization_presentation": "simplified through the certified Tietze maps",
+          "raw_generators": 109,
+          "simplified_generators": 3,
+          "abelianization": {
+            "free_rank": 0,
+            "torsion": [],
+            "method": "Smith normal form of the relator exponent-sum matrix"
+          }
+        }
+      },
+      "native_stage_seconds": {
+        "two_cells_and_coverage": 6.488568449,
+        "ridges": 3.044858833,
+        "GL_assembly": 8.831063964,
+        "SL_extraction": 30.63791062,
+        "SL_simplification": 18.43978019,
+        "abelianizations": 0.378546948,
+        "PSL_simplification": 21.295186605,
+        "GL_simplification": 2.326510919,
+        "field_and_unit_verification": 2.403607632,
+        "PSL_quotient": 25.744053183,
+        "perfect_enumeration_and_validation": 25.722259009
+      },
+      "native_total_seconds": 165.458560719,
+      "artifact_sha256": {
+        "native/SL_raw.json": "8de94afe82d00d1b9d7c1474fc90e9f60f170167471bde2bd3f978af3bb4a6de",
+        "native/PSL_raw.json": "8505f4008f0b4d870ef3855049afa6e0bfa8896c38cffd5b4e7f3c60e949ea91",
+        "native/SL_simplified.json": "232930aef83e667a1f29197fee0577c390468fb35b3293baba4ba7b452910a1b",
+        "native/PSL_simplified.json": "43b42c95017c41e33c954551b064a7cf3b5ca346efc91f7ed94d6f7432e51b4a",
+        "hap_sl.json": "638eced275de7ea0eb9aff8279c9079e82a2632f5a310fdd7e7c90a5d1edadfa",
+        "SL_maps.json": "b456b5b433d441db21b98f025c455fc57b0b3e87e554fdbe3869ffb237bec920",
+        "PSL_maps.json": "6c3053c97b4aed52faca0d69fe67a71cca05606867b27fe3fd5c70933608a6e2",
+        "magma.log": "feecdae5d05a2db34d4963c7270347d8854670fc89e890d929d72d6bee625292"
+      },
+      "reference_script_sha256": "b322463712273682dffb1fc8f0006561d8a303fb8ac93678851391e3df1f95db"
+    }
+  ],
+  "real_quadratic_native": {
+    "discriminant": 5,
+    "rank": 3,
+    "perfect_form_orbits": 7,
+    "local_ridges": 11426,
+    "local_ridge_orbits": 391,
+    "oriented_loops": 782,
+    "SL_abelianization": [],
+    "PSL_abelianization": [],
+    "center_order": 1,
+    "determinant_quotient_index": 6,
+    "native_pipeline_seconds": 438.45585353,
+    "independent_presentation_comparison": "not completed"
+  },
+  "incomplete_optional_comparisons": [
+    {
+      "discriminant": -3,
+      "rank": 3,
+      "group": "SL",
+      "status": "inconclusive, manually stopped",
+      "direct_required_identities_proved": 1197,
+      "direct_required_identities_total": 1202,
+      "direct_log_sha256": "1c857d14f32c47f07e77205eef44430186a112bb0fb0a168781d054141ea1661",
+      "tietze_required_identities_proved": 101,
+      "tietze_required_identities_total": 102,
+      "tietze_log_sha256": "bad094dce9ef7a242f5da95d547968aa183260e4d35cbb0d79ba4e3caec38528",
+      "note": "These counts concern the native-presentation direction only. Neither run completed both abstract maps and round trips; no presentation-isomorphism claim follows from these partial reductions."
+    }
+  ]
+}

@@ -51,7 +51,7 @@ include(joinpath(@__DIR__,"../scripts/request_arguments.jl"))
         @test_throws ArgumentError request_arguments(["--requests=$path"];default_discriminants=[8],default_output=directory)
         write(path,JSON3.write(q))
         @test_throws ArgumentError request_arguments(["--requests=$path"];default_discriminants=[8],default_output=directory)
-        r=deepcopy(q);r["rank"]=3
+        r=deepcopy(q);r["rank"]=1
         output=joinpath(directory,"invalid")
         @test_throws ArgumentError run_field_pipeline(r;directory=output)
         @test !ispath(output)

@@ -100,6 +100,8 @@ end
 if abspath(PROGRAM_FILE)==@__FILE__
     Oscar.GAP.Packages.load("hap") || error("the comparison script requires GAP's HAP package")
     result=main(ARGS;on_result=imaginary_checks,default_discriminants=IMAGINARY_DISCRIMINANTS,
-        default_output=joinpath(NAV.PACKAGE_ROOT,"results/imaginary_fields"))
+        default_output=joinpath(pwd(),"results/imaginary_fields"),
+        validate_request=r->(r["rank"]==2 && r["field"]["discriminant"]<0 ||
+            error("the Yasaki/HAP stored-complex survey requires imaginary rank-two requests; use run_native_fields.jl for higher rank")))
     imaginary_bundle(result.root,result.summary)
 end

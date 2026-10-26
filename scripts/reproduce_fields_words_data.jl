@@ -1,3 +1,5 @@
+include(joinpath(@__DIR__,"../integrations/perfect_forms/adapter.jl"))
+using .PerfectFormsAdapter
 using ArithmeticVoronoi
 results=Dict(D=>run_field_pipeline(voronoi_request(D);backend=:polyhedral_common) for D in (5,8,12,13,40))
 include(joinpath(@__DIR__,"../test/fields_words.jl"))

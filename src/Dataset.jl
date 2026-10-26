@@ -17,7 +17,12 @@ end
 
 
 
-function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset/v1"))
+function export_dataset(results;directory=joinpath(pwd(),"results/dataset/v1"))
+    for R in values(results)
+        P=R.enumeration.problem
+        P.degree==2 && !is_hermitian(P) && P.rank==2 ||
+            throw(ArgumentError("the legacy v1 dataset format requires real quadratic rank two; use the pipeline's per-run JSON files for other fields and ranks"))
+    end
     mkpath(directory);artifacts=Dict{String,Any}()
     function copy_artifact(source,name)
         destination=joinpath(directory,name);mkpath(dirname(destination))
@@ -34,7 +39,7 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
             source=joinpath(R.directory,name)
             isfile(source) && (refs[name]=copy_artifact(source,"$prefix/$name"))
         end
-        cache=joinpath(PACKAGE_ROOT,"results/cache",R.enumeration.provenance["cache_key"]*".json")
+        cache=joinpath(pwd(),"results/cache",R.enumeration.provenance["cache_key"]*".json")
         refs["checkpoint.json"]=copy_artifact(cache,"$prefix/checkpoint.json")
         sourcecert=normpath(joinpath(R.directory,R.run["certificate_directory"]))
         refs["coverage.json"]=copy_artifact(joinpath(sourcecert,"coverage.json"),"$prefix/two_cells/coverage.json")
@@ -106,7 +111,9 @@ function export_dataset(results;directory=joinpath(PACKAGE_ROOT,"results/dataset
     manifest=(;schema="arithmetic_groups_dataset_v1",dataset_version="local-v1",created_utc=string(now(UTC)),
         exact_encoding="field coefficients are rational strings in ascending powers of the recorded w; matrices are rows; words are signed one-based generator indices in written matrix-product order",
         provenance=(;workspace_git_commit=nothing,reason="workspace sources are not identified by a dedicated tracked commit; exact software hashes are supplied",
-            backend_commit=BACKEND_COMMIT,
+            backend_commit=let commits=unique([get(R.enumeration.provenance,"backend_commit",nothing) for R in values(results)])
+                length(commits)==1 ? only(commits) : nothing
+            end,
             backend_distribution="external pinned dependency; no upstream source trees or backend binaries bundled",
             julia_version=string(VERSION),oscar_version=string(pkgversion(Oscar)),
             hecke_version=string(pkgversion(Hecke)),json3_version=string(pkgversion(JSON3)),
