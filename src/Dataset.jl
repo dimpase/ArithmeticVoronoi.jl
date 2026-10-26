@@ -18,6 +18,11 @@ end
 
 
 function export_dataset(results;directory=joinpath(pwd(),"results/dataset/v1"))
+    for R in values(results)
+        P=R.enumeration.problem
+        P.degree==2 && !is_hermitian(P) && P.rank==2 ||
+            throw(ArgumentError("the legacy v1 dataset format requires real quadratic rank two; use the pipeline's per-run JSON files for other fields and ranks"))
+    end
     mkpath(directory);artifacts=Dict{String,Any}()
     function copy_artifact(source,name)
         destination=joinpath(directory,name);mkpath(dirname(destination))

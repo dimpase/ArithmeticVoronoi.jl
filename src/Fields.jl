@@ -2,6 +2,16 @@ export field_metadata, abelianization_invariants
 
 function field_metadata(P)
     units=verified_units(P)
+    if P.degree==1
+        return (;discriminant=1,polynomial_coefficients=[0,1],integral_basis=["1"],
+            order_is_maximal=true,basis_discriminant=1,fundamental_unit=nothing,
+            fundamental_unit_norm=nothing,unit_rank=0,fundamental_unit_free_exponent=nothing,
+            fundamental_unit_torsion=nothing,torsion_unit_order=2,torsion_unit_generator=["-1"],
+            ordinary_class_number="1",ordinary_class_group_invariants=String[],
+            class_group_kind="ordinary",narrow_class_group=nothing,
+            proof_settings="Z is a principal ideal domain with units +/-1",
+            lmfdb_label=nothing,lmfdb_generator_map=nothing,lmfdb_status="not_requested")
+    end
     C,map=class_group(P.order;GRH=false)
     h=BigInt(order(C))
     ensure(h>0,"ordinary class-group computation did not return a finite group")

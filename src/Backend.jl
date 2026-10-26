@@ -19,6 +19,7 @@ end
 fraction_string(q)=begin
     q=QQ(q);d=denominator(q);isone(d) ? string(numerator(q)) : string(numerator(q),"/",d)
 end
+field_scalar_data(P,a)=[fraction_string(P.degree==1 ? a : coeff(a,k)) for k in 0:P.degree-1]
 matrix_strings(A)=[[fraction_string(A[i,j]) for j in 1:ncols(A)] for i in 1:nrows(A)]
 field_matrix_data(P,A)=[[[fraction_string(P.degree==1 ? A[i,j] : coeff(A[i,j],k)) for k in 0:P.degree-1] for j in 1:ncols(A)] for i in 1:nrows(A)]
 function problem_descriptor(P)

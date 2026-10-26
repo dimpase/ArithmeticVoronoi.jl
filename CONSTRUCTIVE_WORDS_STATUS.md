@@ -1,11 +1,10 @@
 # Constructive matrix words: implementation and validation scope
 
-The existing cone-descent routine was inspected and retained. It is now
-exposed through a public GL/SL/PSL wrapper with exact path replay. The supported
-fields are discriminants 5, 8, 12, 13 and 40, on the free maximal-order lattice
-O^2. Within each completed case the input may be an arbitrary valid matrix;
-it is not restricted to words in the final generators or to scalar units.
-No claim of support for other field models is made by the current constructor.
+The cone-descent routine is exposed through a public GLₙ/SLₙ/PSLₙ wrapper
+with exact path replay, for n ≥ 2 over Z or maximal real/imaginary quadratic
+orders on the free lattice Oⁿ. Within each completed case the input may be
+an arbitrary valid matrix; it is not restricted to products specified in the
+final generators or to scalar units.
 
 ## Public interface
 
@@ -25,12 +24,15 @@ selects the raw alphabet; `certificate=false` returns only its signed-index
 word. The word product is evaluated in written matrix-product order. It is
 neither a shortest word nor a canonical normal form.
 
-A two-by-two matrix is interpreted over the stated K. An encoded four-by-four
-integral matrix is also accepted only if it commutes with multiplication by
-w and decodes to the same K-linear action. Integral entries in O and unit
+A rank-by-rank matrix is interpreted over the stated K. An encoded integral
+matrix of size `rank*degree(K)` is also accepted only if it commutes with
+the field action and decodes to the same K-linear map. Integral entries in O and unit
 determinant are checked before GL reduction. SL/PSL require determinant one.
-For PSL the input is an SL lift: the returned lift may differ by -I, with
-its exact sign in `SL_lift_sign`. This does not accept arbitrary PGL matrices.
+For PSL the input is an SL lift: the evaluated word may equal λ times the
+input, with λⁿ=1. Version-two certificates store λ as exact rational field
+coefficients in `SL_lift_scalar`; `SL_lift_sign` is ±1 when λ=±1 and `nothing`
+otherwise. The verifier also accepts the earlier version-one sign certificates.
+This does not accept arbitrary PGL matrices.
 
 The original method `matrix_to_word(C::PresentationCertificate,g)` remains a
 raw GL interface. The new wrapper uses the existing Schreier rewrite to move
@@ -40,8 +42,10 @@ so the SL result equals the input matrix including its sign.
 
 ## Why the reducer is general and terminates
 
-The root interior B is a positive sum of every root-cone evaluation ray.
-The target Q=g^-1 B g^-t lies in the interior of the unique target full cone.
+Write A* for transpose in the rational/real case and conjugate transpose in
+the imaginary case. The root interior B is a positive sum of every root-cone
+evaluation ray. The target Q=g^-1 B (g^-1)* lies in the interior of the unique
+target full cone.
 The code examines every exact facet of the current representative and crosses
 an actually separating facet; it is not a breadth-first search in a fixed
 small set of actual cones. It updates frames by b*s_src*a and prepends the
@@ -65,7 +69,7 @@ correction R_j are distinguished in the proof and convention regression.
 ## Certificates, failure and resource scope
 
 A complete certificate records its field/fan source hash, alphabet fingerprint,
-exact input, target group, final word and lift sign. Its raw GL path records
+exact input, target group, final word and central lift scalar. Its raw GL path records
 source/target cones, source and next frames, both crossing labels, facet IDs,
 trace objectives and denominator bound, accumulated words and finite residual.
 Replay recomputes each crossing without searching and checks the final group
@@ -77,7 +81,8 @@ correctly. A step/time budget exhaustion creates an incomplete `.partial`
 checkpoint and raises `WordReductionError(:resource_exhausted,...)`.
 Incomplete paths are retained diagnostically; a new search currently restarts
 at the root rather than resuming a partly traversed path. Complete caches
-are reusable. `max_steps` limits reduction iterations, including the terminal
+are reusable. By default no step or time budget is imposed. An explicit
+`max_steps` limits reduction iterations, including the terminal
 cone check. `timeout` is checked between exact crossings; it is not a hard
 preemption of a single arithmetic operation or of Julia startup/compilation.
 
@@ -88,6 +93,14 @@ never produce a complete word. There is no presentation or word claim for
 an unfinished case.
 
 ## Validation evidence
+
+`test/sl_presentations.jl` constructs rational and imaginary-quadratic SL/PSL
+examples from scratch, including the rank-three Eisenstein centre of order
+three. It checks matrix words in raw and simplified alphabets and rejects
+corrupt lift scalars. The [higher-rank guide](docs/higher_rank.md) describes
+independent HAP and Magma comparisons. These tests use no stored presentations.
+
+The historical rank-two validation is described below.
 
 `test/fields_words.jl` exercises independently specified identity, -I, finite
 stabilizer elements, eI/e^-1 I, diag(e,e^-1), diag(e,1), upper/lower elementary

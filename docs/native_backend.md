@@ -51,9 +51,9 @@ words can have different labels. Certificates refer to their own enumeration.
 
 ## Scope and dependencies
 
-The native enumerator handles binary rational forms (`classical_problem()`)
-and rank-two forms over maximal quadratic orders on the free lattice
-`O^2`. `arithmetic_problem(D)` accepts positive and negative fundamental quadratic
+The native enumerator handles rational forms (`classical_problem(rank=n)`)
+and forms in any rank n ≥ 2 over maximal quadratic orders on the free lattice
+`O^n`. `arithmetic_problem(D; rank=n)` accepts positive and negative fundamental quadratic
 discriminants; negative discriminants use Hermitian forms.
 It is not restricted to a table of previously computed fields.
 The group-presentation pipeline computes fundamental units and ordinary class
@@ -64,8 +64,8 @@ See the [16-field survey](native_survey.md) for computed examples and timings.
 For imaginary fields, the unit group is finite and SL is obtained directly
 as the determinant kernel of index 2, 4 or 6. See the
 [imaginary quadratic examples](imaginary_quadratic.md) for computations and comparisons.
-This is not yet a replacement for
-PerfectForms' arbitrary T-spaces or higher ranks.
+Arbitrary T-spaces beyond these rational and quadratic models remain outside
+the native interface.
 
 The computation uses Hecke's exact lattice routines, Nemo arithmetic and
 OSCAR's exact polyhedral geometry. It requires no Dutour exporter executable,

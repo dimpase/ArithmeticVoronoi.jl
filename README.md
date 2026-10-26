@@ -1,9 +1,9 @@
 # ArithmeticVoronoi
 
-Compute presentations and verified matrix-to-word expressions for **GL(n,O)**
-(`n ≥ 2`), and **SL(2,O), PSL(2,O)**, where O is the maximal order of a real or
-imaginary quadratic field, acting on the free lattice Oⁿ. GL(n,Z) is also
-supported. The native backend uses
+Compute presentations and verified matrix-to-word expressions for
+**GL(n,O), SL(n,O) and PSL(n,O)** (`n ≥ 2`), where O is Z or the maximal order
+of a real or imaginary quadratic field, acting on the free lattice Oⁿ.
+The native backend uses
 Julia, OSCAR and Hecke; no C++ build or Magma installation is needed.
 Installing this package does not install PerfectForms or build C++. The optional
 C++ comparison environment requires a separate, explicit setup.
@@ -43,8 +43,9 @@ elementary_divisors(abelian_invariants(A))   # [2, 6]: C2 × C6
 
 The input is a **field discriminant**: `12` means Q(√3), `-7` means Q(√−7),
 and `-4` means Q(i). Change the discriminant and output directory together.
-Select `:GL` or `:PSL` to use the other computed presentations. GL and SL
-retain −I; PSL is SL/{I,−I}.
+Select `:GL` or `:PSL` to use the other computed presentations. Add `rank=3`
+to compute rank three. SL retains its full scalar centre; PSL quotients by
+it. In rank two this centre is {I,−I}.
 
 Native Julia computation is the default. The first Julia import and compilation
 can take several minutes.
@@ -69,7 +70,7 @@ compatibility copy used by HAP.
 - [Five imaginary quadratic fields](docs/imaginary_quadratic.md): full
   presentations and comparisons with Yasaki, HAP and Aurel Page's Magma code.
 - [Native higher homology with HAP and Schönnenbeck comparisons](docs/hap_and_vmh.md).
-- [Higher-rank GL presentations and HAP complexes](docs/higher_rank.md), with Magma regression comparisons.
+- [Higher-rank presentations and HAP complexes](docs/higher_rank.md), with Magma regression comparisons.
 - [Shared request records and JSON experiment batches](docs/requests.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).
