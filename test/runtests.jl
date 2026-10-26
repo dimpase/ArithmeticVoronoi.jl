@@ -12,4 +12,6 @@ using Test
     include("imaginary.jl")
     include("gl_presentations.jl")
     test_gl_presentations()
+    include("sl_presentations.jl")
+    test_sl_presentations()
 end

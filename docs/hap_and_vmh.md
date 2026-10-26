@@ -52,7 +52,9 @@ latter. Scalar matrices are retained when they belong to the group; −I lies
 in SL only in even rank. This interface does not currently supply
 real-quadratic SL, projective quotients or nonfree lattices.
 See [higher-rank examples and validation](higher_rank.md). The separate
-presentation pipeline remains rank two.
+presentation pipeline computes GLₙ, SLₙ and PSLₙ for every supported rank
+over Z and maximal quadratic orders. Rational GLₙ/SLₙ complexes are also
+available through `voronoi_complex(enumerate_perfect_forms(classical_problem(rank=n)); group=:SL)`.
 
 To reuse a perfect-form enumeration or inspect the native cells:
 

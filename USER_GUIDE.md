@@ -1,8 +1,8 @@
 # ArithmeticVoronoi user guide
 
 ArithmeticVoronoi computes perfect forms, finite presentations and verified
-matrix words for GL(n,O) (n ≥ 2), SL(2,O) and PSL(2,O). Here O is a maximal quadratic
-order and the lattice is the free module Oⁿ; GL(n,Z) is also supported. Both real and imaginary fields
+matrix words for GL(n,O), SL(n,O) and PSL(n,O), for n ≥ 2. Here O is Z or a maximal
+quadratic order and the lattice is the free module Oⁿ. Both real and imaginary fields
 are supported by the native Julia backend. Inputs are not restricted to the
 fields already in our surveys.
 
@@ -64,10 +64,12 @@ Pass a **fundamental field discriminant**, not a square-root radicand:
 | −4 | Q(i) | i |
 | −7 | Q(√−7) | (1+√−7)/2 |
 
-The action is K-linear. GL includes all scalar units. In the rank-two
-GL/SL/PSL pipeline, GL and SL retain −I and PSL is the separate quotient
-SL/{I,−I}; its matrices are determinant-one
-lifts. PGL, the quotient of GL by all scalar units, is a different group and
+The action is K-linear. GL includes all scalar units. SL retains precisely
+the scalar matrices ζI with ζⁿ=1; −I belongs to SL only in even rank.
+PSL is the separate quotient by this full scalar centre, and its saved
+matrices are determinant-one lifts. In rank two PSL is SL/{I,−I}; in rank
+three over the Eisenstein integers the centre of SL has order three.
+PGL, the quotient of GL by all scalar units, is a different group and
 is not an output of this pipeline. Other lattices and nonmaximal orders
 remain outside the current native group interface.
 
@@ -90,7 +92,7 @@ For GLₙ(Z), pass `classical_problem(; rank=n)`. For a real quadratic order,
 use, for example, `run_gl_pipeline(5; rank=3, directory="results/my_GL3_D5")`.
 `R.gl` is the raw presentation; `R.simplified[:GL]` includes the Tietze maps.
 This runner defaults to GL for word reduction and uses native enumeration.
-The combined runner below still computes GL₂/SL₂/PSL₂.
+Use `run_field_pipeline` instead to compute GLₙ, SLₙ and PSLₙ together.
 See [higher-rank computations](docs/higher_rank.md) for batches, HAP and
 independent Magma checks.
 
@@ -117,6 +119,21 @@ For an imaginary quadratic field:
 Rim = run_field_pipeline(-7; backend=:native, progress=true,
     directory="results/my_Dminus7");
 ```
+
+The default rank is two. For higher rank, use `rank=n`, or pass a problem:
+
+```julia
+R3 = run_field_pipeline(-3; rank=3, progress=true,
+    directory="results/my_SL3_eisenstein");
+R3.sl.center_order                       # 3
+S3 = R3.simplified[:PSL];
+
+RZ = run_field_pipeline(classical_problem(rank=3);
+    directory="results/my_SL3_Z");
+RZ.sl.center_order                       # 1: SL3(Z) = PSL3(Z)
+```
+
+The rank is not capped; enumeration and presentation sizes grow rapidly.
 
 All enumeration and field-pipeline entry points default to `backend=:native`.
 The optional C++ comparison path must be selected explicitly and currently
@@ -173,7 +190,9 @@ same run and generator alphabet.
 
 `target=:GL` accepts integral matrices with unit determinant; `:SL` and
 `:PSL` require determinant one. PSL certificates record equality modulo
-±I and the exact lift sign. Words are verified, but need not be shortest or
+the full scalar centre in `SL_lift_scalar`, as rational field coefficients.
+`SL_lift_sign` is ±1 when applicable, and `nothing` for other roots of unity.
+Words are verified, but need not be shortest or
 canonical. Semilinear matrices and matrices outside the integral group are
 rejected.
 
@@ -337,8 +356,10 @@ The [HAP and Schönnenbeck guide](docs/hap_and_vmh.md) explains the package
 layers, native higher homology, an optional Julia provider for HAP's own
 Voronoi entry points, and independent comparisons with fresh Magma complexes.
 Native complexes also accept higher rank through `voronoi_request(D; rank=n)`:
-quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. `run_gl_pipeline` also
-constructs GLₙ presentations; the combined GL/SL/PSL pipeline remains rank two.
+quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. Rational GLₙ and SLₙ use
+`classical_problem(rank=n)`. The combined `run_field_pipeline` computes
+GLₙ/SLₙ/PSLₙ presentations over all supported fields; HAP complexes for
+real-quadratic SL and for PSL require further work.
 See [higher-rank computations and validation](docs/higher_rank.md).
 Cup products require additional contracting-homotopy data.
 

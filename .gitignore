@@ -32,6 +32,7 @@ __pycache__/
 !/results/vmh_comparison.json
 !/results/higher_rank_validation.json
 !/results/gl_presentation_validation.json
+!/results/sl_presentation_validation.json
 !/results/code_data_separation_validation.json
 !/results/test_summary.txt
 !/results/two_cell_summary.json

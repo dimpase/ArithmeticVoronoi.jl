@@ -1,6 +1,9 @@
-# Higher-rank GL presentations and HAP complexes
+# Higher-rank presentations and HAP complexes
 
-The native enumerator and HAP provider accept ranks `n >= 2`. Quadratic
+Both presentation runners and the native enumerator accept ranks `n >= 2`.
+`run_field_pipeline` computes GLₙ, SLₙ and PSLₙ over Z and real or imaginary
+quadratic maximal orders on the free lattice Oⁿ. `run_gl_pipeline` computes
+GLₙ only. For HAP's full equivariant complexes, quadratic
 requests describe GLₙ over a real or imaginary quadratic maximal order, or
 SLₙ over an imaginary quadratic maximal order, on the free lattice Oⁿ.
 Higher-rank support uses the same general record interface merged in
@@ -39,6 +42,31 @@ saved loops are read only when `resume=true` is supplied, and then exactly
 replayed. It uses the native enumerator and
 imposes no timeout or memory limit. `simplify=false` skips Tietze simplification;
 then use `matrix_to_word(R, g; simplified=false)`.
+The per-run JSON files support every computed rank. The historical
+`export_dataset`/`verify_dataset` v1 archive format remains specific to the
+original real-quadratic rank-two collection and rejects other exports.
+
+For all three presentations, use the combined runner. This example also
+exercises a scalar centre larger than {±I}:
+
+```julia
+R = run_field_pipeline(-3; rank=3, directory="results/my_eisenstein3",
+    progress=true);
+R.sl.center_order                         # 3
+S = R.simplified[:SL];
+Q = R.simplified[:PSL];
+P = R.enumeration.problem;
+g = identity_matrix(P.field, 3); g[1,3] = P.generator;
+c = matrix_to_word(R, g; target=:PSL);
+verify_word_certificate(R, g, c)           # true
+c["SL_lift_scalar"]                       # exact coefficients in 1,w
+```
+
+For SLₙ(Z) and PSLₙ(Z), pass `classical_problem(rank=n)` to this runner.
+For real quadratic fields pass a discriminant or a quadratic GL request with
+`rank=n`. SL keeps the entire scalar centre μₙ(O); PSL adds a relation killing
+its generator. The centre is trivial for SL₃(Z) and SL₃(Z[i]), has order
+three for SL₃(Z[(1+√−3)/2]), and has order two for SL₄(Z).
 
 In higher rank it walks representatives under each full vertex stabilizer.
 The saved coverage ledger includes a checked matrix and stabilizer word
@@ -104,11 +132,12 @@ quotient by scalar units. In odd rank, −I is excluded from SL; other central
 roots of unity with determinant one must still be retained.
 
 `run_gl_pipeline` constructs GLₙ presentations using the 2-skeleton in every
-supported rank. The combined GL/SL/PSL `run_field_pipeline` remains rank two,
-as does the optional C++ request adapter. They reject higher-rank requests
-explicitly. Rational and
-real-quadratic SL complexes, projective quotients, nonmaximal orders, nonfree lattices and
-fields of degree greater than two remain outside the provider's scope.
+supported rank. The combined `run_field_pipeline` then extracts SLₙ and its
+full projective quotient. Only the optional C++ adapter remains rank two.
+HAP complexes support rational GLₙ/SLₙ as well as quadratic GLₙ and
+imaginary-quadratic SLₙ. Real-quadratic SL complexes, projective complexes,
+nonmaximal orders, nonfree lattices and fields of degree greater than two
+remain outside the provider's scope.
 The record adapter takes quadratic fields; use `classical_problem` for Q.
 
 Supporting an input rank does not imply practical computation at arbitrary
@@ -129,6 +158,75 @@ additional work. Generating GL presentations only requires the 2-skeleton
 and does not require computing H₂.
 
 ## Regression tests and independent comparisons
+
+The combined-pipeline tests in `test/sl_presentations.jl` compute SL₂(Z),
+SL₃(Z), SL₃(Z[i]) and SL₃(Z[(1+√−3)/2]), together with their full projective
+quotients. They check the known abelianizations, scalar centres, raw and
+simplified matrix words, cache replay and rejection of corrupt certificates.
+The tests also exercise the real determinant quotient C₂ × Cₙ and the
+order-four scalar centre over the Gaussian integers. They run in the native
+suite without HAP, Magma or any saved presentation library.
+
+For fresh independent SL/PSL comparisons, with licensed Magma on PATH:
+
+```sh
+julia --startup-file=no --project=. scripts/compare_sl_presentations.jl /path/to/VMH-TotallyRealNumberFields /path/to/VMH-ImaginaryQuadraticNumberFields results/sl_validation
+```
+
+This compares rank three over Z, Gaussian and Eisenstein integers, and rank
+four over Z. HAP independently assembles SL presentations from the native
+full complex and checks matrix relators, generator words and H₁. Magma
+computes fresh VMH presentations: imaginary cases use its SL option;
+rational cases use its GL presentation followed by Magma's determinant-kernel
+rewriting. The latter avoids the real VMH routine's assumption that −I
+belongs to every subgroup. PSL is formed by finding all nth roots of unity
+in the field and killing a generator of the full scalar centre. No VMH
+algorithm is patched. Exact matrix words define maps in both directions;
+the second Magma phase attempts to prove the abstract relators and both
+round trips. It is enabled by default for the rational and Gaussian cases.
+The Eisenstein case defaults to exact matrix/centre and homology comparisons:
+its direct abstract comparison was inconclusive after extensive relation
+rewriting. Matrix checks and matching H₁ are not a substitute for that proof.
+To repeat the optional abstract comparison without a time limit:
+
+```sh
+julia --startup-file=no --project=. -e 'include("scripts/compare_sl_presentations.jl"); compare_sl_presentations(ARGS; cases=((D=-3,rank=3,abstract=true),))' /path/to/VMH-TotallyRealNumberFields /path/to/VMH-ImaginaryQuadraticNumberFields results/eisenstein_abstract
+```
+
+A larger native real-quadratic example exercises the index-six determinant
+quotient and fundamental-unit corrections:
+
+```sh
+julia --startup-file=no --project=. -e 'include("test/sl_presentations.jl"); test_sl_presentations(cases=((5,3),))'
+```
+
+This uses the known perfectness of SL₃ over the Euclidean order O₅. It is
+separate from the fresh Magma comparisons above; the unfinished independent
+GL₃(O₅) reference calculation described below is still unfinished.
+
+The [SL/PSL validation receipt](../results/sl_presentation_validation.json)
+records the tested sources, versions and the scope of each comparison.
+The native suite passed 180,786 assertions and 23 isolated-process checks;
+the HAP suite passed 364 assertions. The additional real D=5 rank-three run
+passed 47,475 assertions, together with 411 unit-quotient, scalar and archive
+checks. The mixed-rank Gaussian batch also completed and resumed rank two
+and rank three separately. These computations use no saved presentation
+library; the validation receipt is never an input to the engine.
+
+The completed comparisons use Magma 2.30-1, Julia 1.13.2, OSCAR 1.8.2 and
+HAP 1.78. All higher-rank SL and PSL groups in this table have trivial H₁.
+
+| Ring | Rank | Order of the SL centre | Independent Magma comparison |
+| --- | ---: | ---: | --- |
+| Z | 3 | 1 | SL and PSL abstract isomorphisms verified |
+| Z | 4 | 2 | SL and PSL abstract isomorphisms verified |
+| Z[i] | 3 | 1 | SL and PSL abstract isomorphisms verified |
+| O₋₃ (Eisenstein) | 3 | 3 | matrix words, centre and H₁ agree; abstract comparison inconclusive |
+| O₅ | 3 | 1 | native checks passed; independent presentation comparison unfinished |
+
+The native rank-two regression also recovers H₁(SL₂(Z)) = C₁₂ and
+H₁(PSL₂(Z)) = C₆. Fresh-environment installation passed six checks without
+PerfectForms or ArithmeticVoronoiData being installed.
 
 The GL presentation regressions construct GL₂(Z), GL₃(Z) and GL₃(Z[i])
 from scratch, check all matrix relations, replay words for elementary,

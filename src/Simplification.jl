@@ -31,18 +31,24 @@ function verify_simplification(old_matrices,old_relations,simplified)
     ensure(simplified.isomorphism_verified,"simplification lacks its Tietze isomorphism")
     new=simplified.generator_matrices;I=identity_matrix(base_ring(first(old_matrices)),nrows(first(old_matrices)))
     projective=hasproperty(simplified,:projective) && simplified.projective
-    equal_image(A,B)=A==B || (projective && A==-B)
+    equal_image(A,B)=A==B || (projective && !isnothing(projective_scalar(A,B)))
     ensure(length(simplified.forward_generator_words)==length(old_matrices),"incomplete old-to-new generator map")
     ensure(length(simplified.backward_generator_words)==length(new),"incomplete new-to-old generator map")
+    forward_images=Any[]
     for (i,word) in enumerate(simplified.forward_generator_words)
-        ensure(equal_image(evaluate_word(new,word),old_matrices[i]),"old-to-new matrix map does not commute")
+        image=evaluate_word(new,word;identity=I)
+        ensure(equal_image(image,old_matrices[i]),"old-to-new matrix map does not commute")
+        push!(forward_images,image)
     end
     for (i,word) in enumerate(simplified.backward_generator_words)
         ensure(equal_image(evaluate_word(old_matrices,word),new[i]),"new-to-old matrix map does not commute")
     end
-    for word in simplified.relators;ensure(equal_image(evaluate_word(new,word),I),"simplified relator fails exact matrix evaluation");end
+    for word in simplified.relators;ensure(equal_image(evaluate_word(new,word;identity=I),I),"simplified relator fails exact matrix evaluation");end
     for word in old_relations
-        ensure(equal_image(evaluate_word(new,substitute_word(word,simplified.forward_generator_words)),I),"rewritten old relation fails the simplified matrix map")
+        # Evaluation is a homomorphism: substitute the evaluated generator
+        # images. Expanding long Tietze words again for every relator performs
+        # the same exact check with much larger intermediate matrices.
+        ensure(equal_image(evaluate_word(forward_images,word;identity=I),I),"rewritten old relation fails the simplified matrix map")
     end
     true
 end

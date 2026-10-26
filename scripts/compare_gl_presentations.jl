@@ -7,13 +7,19 @@ const GPAV=ArithmeticVoronoi
 # smaller than the (valid but often very long) geometric descent words.
 # Meet two balls in the exact integral matrix group; each returned word is
 # checked. This is a validation utility, not the package's membership routine.
-function short_generator_words(P,generators,targets;fallback=nothing,radius=typemax(Int))
+function short_generator_words(P,generators,targets;fallback=nothing,radius=typemax(Int),projective=false)
     n=P.rank*P.degree
+    units=projective ? GPAV.verified_units(P) : nothing
+    d=projective ? gcd(P.rank,units.torsion_order) : 1
+    z=projective ? units.torsion_generator^div(units.torsion_order,d) : one(P.field)
+    centers=[encode_matrix(P,z^j*identity_matrix(P.field,P.rank)) for j in 0:d-1]
+    key(M)=minimum(GPAV.matrix_key(c*M) for c in centers)
+    equal(A,B)=A==B || (projective && !isnothing(GPAV.projective_scalar(A,B)))
     matrices=encode_matrix.(Ref(P),generators)
     letters=[collect(eachindex(matrices));-collect(eachindex(matrices))]
     steps=[matrices;inv.(matrices)]
     values=[identity_matrix(QQ,n)];words=[Int[]]
-    known=Dict(GPAV.matrix_key(first(values))=>1)
+    known=Dict(key(first(values))=>1)
     encoded=encode_matrix.(Ref(P),targets)
     result=Union{Nothing,Vector{Int}}[nothing for _ in targets]
     frontier=1:1
@@ -21,10 +27,10 @@ function short_generator_words(P,generators,targets;fallback=nothing,radius=type
         for i in eachindex(targets)
             isnothing(result[i]) || continue
             for (j,g) in enumerate(values)
-                k=get(known,GPAV.matrix_key(encoded[i]*inv(g)),0)
+                k=get(known,key(encoded[i]*inv(g)),0)
                 k==0 && continue
                 result[i]=GPAV.freely_reduce([words[k];words[j]])
-                @assert GPAV.evaluate_word(generators,result[i])==targets[i]
+                @assert equal(GPAV.evaluate_word(generators,result[i]),targets[i])
                 break
             end
         end
@@ -34,9 +40,9 @@ function short_generator_words(P,generators,targets;fallback=nothing,radius=type
         depth==radius && break
         firstnew=length(values)+1
         for j in frontier,(letter,g) in zip(letters,steps)
-            value=values[j]*g;key=GPAV.matrix_key(value)
-            haskey(known,key) && continue
-            push!(values,value);push!(words,[words[j];letter]);known[key]=length(values)
+            value=values[j]*g;valuekey=key(value)
+            haskey(known,valuekey) && continue
+            push!(values,value);push!(words,[words[j];letter]);known[valuekey]=length(values)
         end
         frontier=firstnew:length(values)
         isempty(frontier) && error("reference generators close to a finite group without all requested matrices")
@@ -58,6 +64,8 @@ function checked_magma(working,script,log,marker)
         run(pipeline(Cmd(`magma -b $script`;dir=working);stdout=io,stderr=io))
     end
     # Magma can return exit code zero after a script error.
+    occursin(r"Runtime error|User error|Assertion failed|Internal error|Syntax error",read(log,String)) &&
+        error("Magma reported an error: inspect $log")
     isfile(joinpath(working,marker)) || error("Magma did not finish: inspect $log")
 end
 

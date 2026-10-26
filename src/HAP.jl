@@ -191,13 +191,13 @@ end
 
 Construct all bounded Ryshkov cells, their finite stabilizers, and signed
 equivariant boundaries from a complete perfect-form enumeration.
-Supports rational/quadratic GL and imaginary-quadratic SL on the free lattice O^n.
+Supports rational/quadratic GL and rational/imaginary-quadratic SL on the free lattice O^n.
 No Magma, stored complexes, or C++ exporter is used by the native enumeration.
 """
 function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=false)
     P=E.problem
     group in (:GL,:SL) || throw(ArgumentError("choose group=:GL or :SL"))
-    group==:SL && !is_hermitian(P) && throw(ArgumentError("SL cell complexes currently require an imaginary quadratic field"))
+    group==:SL && P.degree!=1 && !is_hermitian(P) && throw(ArgumentError("SL cell complexes currently require rational or imaginary quadratic coefficients"))
     ensure(E.completion_status==:complete && isempty(E.pending_facets),"cell complex requires a complete enumeration")
     cells=native_cell_orbits(E;progress)
     generators=Any[g for r in E.representatives for g in r.stabilizer]

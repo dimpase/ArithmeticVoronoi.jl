@@ -21,13 +21,10 @@ R = run_field_pipeline(request; progress=true,
 K = hap_voronoi_complex(request; resolution_length=3);
 ```
 
-These record-based calls use native Julia enumeration by default. The legacy
-`run_field_pipeline(D)` and problem-object enumeration calls retain their
-existing default; pass `backend=:native` to them explicitly. The presentation
-runner `run_field_pipeline` takes a rank-two GL request and computes GL, SL
-and PSL presentations; `run_gl_pipeline` accepts any supported rank and
-computes GL. HAP
-complexes currently support GL and imaginary-quadratic SL. For the latter,
+All these calls use native Julia enumeration by default. The presentation
+runner `run_field_pipeline` takes a GL request of any supported rank and
+computes GL, SL and PSL presentations; `run_gl_pipeline` computes GL only.
+HAP complexes currently support quadratic GL and imaginary-quadratic SL. For the latter,
 use `voronoi_request(-7; group=:SL)`.
 
 Julia accepts named tuples, dictionaries with string or symbol keys, and
@@ -37,18 +34,18 @@ field can specify either a fundamental `discriminant` or a squarefree
 `radicand`, never both. For example, `radicand=-1` normalizes to
 `discriminant=-4`.
 
-Native enumeration, `run_gl_pipeline` and HAP complexes accept any integer rank at least two,
+Native enumeration, both presentation runners and HAP complexes accept any integer rank at least two,
 a quadratic field, its maximal order, and the free lattice `O^rank`.
 For example, `voronoi_request(-4; rank=3)` requests GL₃ over the Gaussian
 integers. Other fields, nonmaximal orders, nonfree lattices and unknown record
 fields are rejected before enumeration. The lower-level
 `classical_problem(; rank=3)` API supports rational forms as well; the request
-adapter covers quadratic fields. The C++ adapter and the GL/SL/PSL presentation
-pipeline still require rank two. See [higher-rank validation](higher_rank.md).
+adapter covers quadratic fields. Only the optional C++ adapter requires rank
+two. See [higher-rank validation](higher_rank.md).
 
 ```julia
-R = run_gl_pipeline(voronoi_request(-4; rank=3);
-    directory="results/request_GL3_D-4");
+R = run_field_pipeline(voronoi_request(-4; rank=3);
+    directory="results/request_GL_SL_PSL3_D-4");
 ```
 
 The GL-only batch runner uses the same records:
@@ -56,6 +53,11 @@ The GL-only batch runner uses the same records:
 ```sh
 julia --project=. scripts/run_gl.jl --requests=examples/higher_rank_gl_requests.json --output=results/higher_gl
 ```
+
+Replace `scripts/run_gl.jl` with `scripts/run_native_fields.jl` to compute
+GL, SL and PSL, including word certificates, for those higher-rank records.
+The combined batch uses `rank3/D-4/` and the summary key `rank3_D-4`, keeping
+rank-two output paths and keys compatible with older runs.
 
 ## Run experiments from JSON
 
