@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, Test, JSON3
+using ArithmeticVoronoi, Oscar, Test, JSON
 import Hecke
 const AV=ArithmeticVoronoi
 @testset "maximal-order trace model and exact K-linear action" begin

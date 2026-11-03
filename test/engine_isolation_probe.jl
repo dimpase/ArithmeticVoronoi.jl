@@ -1,5 +1,5 @@
 # Run only through engine_isolation.jl, in a fresh Julia process.
-using Oscar, JSON3, Test
+using Oscar, JSON, Test
 const ISOLATED_ROOT=only(ARGS)
 include(joinpath(ISOLATED_ROOT,"src/ArithmeticVoronoi.jl"))
 using .ArithmeticVoronoi
@@ -18,9 +18,9 @@ const IAV=ArithmeticVoronoi
         @test verify_presentation(R.gl)
         @test R.run["presentation"]["abelianization"].torsion==["2"]
         @test !R.run["resume_requested"] && R.run["replayed_loop_certificates"]==0
-        ledger=JSON3.read(read(joinpath(directory,"two_cells/coverage.json"),String))
+        ledger=JSON.parse(read(joinpath(directory,"two_cells/coverage.json"),String))
         loop=joinpath(directory,"two_cells",first(first(ledger.entries).certificates))
-        bad=JSON3.read(read(loop,String),Dict{String,Any});bad["source_hash"]="corrupt"
+        bad=JSON.parse(read(loop,String),Dict{String,Any});bad["source_hash"]="corrupt"
         IAV.atomic_json(loop,bad)
         @test_throws ArithmeticValidationError run_gl_pipeline(P;directory,progress=false,resume=true)
         # A fresh computation must ignore stale/corrupt saved answers.
@@ -46,12 +46,12 @@ const IAV=ArithmeticVoronoi
         @test verify_presentation(F.gl) && verify_sl_presentation(F.sl)
         g=matrix(F.enumeration.problem.field,[1 1;0 1])
         @test verify_word_certificate(F,g,matrix_to_word(F,g;target=:GL))
-        badsimple=JSON3.read(read(joinpath(fielddir,"GL_simplified.json"),String),Dict{String,Any})
+        badsimple=JSON.parse(read(joinpath(fielddir,"GL_simplified.json"),String),Dict{String,Any})
         badsimple["old_generator_count"]+=1
         IAV.atomic_json(joinpath(fielddir,"GL_simplified.json"),badsimple)
         resumed=run_field_pipeline(voronoi_request(5);directory=fielddir,resume=true)
         @test resumed.run["replayed_loop_certificates"]==2sum(length,resumed.context.ridges)
-        saved=JSON3.read(read(joinpath(fielddir,"GL_simplified.json"),String))
+        saved=JSON.parse(read(joinpath(fielddir,"GL_simplified.json"),String))
         @test saved.old_generator_count==length(resumed.gl.generator_matrices)
         @test verify_presentation(resumed.gl) && verify_sl_presentation(resumed.sl)
     end

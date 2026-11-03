@@ -2,7 +2,7 @@
 # --output=DIR selects the parent directory; --resume retains completed fields.
 # --requests=FILE reads JSON records. Integers are quadratic GL shortcuts.
 const import_started=time_ns()
-using ArithmeticVoronoi, Oscar, LinearAlgebra, JSON3
+using ArithmeticVoronoi, Oscar, LinearAlgebra, JSON
 const NAV=ArithmeticVoronoi
 const import_seconds=(time_ns()-import_started)/1e9
 const SURVEY_DISCRIMINANTS=[5,8,12,13,17,21,24,28,29,33,37,40,41,44,56,60]
@@ -82,7 +82,7 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
     fields=Dict{String,Any}()
     summary_path=joinpath(root,"summary.json")
     if resume && isfile(summary_path)
-        previous=JSON3.read(read(summary_path,String),Dict{String,Any})
+        previous=JSON.parse(read(summary_path,String),Dict{String,Any})
         NAV.ensure(previous["schema"]=="av_native_field_batch_v1","incompatible batch summary")
         for request in requests
             key=field_key(request)

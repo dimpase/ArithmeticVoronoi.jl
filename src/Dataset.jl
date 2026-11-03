@@ -3,7 +3,7 @@ export export_dataset, verify_dataset, load_simplification
 # Explicit archive I/O: verifies the recorded matrix maps, not a fresh
 # abstract Tietze proof. Computation pipelines always simplify afresh.
 function load_simplification(P,path,matrices,relations)
-    d=JSON3.read(read(path,String),Dict{String,Any})
+    d=JSON.parse(read(path,String),Dict{String,Any})
     S=(;label=d["group"],projective=get(d,"projective",false),algorithm=d["algorithm"],
       isomorphism_verified=d["isomorphism_verified"],old_generator_count=d["old_generator_count"],
       old_relator_count=d["old_relator_count"],gap_version=d["gap_version"],
@@ -43,7 +43,7 @@ function export_dataset(results;directory=joinpath(pwd(),"results/dataset/v1"))
         refs["checkpoint.json"]=copy_artifact(cache,"$prefix/checkpoint.json")
         sourcecert=normpath(joinpath(R.directory,R.run["certificate_directory"]))
         refs["coverage.json"]=copy_artifact(joinpath(sourcecert,"coverage.json"),"$prefix/two_cells/coverage.json")
-        coverage=JSON3.read(read(joinpath(sourcecert,"coverage.json"),String),Dict{String,Any})
+        coverage=JSON.parse(read(joinpath(sourcecert,"coverage.json"),String),Dict{String,Any})
         for entry in coverage["entries"],file in entry["certificates"]
             copy_artifact(joinpath(sourcecert,file),"$prefix/two_cells/$file")
         end
@@ -101,12 +101,17 @@ function export_dataset(results;directory=joinpath(pwd(),"results/dataset/v1"))
     for file in readdir(joinpath(PACKAGE_ROOT,"src"))
         endswith(file,".jl") && copy_artifact(joinpath(PACKAGE_ROOT,"src",file),"software/src/$file")
     end
-    for file in ["Project.toml","Manifest.toml"]
-        copy_artifact(joinpath(PACKAGE_ROOT,file),"software/$file")
-    end
+    copy_artifact(joinpath(PACKAGE_ROOT,"Project.toml"),"software/Project.toml")
+    manifest_path=joinpath(PACKAGE_ROOT,"Manifest.toml")
+    isfile(manifest_path) && copy_artifact(manifest_path,"software/Manifest.toml")
     copy_artifact(joinpath(PACKAGE_ROOT,"scripts/verify_dataset.jl"),"software/scripts/verify_dataset.jl")
-    for file in ["PRESENTATION_JUSTIFICATION.md","CONSTRUCTIVE_WORDS_STATUS.md","KW_COMPARISON.md","DATASET_SCHEMA.md","DATASET_PROPOSAL.md"]
-        isfile(joinpath(PACKAGE_ROOT,file)) && copy_artifact(joinpath(PACKAGE_ROOT,file),"documentation/$file")
+    for (source,file) in [
+            "docs/src/theory/presentations.md"=>"PRESENTATION_JUSTIFICATION.md",
+            "docs/src/theory/words.md"=>"CONSTRUCTIVE_WORDS_STATUS.md",
+            "docs/src/validation/kirchheimer_wolfart.md"=>"KW_COMPARISON.md",
+            "docs/src/data/schema.md"=>"DATASET_SCHEMA.md",
+            "docs/src/data/proposal.md"=>"DATASET_PROPOSAL.md"]
+        isfile(joinpath(PACKAGE_ROOT,source)) && copy_artifact(joinpath(PACKAGE_ROOT,source),"documentation/$file")
     end
     manifest=(;schema="arithmetic_groups_dataset_v1",dataset_version="local-v1",created_utc=string(now(UTC)),
         exact_encoding="field coefficients are rational strings in ascending powers of the recorded w; matrices are rows; words are signed one-based generator indices in written matrix-product order",
@@ -116,7 +121,7 @@ function export_dataset(results;directory=joinpath(pwd(),"results/dataset/v1"))
             end,
             backend_distribution="external pinned dependency; no upstream source trees or backend binaries bundled",
             julia_version=string(VERSION),oscar_version=string(pkgversion(Oscar)),
-            hecke_version=string(pkgversion(Hecke)),json3_version=string(pkgversion(JSON3)),
+            hecke_version=string(pkgversion(Hecke)),json_version=string(pkgversion(JSON)),
             publication_status="local candidate dataset; not submitted or accepted by LMFDB; no DOI assigned"),
         fields,artifacts=artifacts,
         verification_levels=Dict("algebraic"=>"exact matrix membership, relators, maps, invariants, central elements and supplied path replay",
@@ -148,7 +153,7 @@ function dataset_path(root,reference)
     ensure(startswith(path,abspath(root)*"/"),"artifact path escapes the dataset directory")
     path
 end
-read_dataset_json(root,ref)=JSON3.read(read(dataset_path(root,ref),String),Dict{String,Any})
+read_dataset_json(root,ref)=JSON.parse(read(dataset_path(root,ref),String),Dict{String,Any})
 
 function wire_presentation(P,d)
     matrices=Any[field_matrix_wire(P,g["matrix"]) for g in d["generators"]]
@@ -243,13 +248,13 @@ function verify_dataset(directory;level=:algebraic,discriminants=nothing)
         # The existing validator consumes the exact exporter payload, without
         # invoking an executable or trusting serialized enumeration records.
         checkpoint=read_dataset_json(root,refs["checkpoint.json"])
-        ensure(checkpoint["completed"] && checkpoint["problem"]==JSON3.read(JSON3.write(problem_descriptor(P)),Dict{String,Any}),"checkpoint field/action mismatch")
-        ensure(bytes2hex(sha256(checkpoint["raw_export_json"]))==checkpoint["raw_export_sha256"],"checkpoint payload checksum mismatch")
-        E=validate_export(P,JSON3.read(checkpoint["raw_export_json"],Dict{String,Any}))
+        ensure(checkpoint["completed"] && checkpoint["problem"]==JSON.parse(JSON.json(problem_descriptor(P)),Dict{String,Any}),"checkpoint field/action mismatch")
+        ensure(text_sha(checkpoint["raw_export_json"])==checkpoint["raw_export_sha256"],"checkpoint payload checksum mismatch")
+        E=validate_export(P,JSON.parse(checkpoint["raw_export_json"],Dict{String,Any}))
         ctx=TwoCellContext(E)
         ensure(ctx.source_hash==rawdata[:GL]["source_hash"],"geometric source hash mismatch")
         coveragepath=joinpath(root,field["certificate_directory"],"coverage.json")
-        coverage=JSON3.read(read(coveragepath,String),Dict{String,Any})
+        coverage=JSON.parse(read(coveragepath,String),Dict{String,Any})
         cells=TwoCellCertificate[]
         if level==:complete
             for entry in coverage["entries"]
@@ -273,7 +278,7 @@ function verify_dataset(directory;level=:algebraic,discriminants=nothing)
         R=ArithmeticGroupResult(E,ctx,C,S,Q,small,metadata,root,Dict{String,Any}())
         for path in readdir(joinpath(root,field["word_certificate_directory"]);join=true)
             endswith(path,".json") || continue
-            cert=JSON3.read(read(path,String),Dict{String,Any});g=field_matrix_wire(P,cert["input_matrix"])
+            cert=JSON.parse(read(path,String),Dict{String,Any});g=field_matrix_wire(P,cert["input_matrix"])
             verify_word_certificate(R,g,cert)
         end
         if !isnothing(field["literature_directory"])

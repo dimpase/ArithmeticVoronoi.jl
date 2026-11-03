@@ -5,6 +5,7 @@ using Test
 @testset "ArithmeticVoronoi native engine" begin
     include("engine_isolation.jl")
     include("backend_selection.jl")
+    include("hashing.jl")
     include("model.jl")
     include("requests.jl")
     include("quadratic_units.jl")

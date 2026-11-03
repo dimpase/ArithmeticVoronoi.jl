@@ -52,3 +52,13 @@ __pycache__/
 !/results/sanitizer_fields/
 /results/sanitizer_fields/*
 !/results/sanitizer_fields/summary.json
+
+# Resolved environments and generated documentation/coverage are local.
+/Manifest.toml
+/Manifest-v*.toml
+/docs/Manifest*.toml
+/docs/build/
+*.cov
+*.mem
+/lcov.info
+/coverage/

@@ -1,6 +1,6 @@
 # Optional reference comparison tooling. Never included by ArithmeticVoronoi.
 module KirchheimerWolfart
-using ArithmeticVoronoi, Oscar, JSON3
+using ArithmeticVoronoi, Oscar, JSON
 import ArithmeticVoronoi: ensure, evaluate_word, inverse_word, freely_reduce,
     substitute_word, verified_units, unit_coordinates, fraction_string,
     field_matrix_data, atomic_json, PACKAGE_ROOT, file_sha, check_projective_comparison
@@ -75,7 +75,7 @@ function reference_matrix_word(P,g;max_steps=1000,division_radius=6)
 end
 
 function kw_source_hashes(source_directory=nothing)
-    record=JSON3.read(read(joinpath(PACKAGE_ROOT,"references/kw_sources.json"),String),Dict{String,Any})
+    record=JSON.parse(read(joinpath(PACKAGE_ROOT,"references/kw_sources.json"),String),Dict{String,Any})
     hashes=record["sha256"]
     if !isnothing(source_directory)
         for (name,expected) in hashes

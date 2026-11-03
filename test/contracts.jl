@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, Test
+using ArithmeticVoronoi, Oscar, JSON, Test
 const CONTRACT_ROOT=mktempdir(joinpath(@__DIR__,"../results");prefix="contract tests ",cleanup=false)
 const CONTRACT_AV=ArithmeticVoronoi
 const OBSERVED=Dict{String,Any}()
@@ -67,7 +67,7 @@ end
     OBSERVED["killed-run restart"]=Dict("status"=>"passed","policy"=>"preserve partial diagnostics; restart enumeration from scratch; only fully validated final caches are reusable")
 
     cache_path=joinpath(CONTRACT_AV.PACKAGE_ROOT,"results/cache",cache_key(P,B)*".json")
-    good=JSON3.read(read(cache_path,String),Dict{String,Any})
+    good=JSON.parse(read(cache_path,String),Dict{String,Any})
     for (label,kind,mutate) in [
         ("wrong field",:wrong_field,d->(d["problem"]["discriminant"]=8)),
         ("wrong subgroup",:wrong_subgroup,d->(d["problem"]["group"]="SL(2,O)")),
@@ -86,7 +86,7 @@ end
     write(truncated,text[1:div(length(text),2)])
     expect_backend_error("truncated cache",:truncated_cache) do;load_checkpoint(P,B,truncated);end
     # These mutations remain syntactically valid and checksum-consistent: mathematical revalidation must reject them.
-    raw=JSON3.read(good["raw_export_json"],Dict{String,Any})
+    raw=JSON.parse(good["raw_export_json"],Dict{String,Any})
     mutations=[
         ("false boundary assertion",d->(d["boundary_square"]=false)),
         ("incorrect minimum",d->(d["representatives"][1]["minimum"]="2")),
@@ -105,7 +105,7 @@ end
         end)]
     for (label,mutate) in mutations
         bad=deepcopy(good);payload=deepcopy(raw);mutate(payload)
-        bad["raw_export_json"]=JSON3.write(payload)
+        bad["raw_export_json"]=JSON.json(payload)
         bad["raw_export_sha256"]=bytes2hex(CONTRACT_AV.sha256(bad["raw_export_json"]))
         file=joinpath(CONTRACT_ROOT,replace(label," "=>"_")*".json");CONTRACT_AV.atomic_json(file,bad)
         expect_backend_error(label,:arithmetic_validation) do;load_checkpoint(P,B,file);end

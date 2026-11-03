@@ -1,6 +1,6 @@
 # julia --project=. scripts/run_hap.jl --requests=examples/voronoi_requests.json
 # Computes fresh complexes through HAP's general record interface, without Magma.
-using ArithmeticVoronoi, Oscar, JSON3
+using ArithmeticVoronoi, Oscar, JSON
 import Oscar: GAP
 include("request_arguments.jl")
 
@@ -31,7 +31,7 @@ function main(args)
         name="$(request["group"])$(rank_suffix)_D$(request["field"]["discriminant"])"
         path=joinpath(root,name*".json")
         if resume && isfile(path)
-            previous=JSON3.read(read(path,String),Dict{String,Any})
+            previous=JSON.parse(read(path,String),Dict{String,Any})
             if get(previous,"status",nothing)=="complete" && matching_request(previous,request) &&
                 get(previous,"degree",nothing)==degree
                 entries[name]=previous;save();continue

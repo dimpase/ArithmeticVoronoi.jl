@@ -1,5 +1,5 @@
-# Exercise package installation as a dependency: the checkout's Manifest.toml
-# and the separate C++ comparison environment must not affect resolution.
+# Resolve from a fresh client environment, without instantiating the package
+# checkout first. --test also exercises Pkg.test and its subprocess environment.
 using Pkg, Test
 
 Pkg.activate(mktempdir())
@@ -21,4 +21,8 @@ using ArithmeticVoronoi
             @test isfile(joinpath(R.directory,"run.json"))
         end
     end
+end
+
+if "--test" in ARGS
+    Pkg.test("ArithmeticVoronoi";coverage=true)
 end

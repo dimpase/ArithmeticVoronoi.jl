@@ -27,7 +27,7 @@ function word_alphabet(R,target,simplified)
     object=simplified ? R.simplified[target] : raw
     payload=(;source_hash=R.context.source_hash,target=string(target),simplified,
         matrices=field_matrix_data.(Ref(R.enumeration.problem),object.generator_matrices),relators=object.relators)
-    (;matrices=object.generator_matrices,fingerprint=bytes2hex(sha256(JSON3.write(payload))))
+    (;matrices=object.generator_matrices,fingerprint=text_sha(JSON.json(payload)))
 end
 
 function translated_word(R,raw_word,target,simplified)
@@ -116,7 +116,7 @@ function matrix_to_word(R::Union{ArithmeticGroupResult,GLGroupResult},g;
         throw(WordReductionError(:invalid_input,"nonnegative search budgets are required",nothing))
     g=word_input(R,g,target);P=R.enumeration.problem;alphabet=word_alphabet(R,target,simplified)
     if !isnothing(cache_path) && isfile(cache_path)
-        data=JSON3.read(read(cache_path,String),Dict{String,Any})
+        data=JSON.parse(read(cache_path,String),Dict{String,Any})
         try verify_word_certificate(R,g,data) catch err
             throw(WordReductionError(:invalid_certificate,sprint(showerror,err),String(cache_path)))
         end
@@ -135,7 +135,7 @@ function matrix_to_word(R::Union{ArithmeticGroupResult,GLGroupResult},g;
     value=evaluate_word(alphabet.matrices,word)
     scalar=target==:PSL ? projective_scalar(value,g) : (value==g ? one(P.field) : nothing)
     ensure(!isnothing(scalar),"translated word does not evaluate to the input matrix modulo the requested centre")
-    data=JSON3.read(JSON3.write((;schema="av_constructive_word_v2",status="complete",source_hash=R.context.source_hash,
+    data=JSON.parse(JSON.json((;schema="av_constructive_word_v2",status="complete",source_hash=R.context.source_hash,
         target=string(target),simplified,alphabet_fingerprint=alphabet.fingerprint,input_matrix=field_matrix_data(P,g),
         word,SL_lift_scalar=field_scalar_data(P,scalar),SL_lift_sign=scalar_sign(scalar),raw_GL_path=path,cache_replay=false,
         guarantee="exact input matrix for GL/SL; input SL lift modulo the full scalar centre for PSL; no canonical or shortest word guarantee")),Dict{String,Any})

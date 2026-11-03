@@ -1,6 +1,6 @@
 module ArithmeticVoronoi
 
-using Oscar, JSON3, SHA, Dates
+using Oscar, JSON, SHA, Dates
 import Hecke
 
 export ArithmeticVoronoiProblem, arithmetic_problem, classical_problem,
@@ -14,6 +14,13 @@ const SCHEMA="arithmetic_voronoi_v1"
 const ACTION="columns; F^g=transpose(g)*F*g; (F^g)^h=F^(g*h)"
 const HERMITIAN_ACTION="columns; F^g=conjugate_transpose(g)*F*g; (F^g)^h=F^(g*h)"
 
+"""
+    ArithmeticVoronoiProblem
+
+A field, its maximal order and the free lattice O^rank, together with the
+exact trace-form embedding and the K-linear group-action convention.
+Construct one with [`classical_problem`](@ref) or [`arithmetic_problem`](@ref).
+"""
 struct ArithmeticVoronoiProblem
     field::Any
     order::Any
@@ -96,6 +103,13 @@ function arithmetic_problem(D::Int;rank=2)
     s*s-4p==D || error("integral basis discriminant mismatch")
     make_problem(K,O,w,2,D,s,p,rank)
 end
+"""
+    classical_problem(; rank=2)
+
+Describe GL(rank,Z) acting on the free lattice Z^rank, with `rank >= 2`.
+Pass this problem to [`run_gl_pipeline`](@ref), [`run_field_pipeline`](@ref)
+or [`enumerate_perfect_forms`](@ref).
+"""
 classical_problem(;rank=2)=make_problem(QQ,ZZ,QQ(0),1,1,0,0,rank)
 
 function form_from_trace(P::ArithmeticVoronoiProblem,A)

@@ -51,7 +51,7 @@ function compare_sl_presentations(args;cases=((D=1,rank=3),(D=-4,rank=3),(D=1,ra
             cp(joinpath(@__DIR__,"magma_sl_presentations.m"),joinpath(working,"validate.m");force=true)
             println(label,": independent Magma SL and full-centre quotient");flush(stdout);start=time_ns()
             checked_magma(working,"validate.m",joinpath(directory,"magma.log"),"sl_complete.txt")
-            reference=JSON3.read(read(joinpath(working,"reference_sl.json"),String),Dict{String,Any})
+            reference=JSON.parse(read(joinpath(working,"reference_sl.json"),String),Dict{String,Any})
             @assert reference["center_order"]==R.sl.center_order
             entry["magma_seconds"]=(time_ns()-start)/1e9;entry["magma_version"]=reference["magma_version"]
             entry["magma"]=Dict{String,Any}();save()
@@ -75,7 +75,7 @@ function compare_sl_presentations(args;cases=((D=1,rank=3),(D=-4,rank=3),(D=1,ra
                 entry["magma"][string(target)]=Dict("abstract_isomorphism"=>(prove ? "pending" : "not_requested"),
                     "matrix_relators_and_bidirectional_words"=>true,"homology"=>h1,"generators"=>length(matrices),"relators"=>length(relations));save()
                 if prove
-                    write(joinpath(working,"presentation_maps.m"),join(["$name := $(JSON3.write(words));\n" for (name,words) in
+                    write(joinpath(working,"presentation_maps.m"),join(["$name := $(JSON.json(words));\n" for (name,words) in
                         (("NativeRelations",S.relators),("ReferenceRelations",relations),("NativeToReference",ntoR),("ReferenceToNative",rtoN))]))
                     cp(joinpath(@__DIR__,"magma_check_gl_maps.m"),joinpath(working,"maps.m");force=true)
                     println(label,": proving $target abstract isomorphism");flush(stdout)

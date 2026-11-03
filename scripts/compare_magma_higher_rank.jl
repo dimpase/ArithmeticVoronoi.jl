@@ -1,7 +1,7 @@
 # julia --project=. scripts/compare_magma_higher_rank.jl /path/to/VMH-TotallyRealNumberFields /path/to/VMH-ImaginaryQuadraticNumberFields [output-directory] [--extended]
 # Requires licensed Magma. Each case copies VMH and changes only BasicData.m;
 # the supplied source checkouts and all upstream algorithms are left intact.
-using ArithmeticVoronoi, Oscar, JSON3, SHA
+using ArithmeticVoronoi, Oscar, JSON, SHA
 import Oscar: GAP
 
 function compare_magma_higher_rank(args;cases=((D=5,rank=2,complex=true),
@@ -71,13 +71,13 @@ function compare_magma_higher_rank(args;cases=((D=5,rank=2,complex=true),
             end
             @assert isfile(joinpath(working,"complete.txt")) "Magma did not finish; inspect $(joinpath(directory,"magma.log"))"
             entry["magma_seconds"]=(time_ns()-started)/1e9
-            entry["magma_version"]=JSON3.read(read(joinpath(working,"magma_version.json"),String))
+            entry["magma_version"]=JSON.parse(read(joinpath(working,"magma_version.json"),String))
             entry["directory"]=relpath(directory,output)
             P=case.D==1 ? classical_problem(;rank=case.rank) : arithmetic_problem(case.D;rank=case.rank)
             started=time_ns()
             E=enumerate_perfect_forms(P;backend=:native,progress=true)
             entry["enumeration_seconds"]=(time_ns()-started)/1e9
-            forms=JSON3.read(read(joinpath(working,"forms.json"),String))
+            forms=JSON.parse(read(joinpath(working,"forms.json"),String))
             @assert length(E.representatives)==length(forms)
             root_image=P.degree==1 ? zero(P.field) : (P.root_sum==1 ? 2P.generator-1 : P.generator)
             matches=Int[]
@@ -117,7 +117,7 @@ function compare_magma_higher_rank(args;cases=((D=5,rank=2,complex=true),
                     reference=homology(GAP.Globals.FreeGResolution(K,degree+1),degree)
                     @assert native==reference
                     if group==:GL
-                        abelianization=sort(BigInt.(JSON3.read(read(joinpath(working,"abelianization.json"),String))))
+                        abelianization=sort(BigInt.(JSON.parse(read(joinpath(working,"abelianization.json"),String))))
                         @assert native[1]==abelianization
                     end
                     result=Dict("cells"=>dims,"homology"=>native,"seconds"=>(time_ns()-started)/1e9,

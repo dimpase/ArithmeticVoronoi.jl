@@ -1,4 +1,4 @@
-using ArithmeticVoronoi,Oscar,JSON3
+using ArithmeticVoronoi,Oscar,JSON
 include(joinpath(@__DIR__,"../test/runtests.jl"))
 include(joinpath(@__DIR__,"../test/cpp.jl"))
 include(joinpath(@__DIR__,"validate_sanitizer.jl"))

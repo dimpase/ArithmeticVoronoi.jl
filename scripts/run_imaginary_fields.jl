@@ -65,7 +65,7 @@ function imaginary_checks(R)
 end
 
 function imaginary_bundle(root,summary)
-    readjson(path)=JSON3.read(read(path,String),Dict{String,Any})
+    readjson(path)=JSON.parse(read(path,String),Dict{String,Any})
     fields=Dict{String,Any}()
     for D in summary["discriminants"]
         directory=joinpath(root,"D$D");entry=summary["fields"][string(D)]

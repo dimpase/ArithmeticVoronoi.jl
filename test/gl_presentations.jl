@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, Test
+using ArithmeticVoronoi, Oscar, JSON, Test
 import Oscar: GAP
 const GLAV=ArithmeticVoronoi
 
@@ -24,9 +24,9 @@ function test_gl_presentations(; with_hap=false)
                 else
                     @test all(r->r.field_rank==n && length(r.rank_witness)==n,Iterators.flatten(R.context.ridges))
                     @test all(g->isnothing(g.multiplication_table),R.gl.vertex_groups)
-                    saved=JSON3.read(read(joinpath(directory,"GL_raw.json"),String))
+                    saved=JSON.parse(read(joinpath(directory,"GL_raw.json"),String))
                     @test all(v->haskey(v,:generator_products),saved.vertex_groups)
-                    coverage=JSON3.read(read(joinpath(directory,"two_cells/coverage.json"),String),Dict{String,Any})
+                    coverage=JSON.parse(read(joinpath(directory,"two_cells/coverage.json"),String),Dict{String,Any})
                     flags=R.gl.ridge_coverage.flags
                     @test coverage["coverage_mode"]=="finite_stabilizer_orbits"
                     @test GLAV.validate_ridge_coverage(R.context,flags,coverage)

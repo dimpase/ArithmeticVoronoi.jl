@@ -1,5 +1,5 @@
 # julia --project=. scripts/run_gl.jl --requests=examples/higher_rank_gl_requests.json
-using ArithmeticVoronoi, JSON3
+using ArithmeticVoronoi, JSON
 include("request_arguments.jl")
 
 function run_gl_batch(args)

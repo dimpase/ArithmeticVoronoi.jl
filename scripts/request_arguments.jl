@@ -9,7 +9,7 @@ function request_arguments(args;default_discriminants,default_output)
             resume=true
         elseif startswith(arg,"--requests=")
             path=split(arg,'=';limit=2)[2]
-            data=JSON3.read(read(path,String))
+            data=JSON.parse(read(path,String))
             data isa AbstractVector || throw(ArgumentError("request file must contain a JSON array of records"))
             append!(requests,normalize_voronoi_request.(data))
         elseif startswith(arg,"--")

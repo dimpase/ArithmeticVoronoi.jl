@@ -1,7 +1,7 @@
 module PerfectFormsAdapter
 
-using ArithmeticVoronoi, JSON3, SHA, Dates
-import ArithmeticVoronoi: SCHEMA, problem_descriptor, validate_export, atomic_json
+using ArithmeticVoronoi, JSON, SHA, Dates
+import ArithmeticVoronoi: SCHEMA, problem_descriptor, validate_export, atomic_json, text_sha
 import PerfectForms
 import PerfectForms: BackendConfig, BackendError, default_backend, run_exporter
 
@@ -21,7 +21,7 @@ backend_options(P)=(;arithmetic="gmp",ListComm=P.degree==1 ? "Trivial" : "Use_re
 function cache_key(P,B::BackendConfig)
     descriptor=(;schema=SCHEMA,problem=problem_descriptor(P),backend_commit=B.commit,
                 executable_sha256=B.executable_sha256,options=backend_options(P))
-    bytes2hex(sha256(JSON3.write(descriptor)))
+    text_sha(JSON.json(descriptor))
 end
 function namelist(P;arithmetic="gmp")
     P.rank==2 || throw(ArgumentError("the C++ request adapter supports rank 2; use backend=:native for higher ranks"))
@@ -29,7 +29,7 @@ function namelist(P;arithmetic="gmp")
 end
 
 function load_checkpoint(P,B,path)
-    checkpoint=try JSON3.read(read(path,String),Dict{String,Any}) catch err
+    checkpoint=try JSON.parse(read(path,String),Dict{String,Any}) catch err
         throw(BackendError(:truncated_cache,sprint(showerror,err)))
     end
     get(checkpoint,"schema",nothing)=="av_checkpoint_v1" || throw(BackendError(:incompatible_schema,"unsupported cache version"))
@@ -37,17 +37,17 @@ function load_checkpoint(P,B,path)
     required=("problem","backend_commit","executable_sha256","options","cache_key","raw_export_json","raw_export_sha256")
     all(haskey(checkpoint,k) for k in required) && checkpoint["problem"] isa AbstractDict && checkpoint["raw_export_json"] isa AbstractString ||
         throw(BackendError(:incompatible_cache,"missing or malformed cache envelope fields"))
-    expected=JSON3.read(JSON3.write(problem_descriptor(P)),Dict{String,Any})
+    expected=JSON.parse(JSON.json(problem_descriptor(P)),Dict{String,Any})
     problem=checkpoint["problem"]
     get(problem,"discriminant",nothing)==P.discriminant && get(problem,"degree",nothing)==P.degree || throw(BackendError(:wrong_field,"cache belongs to a different number field"))
     get(problem,"group",nothing)==P.group_constraints && get(problem,"action",nothing)==P.action_convention || throw(BackendError(:wrong_subgroup,"cache group/action constraints differ"))
     problem==expected || throw(BackendError(:incompatible_problem,"order, basis or lattice data differ"))
     checkpoint["backend_commit"]==B.commit && checkpoint["executable_sha256"]==B.executable_sha256 || throw(BackendError(:incompatible_backend,"cache comes from a different backend build"))
-    checkpoint["options"]==JSON3.read(JSON3.write(backend_options(P)),Dict{String,Any}) || throw(BackendError(:incompatible_options,"cache options or commuting constraints differ"))
+    checkpoint["options"]==JSON.parse(JSON.json(backend_options(P)),Dict{String,Any}) || throw(BackendError(:incompatible_options,"cache options or commuting constraints differ"))
     checkpoint["cache_key"]==cache_key(P,B) || throw(BackendError(:incompatible_cache,"cache key mismatch"))
     raw=checkpoint["raw_export_json"]
-    bytes2hex(sha256(raw))==checkpoint["raw_export_sha256"] || throw(BackendError(:corrupt_cache,"export checksum mismatch"))
-    data=try JSON3.read(raw,Dict{String,Any}) catch err
+    text_sha(raw)==checkpoint["raw_export_sha256"] || throw(BackendError(:corrupt_cache,"export checksum mismatch"))
+    data=try JSON.parse(raw,Dict{String,Any}) catch err
         throw(BackendError(:truncated_cache,sprint(showerror,err)))
     end
     get(data,"backend_commit",nothing)==B.commit || throw(BackendError(:incompatible_backend,"raw cached output declares a different backend commit"))
@@ -85,7 +85,7 @@ function ArithmeticVoronoi.enumerate_external(P::ArithmeticVoronoiProblem,::Val{
     E.provenance["validation_seconds"]=(time_ns()-start)/1e9
     checkpoint=(;schema="av_checkpoint_v1",completed=true,cache_key=key,problem=problem_descriptor(P),
         backend_commit=B.commit,executable_sha256=B.executable_sha256,options=backend_options(P),
-        raw_export_sha256=bytes2hex(sha256(run.raw)),raw_export_json=run.raw,
+        raw_export_sha256=text_sha(run.raw),raw_export_json=run.raw,
         validated_utc=string(now(UTC)),validation=E.provenance)
     atomic_json(path,checkpoint)
     report=run.process_info;report["completed"]=true;report["status"]="validated_complete"

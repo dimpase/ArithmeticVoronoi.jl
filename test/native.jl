@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, Test
+using ArithmeticVoronoi, Oscar, JSON, Test
 const NAV=ArithmeticVoronoi
 
 @testset "exact native deformation" begin
@@ -74,7 +74,7 @@ end
         end
         @test R.run["backend"]=="native"
         @test R.run["request"]==voronoi_request(12)
-        @test JSON3.read(read(joinpath(directory,"run.json"),String),Dict{String,Any})["request"]==voronoi_request(12)
+        @test JSON.parse(read(joinpath(directory,"run.json"),String),Dict{String,Any})["request"]==voronoi_request(12)
         @test length(R.enumeration.representatives)==3
         @test verify_presentation(R.gl)
         @test verify_sl_presentation(R.sl)
@@ -92,7 +92,7 @@ end
         partial=enumerate_two_cells(R.context;directory=partial_directory,stop_after=1)
         @test partial.ledger["status"]=="partial"
         resumed=enumerate_two_cells(R.context;directory=partial_directory,stop_after=2,resume=true)
-        saved=JSON3.read(read(joinpath(partial_directory,"coverage.json"),String))
+        saved=JSON.parse(read(joinpath(partial_directory,"coverage.json"),String))
         @test resumed.ledger["cache_hits"]==saved.cache_hits==2
         @test saved.status=="partial" && saved.completed_oriented_loops==4
         @test count(e->e.status=="complete",saved.entries)==2

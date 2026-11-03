@@ -1,6 +1,6 @@
 include(joinpath(@__DIR__,"../integrations/perfect_forms/adapter.jl"))
 using .PerfectFormsAdapter
-using ArithmeticVoronoi, Oscar, JSON3
+using ArithmeticVoronoi, Oscar, JSON
 import Hecke
 const ROOT=normpath(joinpath(@__DIR__,".."))
 const AV=ArithmeticVoronoi

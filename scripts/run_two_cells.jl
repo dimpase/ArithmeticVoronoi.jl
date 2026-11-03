@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, SHA, Dates
+using ArithmeticVoronoi, Oscar, JSON, SHA, Dates
 const AV=ArithmeticVoronoi
 const ROOT=normpath(joinpath(@__DIR__,".."))
 
@@ -35,9 +35,9 @@ function run_case(D)
     write_first_two_cell(ctx,first(cells.certificates);directory)
     times["GL_assembly_and_validation"]=@elapsed C=build_gl_presentation(ctx,cells.certificates;coverage=cells.ledger)
     atomic=AV.atomic_json
-    raw=JSON3.read(JSON3.write(presentation_data(C)),Dict{String,Any})
+    raw=JSON.parse(JSON.json(presentation_data(C)),Dict{String,Any})
     raw["two_cell_certificates"]=[Dict("source"=>cell.source,"ridge"=>cell.ridge,"initial_outgoing"=>cell.initial_outgoing,
-        "sha256"=>bytes2hex(sha256(JSON3.write(two_cell_data(ctx,cell))))) for cell in cells.certificates]
+        "sha256"=>bytes2hex(sha256(JSON.json(two_cell_data(ctx,cell))))) for cell in cells.certificates]
     raw["coverage_file_sha256"]=AV.file_sha(joinpath(directory,"coverage.json"))
     atomic(joinpath(directory,"GL_presentation.json"),raw)
     times["SL_extraction_and_validation"]=@elapsed S=extract_sl_presentation(C)

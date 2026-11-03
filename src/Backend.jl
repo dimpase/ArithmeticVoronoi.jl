@@ -3,10 +3,13 @@ export enumerate_perfect_forms, write_enumeration, enumeration_data
 const PACKAGE_ROOT=normpath(joinpath(@__DIR__,".."))
 
 file_sha(path)=bytes2hex(open(SHA.sha256,path))
+# SHA updates on CodeUnits repeatedly hash their parent String during alias
+# checks on Julia 1.10. An owned byte buffer keeps large certificates linear.
+text_sha(text::AbstractString)=bytes2hex(sha256(Vector{UInt8}(codeunits(text))))
 function atomic_json(path,data)
     mkpath(dirname(path));temporary,io=mktemp(dirname(path);cleanup=false)
     try
-        JSON3.pretty(io,data);println(io);flush(io);close(io)
+        JSON.json(io,data;pretty=4);println(io);flush(io);close(io)
         Base.Filesystem.rename(temporary,path)
     catch
         isopen(io) && close(io)

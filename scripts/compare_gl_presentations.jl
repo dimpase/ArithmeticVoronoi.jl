@@ -1,5 +1,5 @@
 # Fresh, constructive GL comparisons; requires licensed Magma and both VMH checkouts.
-using ArithmeticVoronoi, Oscar, JSON3, SHA
+using ArithmeticVoronoi, Oscar, JSON, SHA
 import Oscar: GAP
 const GPAV=ArithmeticVoronoi
 
@@ -142,7 +142,7 @@ function compare_gl_presentations(args;cases=((D=1,rank=3,hap=true),(D=-4,rank=3
             println(label,": fresh Magma presentation");flush(stdout);started=time_ns()
             checked_magma(working,"validate.m",joinpath(directory,"magma.log"),"complete.txt")
             entry["magma_seconds"]=(time_ns()-started)/1e9
-            reference=JSON3.read(read(joinpath(working,"reference.json"),String))
+            reference=JSON.parse(read(joinpath(working,"reference.json"),String))
             forms=[transpose(reference_matrix(P,f)) for f in reference.forms]
             forms=[f/shortest_data(trace_gram(P,f)).minimum for f in forms]
             # Imaginary VMH uses row matrices; real VMH already uses columns.
@@ -191,7 +191,7 @@ function compare_gl_presentations(args;cases=((D=1,rank=3,hap=true),(D=-4,rank=3
                 "exact_relator_and_bidirectional_generator_word_checks"=>true,
                 "abstract_isomorphism"=>"pending","working_directory"=>relpath(working,output))
             save()
-            write(joinpath(working,"presentation_maps.m"),join(["$name := $(JSON3.write(words));\n"
+            write(joinpath(working,"presentation_maps.m"),join(["$name := $(JSON.json(words));\n"
                 for (name,words) in (("NativeRelations",S.relators),("ReferenceRelations",relators),
                     ("NativeToReference",ntoR),("ReferenceToNative",rtoN))]))
             cp(joinpath(@__DIR__,"magma_check_gl_maps.m"),joinpath(working,"maps.m");force=true)

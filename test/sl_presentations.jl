@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, Test
+using ArithmeticVoronoi, Oscar, JSON, Test
 const SLAV=ArithmeticVoronoi
 
 @testset "determinant quotient and full projective scalars" begin
@@ -77,7 +77,7 @@ function test_sl_presentations(;cases=((1,2),(1,3),(-4,3),(-3,3)))
                 cache=joinpath(directory,"central_word.json")
                 c=matrix_to_word(R,S.center_generator*I;target=:PSL,cache_path=cache)
                 @test matrix_to_word(R,S.center_generator*I;target=:PSL,cache_path=cache)["cache_replay"]
-                @test JSON3.read(read(joinpath(directory,"PSL_raw.json"),String))["center_order"]==S.center_order
+                @test JSON.parse(read(joinpath(directory,"PSL_raw.json"),String))["center_order"]==S.center_order
                 if D==-3 && n==3
                     @test S.center_order==3 && S.center_generator!=1 && S.center_generator!=-1
                     @test any(isnothing,Q.relator_signs)

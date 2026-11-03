@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, JSON3, Test
+using ArithmeticVoronoi, Oscar, JSON, Test
 const TCAV=ArithmeticVoronoi
 const TCROOT=normpath(joinpath(@__DIR__,".."))
 const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
@@ -15,7 +15,7 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
             directory=mktempdir(joinpath(TCROOT,"results");prefix="two_cell_fixtures_D$(D)_",cleanup=false)
             enumerate_two_cells(ctx;directory)
         end
-        coverage=JSON3.read(read(joinpath(directory,"coverage.json"),String),Dict{String,Any})
+        coverage=JSON.parse(read(joinpath(directory,"coverage.json"),String),Dict{String,Any})
         @test coverage["status"]=="complete"
         @test length.(ctx.ridges)==(D==5 ? [75,15] : [15,76]) # measured regression fixtures
         @test all(r.field_rank==2 && length(r.facets)==2 && rank(r.rays)==4 for list in ctx.ridges for r in list)
@@ -49,7 +49,7 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
         @test all(TCAV.signed_key(-v)==TCAV.signed_key(v) for v in E.representatives[1].minimal_vectors)
 
         scratch=mktempdir(joinpath(TCROOT,"results");prefix="two_cell_tests_",cleanup=false)
-        data=JSON3.read(JSON3.write(two_cell_data(ctx,first_cell)),Dict{String,Any})
+        data=JSON.parse(JSON.json(two_cell_data(ctx,first_cell)),Dict{String,Any})
         for (name,mutate) in [("wrong_source",d->(d["source_hash"]="0"^64)),
                                ("incomplete",d->(d["status"]="partial")),
                                ("wrong_group",d->(d["group"]="PGL(2,O)")),
@@ -59,7 +59,7 @@ const TWO_CELL_OBSERVATIONS=Dict{String,Any}()
         end
         partial_path=joinpath(scratch,"limited_walk.json")
         @test_throws TCAV.ArithmeticValidationError walk_ridge(ctx,1,1;max_steps=1,checkpoint=partial_path)
-        @test JSON3.read(read(partial_path,String))["status"]!="complete"
+        @test JSON.parse(read(partial_path,String))["status"]!="complete"
         if D==5
             batch=enumerate_two_cells(ctx;directory=joinpath(scratch,"resume"),stop_after=1)
             @test batch.ledger["status"]=="partial"

@@ -1,4 +1,4 @@
-using ArithmeticVoronoi,Oscar,JSON3,Test
+using ArithmeticVoronoi,Oscar,JSON,Test
 include(joinpath(@__DIR__,"../validation/KirchheimerWolfart.jl"))
 using .KirchheimerWolfart
 const FWAV=ArithmeticVoronoi
@@ -58,7 +58,7 @@ function run_fields_words_tests(results;report_path=nothing)
             partial=joinpath(scratch,"exhausted.json")
             err=try matrix_to_word(R,e*I;target=:GL,max_steps=0,cache_path=partial);nothing catch caught;caught end
             @test err isa WordReductionError && err.kind==:resource_exhausted
-            @test !isfile(partial) && JSON3.read(read(partial*".partial",String))["status"]=="incomplete"
+            @test !isfile(partial) && JSON.parse(read(partial*".partial",String))["status"]=="incomplete"
             err=try matrix_to_word(R,e*I;target=:GL,timeout=0.0);nothing catch caught;caught end
             @test err isa WordReductionError && err.kind==:resource_exhausted
             g,data=leaving;bad=deepcopy(data)

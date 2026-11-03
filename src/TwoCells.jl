@@ -115,7 +115,7 @@ function TwoCellContext(E::ArithmeticVoronoiEnumeration)
     P=E.problem
     groups=Any[finite_matrix_closure([encode_matrix(P,g) for g in r.stabilizer],P.rank*P.degree,r.stabilizer_order) for r in E.representatives]
     data=enumeration_data(E)
-    digest=bytes2hex(sha256(JSON3.write((;problem=data.problem,forms=data.forms,neighbours=data.neighbours))))
+    digest=text_sha(JSON.json((;problem=data.problem,forms=data.forms,neighbours=data.neighbours)))
     TwoCellContext(E,enumerate_ridges(E),groups,
         [[n for n in E.neighbours if n.source==i] for i in eachindex(E.representatives)],digest)
 end
@@ -123,7 +123,7 @@ end
 function compatible_two_cell_cache(ctx::TwoCellContext,directory)
     path=joinpath(directory,"coverage.json")
     isfile(path) || return false
-    ledger=JSON3.read(read(path,String),Dict{String,Any})
+    ledger=JSON.parse(read(path,String),Dict{String,Any})
     get(ledger,"schema",nothing)==TWO_CELL_SCHEMA && get(ledger,"status",nothing)=="complete" &&
         get(ledger,"source_hash",nothing)==ctx.source_hash
 end
@@ -281,7 +281,7 @@ function state_wire(P,s)
 end
 
 function read_two_cell(ctx,path)
-    data=JSON3.read(read(path,String),Dict{String,Any});P=ctx.enumeration.problem
+    data=JSON.parse(read(path,String),Dict{String,Any});P=ctx.enumeration.problem
     ensure(get(data,"schema",nothing)==TWO_CELL_SCHEMA && get(data,"status",nothing)=="complete","incomplete or incompatible two-cell cache")
     ensure(data["source_hash"]==ctx.source_hash,"two-cell cache has the wrong source enumeration")
     steps=Any[(;state=state_wire(P,s["state"]),s=field_matrix_wire(P,s["s"]),b=field_matrix_wire(P,s["b"]),
@@ -290,7 +290,7 @@ function read_two_cell(ctx,path)
     C=TwoCellCertificate(Int(data["source"]),Int(data["ridge"]),Int(data["initial_outgoing"]),steps,
         field_matrix_wire(P,data["residual_matrix"]),Int.(data["residual_stabilizer_word"]),matrix_word_wire(data["attaching_word"]),data["source_hash"])
     validate_two_cell(ctx,C)
-    ensure(JSON3.read(JSON3.write(two_cell_data(ctx,C)),Dict{String,Any})==data,"two-cell cache metadata or exact incidence data is inconsistent")
+    ensure(JSON.parse(JSON.json(two_cell_data(ctx,C)),Dict{String,Any})==data,"two-cell cache metadata or exact incidence data is inconsistent")
     C
 end
 
@@ -405,7 +405,7 @@ function validate_ridge_coverage(ctx,flags,coverage)
     selected=Set((i,r) for (i,r,_) in flags)
     if get(coverage,"coverage_mode","all_local_ridges")=="finite_stabilizer_orbits"
         P=ctx.enumeration.problem;covered=Set{Tuple{Int,Int}}();representatives=Set{Tuple{Int,Int}}()
-        data=JSON3.read(JSON3.write(coverage["local_ridge_orbits"]),Vector{Any})
+        data=JSON.parse(JSON.json(coverage["local_ridge_orbits"]),Vector{Any})
         ensure(length(data)==length(ctx.ridges),"ridge-orbit coverage has the wrong number of vertices")
         for (i,orbits) in enumerate(data)
             r=ctx.enumeration.representatives[i]
