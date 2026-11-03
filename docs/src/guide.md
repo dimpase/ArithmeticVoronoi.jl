@@ -414,6 +414,8 @@ The native workflows above do not use them.
 
 ### Build and install
 
+Use Julia 1.13 or later for this separate comparison environment.
+
 The C++ path needs Linux or macOS, Git, CMake 3.24+, Make or Ninja,
 pkg-config, a C++20 compiler and standard library with `std::format`, and
 development files for GMP, Eigen 3, Boost.Serialization and nauty/Traces.

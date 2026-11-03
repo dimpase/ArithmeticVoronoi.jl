@@ -1,8 +1,9 @@
 # ArithmeticVoronoi
 
 [![CI](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](docs/src/index.md)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://dimpase.github.io/ArithmeticVoronoi.jl/)
 [![Documentation build](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/documentation.yml/badge.svg)](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/documentation.yml)
+[![codecov](https://codecov.io/gh/dimpase/ArithmeticVoronoi.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/dimpase/ArithmeticVoronoi.jl)
 
 Compute presentations and verified matrix-to-word expressions for
 **GL(n,O), SL(n,O) and PSL(n,O)** (`n ≥ 2`), where O is Z or the maximal order
@@ -65,7 +66,7 @@ compatibility copy used by HAP.
 
 ## Documentation and results
 
-The [Documenter manual](docs/src/index.md) includes
+The [Documenter manual](https://dimpase.github.io/ArithmeticVoronoi.jl/) includes
 the user guide, algorithms, validation records and an API reference from docstrings.
 
 - [User guide](docs/src/guide.md): installation, group operations, matrix words,
