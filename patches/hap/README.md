@@ -10,20 +10,50 @@ implemented in the Julia provider; see [examples and validation](../../docs/src/
 No further HAP API patch is needed for it. The original patch and its validation
 record below are retained for reference.
 
-The separate `0002-update-julia-provider-repository.patch` changes HAP's CI
-checkout URL to `dimpase/ArithmeticVoronoi.jl`, preserving its pinned provider
-commit `007df75debde04c7469124891ac78d555d5de20b`. It applies to the current
-HAP workflow (blob `b9022ef40dc907165094629f1f6920b69b0490f6`). This patch is
-prepared for review and has not been submitted upstream. Keep the original
-repository available until the change lands and HAP's Julia CI passes;
-see [the repository transition](../../docs/src/repository_transition.md).
+## Current follow-up (local, not submitted)
 
-To check and apply only this URL update in a HAP checkout:
+`0003-arithmetic-voronoi-interface.patch` is prepared against HAP
+`69b346b83b82dfcfa0261109f4062a6d43462bb8`. It supersedes the older URL-only
+`0002-update-julia-provider-repository.patch`; apply only `0003` to that base.
+It updates the provider repository to `dimpase/ArithmeticVoronoi.jl`, pins the
+new provider implementation, uses current stable Julia, documents the direct
+Julia calling sequence, and exercises quadratic GL/SL/PSL and rational and
+Gaussian rank-three cases in one CI process. Its mock GAP test also forwards
+a rational PSL request unchanged. HAP's dispatcher needs no code change.
+The patch also corrects the return type of `InverseMutable` for quotient
+elements: returning an opposite-group element breaks finite stabilizer direct
+products in PSL homology. A separate GAP regression checks inverses and a
+finite direct product; the Julia adapter detects this bug in older HAP and
+installs a compatibility method without changing installed files.
+
+The provider revision named in the workflow must be published in the engine
+repository before this HAP patch can run on GitHub. Both branches are local
+pending review; no HAP PR has been opened. Keep the original engine repository
+available until this update lands and HAP's Julia CI passes; see
+[the repository transition](../../docs/src/repository_transition.md).
 
 ```sh
-git apply --check /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
-git apply /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
+git apply --check /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0003-arithmetic-voronoi-interface.patch
+git apply /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0003-arithmetic-voronoi-interface.patch
 ```
+
+The current Julia API requires no explicit registration for direct calls:
+
+```julia
+using ArithmeticVoronoi, Oscar
+import Oscar: GAP
+K = hap_voronoi_complex(; rank=3, group=:SL, resolution_length=3);
+R = GAP.Globals.FreeGResolution(K, 3);
+GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R), 1)) # []
+```
+
+Rational and imaginary-quadratic GL/SL/PSL and real-quadratic GL are supported
+on free maximal-order lattices in ranks at least two. PSL divides by the full
+scalar centre. Real-quadratic SL/PSL cell complexes remain unsupported; the
+separate presentation pipeline handles those groups. No Magma, C++ build or
+precomputed data is used by the CI examples.
+
+## Historical merged patch
 
 `0001-optional-voronoi-backends.patch` is prepared against
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).

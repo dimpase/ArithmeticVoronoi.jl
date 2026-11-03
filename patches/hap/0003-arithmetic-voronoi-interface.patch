@@ -1,0 +1,231 @@
+diff --git a/.github/scripts/voronoi-julia.jl b/.github/scripts/voronoi-julia.jl
+index bd2c519f..76509dc3 100644
+--- a/.github/scripts/voronoi-julia.jl
++++ b/.github/scripts/voronoi-julia.jl
+@@ -1,5 +1,5 @@
+-# Run with the ArithmeticVoronoi environment pinned in ../workflows/CI.yml:
+-# julia --startup-file=no --project=/path/to/arithmetic_voronoi \
++# Run with the ArithmeticVoronoi revision pinned in ../workflows/CI.yml:
++# julia --startup-file=no --project=/path/to/ArithmeticVoronoi.jl \
+ #     .github/scripts/voronoi-julia.jl
+ println("Loading the Julia provider and its dependencies...")
+ flush(stdout)
+@@ -21,34 +21,51 @@ dispatcher = GAP.Globals.VoronoiComplex
+ println("HAP checkout: ", hap_root)
+ println("Julia ", VERSION, "; OSCAR ", pkgversion(Oscar), "; GAP ", GAP.GAP_VERSION)
+ 
+-@testset "Julia provider: GL2 over O_(Q(sqrt(-7)))" begin
+-    enable_hap_julia_backend(; progress=true, resolution_length=3)
+-    @test GAP.Globals.IsIdenticalObj(dispatcher, GAP.Globals.VoronoiComplex)
+-
+-    request = Dict(
+-        "group" => "GL", "rank" => 2,
+-        "field" => Dict("kind" => "quadratic", "discriminant" => -7),
+-        "order" => Dict("kind" => "maximal"),
+-        "lattice" => Dict("kind" => "free"),
++@testset "ArithmeticVoronoi: rational and quadratic groups" begin
++    enable_hap_julia_backend(;progress=true,resolution_length=3)
++    @test GAP.Globals.IsIdenticalObj(dispatcher,GAP.Globals.VoronoiComplex)
++    construct=GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")")
++    # These are regression expectations from independent VMH/Magma, HAP stored
++    # resolutions and classical homology. All complexes here are computed fresh.
++    examples=(
++        (request=voronoi_request(-7),cells=[1,2,1],homology=([2,2,2],[2,12])),
++        (request=voronoi_request(5),cells=[2,4,5,4,1],homology=([0,2],[2,2,2,2])),
++        (request=voronoi_request(-7;group=:SL),cells=nothing,homology=([0,4],[12])),
++        (request=voronoi_request(-7;group=:PSL),cells=nothing,homology=([0,2],)),
++        (request=voronoi_request(;rank=3),cells=[1,1,2,1],homology=([2],[2,2])),
++        (request=voronoi_request(;rank=3,group=:SL),cells=nothing,homology=(Int[],)),
++        (request=voronoi_request(-4;rank=3),cells=[1,1,3,5,4,3,2],homology=([4],)),
+     )
+-    println("Request: ", request)
+-    flush(stdout)
+-    construct = GAP.evalstr("request -> VoronoiComplex(request : backend := \"julia\")")
+-    # A fresh native enumeration, without Magma, stored complexes or a C++ build.
+-    K = construct(GAP.GapObj(request; recursive=true))
+-    @test GAP.Globals.IsHapNonFreeResolution(K)
+-    cells = Int.(GAP.gap_to_julia(
+-        GAP.evalstr("K -> List([0..2], n -> K!.dimension(n))")(K)))
+-    @test cells == [1, 2, 1]
+-    println("Cell orbits in dimensions 0, 1, 2: ", cells)
+-
+-    R = GAP.Globals.FreeGResolution(K, 3)
+-    C = GAP.Globals.TensorWithIntegers(R)
+-    # These invariants were independently checked with Magma/VMH;
+-    # neither the example nor CI needs Magma to compute them.
+-    for (degree, expected) in ((1, [2, 2, 2]), (2, [2, 12]))
+-        invariants = sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C, degree))))
+-        println("H", degree, " invariant factors: ", invariants)
+-        @test invariants == expected
++    first_complex=nothing
++    for (i,example) in enumerate(examples)
++        request=example.request
++        @testset "$(request)" begin
++            println("Request: ",request);flush(stdout)
++            started=time_ns()
++            K=construct(GAP.GapObj(request;recursive=true))
++            i==1 && (first_complex=K)
++            @test GAP.Globals.IsHapNonFreeResolution(K)
++            @test Int(GAP.evalstr("K -> K!.arithmeticVoronoi")(K).rank)==request["rank"]
++            @test GAP.evalstr("K -> K!.arithmeticVoronoi")(K).groupKind==GAP.GapObj(request["group"])
++            if !isnothing(example.cells)
++                cells=GAP.evalstr("{K,d} -> List([0..d-1], K!.dimension)")(K,length(example.cells))
++                @test Int.(GAP.gap_to_julia(cells))==example.cells
++            end
++            R=GAP.Globals.FreeGResolution(K,length(example.homology)+1)
++            C=GAP.Globals.TensorWithIntegers(R)
++            for (degree,expected) in enumerate(example.homology)
++                invariants=sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,degree))))
++                println("H",degree," invariant factors: ",invariants)
++                @test invariants==expected
++            end
++            println("Example time: ",round((time_ns()-started)/1e9;digits=2)," s");flush(stdout)
++        end
+     end
++    # The direct Julia interface requires no record conversion or dispatcher.
++    K=hap_voronoi_complex(;group=:PSL,resolution_length=2)
++    R=GAP.Globals.FreeGResolution(K,2)
++    @test Int.(GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R),1)))==[6]
++    # Later computations must not overwrite an earlier object's captured data.
++    R=GAP.Globals.FreeGResolution(first_complex,3)
++    @test sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R),2))))==[2,12]
+ end
+diff --git a/.github/workflows/CI.yml b/.github/workflows/CI.yml
+index b9022ef4..8a7b57a6 100644
+--- a/.github/workflows/CI.yml
++++ b/.github/workflows/CI.yml
+@@ -45,7 +45,7 @@ jobs:
+           token: ${{ secrets.CODECOV_TOKEN }}
+ 
+   julia-voronoi:
+-    name: Julia Voronoi example (GL2, D=-7)
++    name: Julia Voronoi examples (GL, SL and PSL)
+     runs-on: ubuntu-latest
+     permissions:
+       contents: read
+@@ -54,15 +54,15 @@ jobs:
+       OPENBLAS_NUM_THREADS: '1'
+     steps:
+       - uses: actions/checkout@v7
+-      - name: Check out the Julia provider and its pinned environment
++      - name: Check out the Julia provider at a tested revision
+         uses: actions/checkout@v7
+         with:
+-          repository: dimpase/arithmetic_voronoi
+-          ref: 007df75debde04c7469124891ac78d555d5de20b
++          repository: dimpase/ArithmeticVoronoi.jl
++          ref: c6942b97936e69a392ee88523fbf3574edcc6e26
+           path: arithmetic-voronoi
+       - uses: julia-actions/setup-julia@v3
+         with:
+-          version: '1.13.2'
++          version: '1'
+       - uses: julia-actions/cache@v3
+         with:
+           delete-old-caches: 'false'
+@@ -74,7 +74,7 @@ jobs:
+         run: >-
+           julia --startup-file=no --project=arithmetic-voronoi
+           -e 'using Pkg; Pkg.precompile("ArithmeticVoronoi"; strict=true, timing=true)'
+-      - name: Construct a fresh complex and check integral H1 and H2
++      - name: Construct fresh complexes and check integral homology
+         run: >-
+           julia --startup-file=no --project=arithmetic-voronoi
+           .github/scripts/voronoi-julia.jl
+diff --git a/lib/FreeGmodules/wordOperations.gi b/lib/FreeGmodules/wordOperations.gi
+index 6af65515..f6944127 100644
+--- a/lib/FreeGmodules/wordOperations.gi
++++ b/lib/FreeGmodules/wordOperations.gi
+@@ -459,7 +459,7 @@ InstallOtherMethod( InverseMutable,
+ 
+ function(x) local w;
+ w:=List(x!.element,InverseMutable);
+-return Objectify(HapOppositeElement,
++return Objectify(HapQuotientElement,
+                     rec(
+                     element:=w) );
+ end);
+diff --git a/tst/testextra/quotient-elements.tst b/tst/testextra/quotient-elements.tst
+new file mode 100644
+index 00000000..72c42b04
+--- /dev/null
++++ b/tst/testextra/quotient-elements.tst
+@@ -0,0 +1,16 @@
++gap> START_TEST("quotient-elements.tst");
++gap> hapqinfo := InfoLevel(InfoWarning);;
++gap> SetInfoLevel(InfoWarning,0);
++gap> hapq := QuotientGroup((1,2,3,4,5,6),[(),(1,4)(2,5)(3,6)]);;
++gap> Print(IsHapQuotientElement(InverseMutable(hapq)),"\n");
++true
++gap> Print(InverseMutable(hapq)=hapq^-1,"\n");
++true
++gap> Print(hapq*InverseMutable(hapq)=One(hapq),"\n");
++true
++gap> Print(Size(DirectProduct(Group(hapq),Group(hapq))),"\n");
++9
++gap> SetInfoLevel(InfoWarning,hapqinfo);
++gap> Unbind(hapqinfo);
++gap> Unbind(hapq);
++gap> STOP_TEST("quotient-elements.tst", 1000);
+diff --git a/tst/testextra/voronoi-backends.tst b/tst/testextra/voronoi-backends.tst
+index 7d1dff5d..a9b826d6 100644
+--- a/tst/testextra/voronoi-backends.tst
++++ b/tst/testextra/voronoi-backends.tst
+@@ -16,6 +16,10 @@ gap> Print([haprequest.group,haprequest.rank,haprequest.field.radicand],"\n");
+ gap> haprequest := VoronoiComplexGL(3,5 : backend := "hap-test");;
+ gap> Print([haprequest.group,haprequest.rank,haprequest.field.radicand],"\n");
+ [ "GL", 3, 5 ]
++gap> haprequest := rec(group:="PSL",rank:=4,field:=rec(kind:="rational"),
++> order:=rec(kind:="maximal"),lattice:=rec(kind:="free"));;
++gap> Print(IsIdenticalObj(haprequest,VoronoiComplex(haprequest : backend := "hap-test")),"\n");
++true
+ gap> RegisterVoronoiBackend("hap-test-fail", request -> fail);
+ gap> Print(VoronoiComplex(rec() : backend := "hap-test-fail"),"\n");
+ fail
+diff --git a/tutorial/tutorialBianchi.xml b/tutorial/tutorialBianchi.xml
+index 748a91fc..81ce33ea 100644
+--- a/tutorial/tutorialBianchi.xml
++++ b/tutorial/tutorialBianchi.xml
+@@ -446,8 +446,41 @@ radicand, not a field discriminant. Without the backend option, or with
+ <C>backend := "magma"</C>, these two convenience functions retain the
+ Magma implementation described above.
+ <P/>
+-A Julia package running with GAP.jl can register an in-process callback
++The Julia package
++<URL Text="ArithmeticVoronoi.jl">https://github.com/dimpase/ArithmeticVoronoi.jl</URL>
++computes these complexes natively and can register an in-process callback
+ under the name <C>"julia"</C>. HAP itself does not install or load Julia.
++From Julia, the direct interface loads HAP automatically:
++<Log><![CDATA[
++using ArithmeticVoronoi, Oscar
++import Oscar: GAP
++K = hap_voronoi_complex(-7; group=:PSL, resolution_length=3);
++R = GAP.Globals.FreeGResolution(K, 3);
++GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R), 1))
++# [0, 2]
++]]></Log>
++The integer argument here is a fundamental field discriminant. Omit it for
++rational coefficients: <C>hap_voronoi_complex(; rank=3, group=:SL)</C>
++computes a complex for <M>SL_3(\mathbb Z)</M>. The provider supports ranks
++at least two, rational and quadratic GL, and rational and imaginary-quadratic
++SL and PSL on free lattices over maximal orders. PSL divides by the full
++scalar centre. Real-quadratic SL/PSL complexes, nonmaximal orders and nonfree
++lattices are not supplied by this provider. The package's separate
++presentation algorithms cover real-quadratic SL/PSL too; they do not replace
++the equivariant cell data required by HAP.
++<P/>
++For HAP's record dispatcher in the same Julia session, first run
++<C>enable_hap_julia_backend()</C>. A rational example is:
++<Log><![CDATA[
++request := rec(group := "SL", rank := 3, field := rec(kind := "rational"),
++    order := rec(kind := "maximal"), lattice := rec(kind := "free"));
++K := VoronoiComplex(request : backend := "julia");
++]]></Log>
++These last commands use GAP syntax, which can be evaluated through GAP.jl.
++See the
++<URL Text="ArithmeticVoronoi HAP guide">https://dimpase.github.io/ArithmeticVoronoi.jl/hap_and_vmh/</URL>
++for installation, the direct Julia calls and supported computations.
++<P/>
+ An unregistered backend name is an error. Providers must supply complete stabilizers, the orientation action
+ and equivariant boundaries; perfect forms or a group presentation alone
+ do not suffice for higher homology. Standard HAP operations such as

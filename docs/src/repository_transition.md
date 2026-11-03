@@ -17,12 +17,15 @@ repository: dimpase/arithmetic_voronoi
 ref: 007df75debde04c7469124891ac78d555d5de20b
 ```
 
-That exact commit is present in the new repository. The prepared
-[HAP patch](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/patches/hap/0002-update-julia-provider-repository.patch)
-changes only `repository` to `dimpase/ArithmeticVoronoi.jl`; it preserves
-the pinned revision and checkout directory. Before retiring the old repository,
-the URL update must be merged in HAP and its Julia CI job must pass using
-the new location. The patch has not been submitted upstream.
+The local follow-up updates HAP to `dimpase/ArithmeticVoronoi.jl` at a tested
+revision and expands the Julia examples to rational/quadratic GL, SL and PSL.
+It also documents the direct `hap_voronoi_complex` calls. The replacement
+patch and application instructions are in [patches/hap/README.md](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/patches/hap/README.md).
+The earlier URL-only patch is retained as historical context.
+
+Before retiring the old repository, publish the tested provider revision,
+merge the follow-up in HAP, and verify its Julia CI job using the new location.
+The follow-up is prepared locally and has not been submitted upstream.
 
 Existing working copies can follow the new repository without changing their
 directory name:
