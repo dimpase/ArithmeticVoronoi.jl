@@ -30,8 +30,7 @@ using ArithmeticVoronoi, Oscar
 import Oscar: GAP
 
 # Fresh GL(2,O) computation for Q(sqrt(-7)); input is a field discriminant.
-request = voronoi_request(-7);
-K = hap_voronoi_complex(request; resolution_length=4, progress=true);
+K = hap_voronoi_complex(-7; resolution_length=4, progress=true);
 R = GAP.Globals.FreeGResolution(K, 4);
 C = GAP.Globals.TensorWithIntegers(R);
 [sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,n)))) for n in 1:3]
@@ -45,16 +44,29 @@ complexes. Julia checks the equivariant boundary equation `d²=0` exactly.
 HAP then resolves the finite cell stabilizers to the requested degree.
 `resolution_length=n+1` suffices for computing Hₙ.
 
-Supported groups are **GLₙ over real and imaginary quadratic maximal orders**
-and **SLₙ over imaginary quadratic maximal orders**, on the free lattice Oⁿ,
-for ranks at least two. Use `voronoi_request(D; rank=n, group=:SL)` for the
-latter. Scalar matrices are retained when they belong to the group; −I lies
-in SL only in even rank. This interface does not currently supply
-real-quadratic SL, projective quotients or nonfree lattices.
-See [higher-rank examples and validation](higher_rank.md). The separate
-presentation pipeline computes GLₙ, SLₙ and PSLₙ for every supported rank
-over Z and maximal quadratic orders. Rational GLₙ/SLₙ complexes are also
-available through `voronoi_complex(enumerate_perfect_forms(classical_problem(rank=n)); group=:SL)`.
+The same direct call supports every rank `n ≥ 2` on the free lattice Oⁿ:
+
+| Coefficients | Groups available as HAP complexes |
+| --- | --- |
+| Z (omit the discriminant) | GLₙ, SLₙ, PSLₙ |
+| Imaginary quadratic maximal orders | GLₙ, SLₙ, PSLₙ |
+| Real quadratic maximal orders | GLₙ |
+
+```julia
+K = hap_voronoi_complex(; rank=3, group=:SL, resolution_length=3); # SL₃(Z)
+K = hap_voronoi_complex(-4; rank=3, group=:GL, resolution_length=2); # GL₃(Z[i])
+K = hap_voronoi_complex(-7; group=:PSL, resolution_length=3); # PSL₂(O₋₇)
+```
+
+No provider registration or GAP record conversion is needed for these Julia
+calls. SL retains its full scalar centre. PSL quotients by **all** scalar
+matrices `zI` with `z^n=1`, using HAP's `QuotientOfContractibleGcomplex`;
+this is not always just `{I,-I}`. In odd rational rank the centre is trivial.
+Real-quadratic SL/PSL cell complexes and nonfree lattices remain unsupported.
+The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and
+maximal quadratic orders; a presentation alone does not provide the cell
+stabilizers and boundaries needed here.
+See [higher-rank examples and validation](higher_rank.md).
 
 To reuse a perfect-form enumeration or inspect the native cells:
 

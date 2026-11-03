@@ -3,9 +3,9 @@
 Both presentation runners and the native enumerator accept ranks `n >= 2`.
 `run_field_pipeline` computes GLₙ, SLₙ and PSLₙ over Z and real or imaginary
 quadratic maximal orders on the free lattice Oⁿ. `run_gl_pipeline` computes
-GLₙ only. For HAP's full equivariant complexes, quadratic
-requests describe GLₙ over a real or imaginary quadratic maximal order, or
-SLₙ over an imaginary quadratic maximal order, on the free lattice Oⁿ.
+GLₙ only. HAP requests describe GLₙ over Z and real or imaginary quadratic
+maximal orders, or SLₙ/PSLₙ over Z and imaginary quadratic maximal orders,
+on the free lattice Oⁿ.
 Higher-rank support uses the same general record interface merged in
 [HAP PR #167](https://github.com/gap-packages/hap/pull/167); HAP needs no new
 dispatcher to accept a larger rank.
@@ -93,7 +93,7 @@ C = GAP.Globals.TensorWithIntegers(R);
 sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C, 1)))) # [4]
 ```
 
-Use `group=:SL` in the request to select SL₃. To enumerate forms first and
+Use `group=:SL` or `group=:PSL` in the request to select SL₃ or PSL₃. To enumerate forms first and
 inspect the cells:
 
 ```julia
@@ -104,7 +104,8 @@ length.(V.cells)           # [1,1,3,5,4,3,2]
 validate_voronoi_complex(V)
 ```
 
-The lower-level model also supports rational forms:
+Rational requests use `voronoi_request(; rank=3)`. The lower-level model
+also exposes the native cells:
 
 ```julia
 E = enumerate_perfect_forms(classical_problem(; rank=3); backend=:native);
@@ -112,14 +113,14 @@ V = voronoi_complex(E);
 length.(V.cells) # [1,1,2,1], for GL(3,Z)
 ```
 
-To run the Gaussian GL₃ and SL₃ examples in one Julia process:
+To run Gaussian GL₃/SL₃ and rational GL₃/SL₃/PSL₃ in one Julia process:
 
 ```sh
 julia --project=. scripts/run_hap.jl --requests=examples/higher_rank_hap_requests.json --degree=1 --output=results/rank3_homology
 ```
 
-The batch writes `GL3_D-4.json`, `SL3_D-4.json` and `summary.json`. Rank-two
-filenames retain their old names. `--resume` compares the entire request,
+The batch writes `GL3_D-4.json`, `SL3_D-4.json`, the rational `*_D1.json`
+files and `summary.json`. Rank-two filenames retain their old names. `--resume` compares the entire request,
 including rank and homology degree.
 
 ## Scope
@@ -134,11 +135,11 @@ roots of unity with determinant one must still be retained.
 `run_gl_pipeline` constructs GLₙ presentations using the 2-skeleton in every
 supported rank. The combined `run_field_pipeline` then extracts SLₙ and its
 full projective quotient. Only the optional C++ adapter remains rank two.
-HAP complexes support rational GLₙ/SLₙ as well as quadratic GLₙ and
-imaginary-quadratic SLₙ. Real-quadratic SL complexes, projective complexes,
-nonmaximal orders, nonfree lattices and fields of degree greater than two
-remain outside the provider's scope.
-The record adapter takes quadratic fields; use `classical_problem` for Q.
+HAP complexes support rational GLₙ/SLₙ/PSLₙ as well as quadratic GLₙ and
+imaginary-quadratic SLₙ/PSLₙ. PSL uses HAP's quotient construction with the
+full scalar centre. Real-quadratic SL/PSL complexes, nonmaximal orders,
+nonfree lattices and fields of degree greater than two remain outside the
+provider's scope. The record adapter accepts rational and quadratic fields.
 
 Supporting an input rank does not imply practical computation at arbitrary
 rank: the number of forms, faces and transporter candidates grows rapidly.
@@ -279,8 +280,10 @@ to run both bundled HAP and a pinned upstream checkout containing the merge.
 Higher-rank tests cover trace models through rank four, the two classical
 rank-four perfect forms, rational rank-three H₁/H₂, and Gaussian rank-three
 GL/SL H₁. The Gaussian GL result is checked against HAP's stored
-`ResolutionGL3QuadraticIntegers(-1,2)`. A separate Eisenstein rank-three
-stabilizer test checks that SL retains its centre of order three and excludes −I.
+`ResolutionGL3QuadraticIntegers(-1,2)`. Projective integration tests also compare fresh PSL₂ complexes with HAP
+resolutions through H₂ for discriminants −3, −4 and −7, and check rational
+SL/PSL in ranks two and three. A separate Eisenstein rank-three stabilizer
+test checks that SL retains its centre of order three and excludes −I.
 
 For fresh Magma comparisons, obtain these independent implementations:
 

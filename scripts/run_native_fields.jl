@@ -46,13 +46,13 @@ function validate_words(R;resume=false)
     validation
 end
 
-field_key(request)=request["rank"]==2 ? string(request["field"]["discriminant"]) :
-    "rank$(request["rank"])_D$(request["field"]["discriminant"])"
-field_directory(request)=request["rank"]==2 ? "D$(request["field"]["discriminant"])" :
-    "rank$(request["rank"])/D$(request["field"]["discriminant"])"
+field_key(request)=request["rank"]==2 ? string(ArithmeticVoronoi.request_discriminant(request)) :
+    "rank$(request["rank"])_D$(ArithmeticVoronoi.request_discriminant(request))"
+field_directory(request)=request["rank"]==2 ? "D$(ArithmeticVoronoi.request_discriminant(request))" :
+    "rank$(request["rank"])/D$(ArithmeticVoronoi.request_discriminant(request))"
 
 function compute_field(request,root;on_result=nothing,resume=false)
-    D=request["field"]["discriminant"]
+    D=ArithmeticVoronoi.request_discriminant(request)
     path=field_directory(request)
     R=run_field_pipeline(request;backend=:native,directory=joinpath(root,path),
         resume)
@@ -76,7 +76,7 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
     (;root,resume,requests)=request_arguments(args;default_discriminants,default_output)
     requests=NAV.enumeration_request.(requests)
     foreach(validate_request,requests)
-    discriminants=[r["field"]["discriminant"] for r in requests]
+    discriminants=[ArithmeticVoronoi.request_discriminant(r) for r in requests]
     LinearAlgebra.BLAS.set_num_threads(1)
     mkpath(root)
     fields=Dict{String,Any}()
@@ -99,7 +99,7 @@ function main(args;on_result=nothing,default_discriminants=SURVEY_DISCRIMINANTS,
     save()=NAV.atomic_json(summary_path,summary)
     save()
     for request in requests
-        D=request["field"]["discriminant"];key=field_key(request)
+        D=ArithmeticVoronoi.request_discriminant(request);key=field_key(request)
         if resume && haskey(fields,key) && fields[key]["status"]=="complete" &&
             matching_request(fields[key],request) &&
             (isnothing(on_result) || !isnothing(get(fields[key],"comparison",nothing)))

@@ -10,7 +10,7 @@ function run_gl_batch(args)
     # attaching-loop certificates in the selected output directory.
     entries=Dict{String,Any}()
     for request in requests
-        label="GL$(request["rank"])_D$(request["field"]["discriminant"])"
+        label="GL$(request["rank"])_D$(ArithmeticVoronoi.request_discriminant(request))"
         R=run_gl_pipeline(request;directory=joinpath(root,label),resume)
         entries[label]=R.run
         ArithmeticVoronoi.atomic_json(joinpath(root,"summary.json"),entries)

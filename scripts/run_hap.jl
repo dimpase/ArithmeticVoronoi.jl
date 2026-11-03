@@ -11,10 +11,7 @@ function main(args)
     degree>0 || throw(ArgumentError("homology degree must be positive"))
     (;root,resume,requests)=request_arguments(filter(arg->!startswith(arg,"--degree="),args);
         default_discriminants=[-7,5],default_output=joinpath(ArithmeticVoronoi.PACKAGE_ROOT,"results/hap_fields"))
-    for r in requests
-        r["group"]=="SL" && r["field"]["discriminant"]>0 &&
-            throw(ArgumentError("real-quadratic SL complexes are not implemented"))
-    end
+    foreach(ArithmeticVoronoi.hap_request,requests)
     enable_hap_julia_backend(;progress=true,resolution_length=degree+1)
     # GAP.jl's callable wrapper keeps record options inside GAP.
     construct=GAP.evalstr("request -> VoronoiComplex(request : backend := \"julia\")")
@@ -28,7 +25,7 @@ function main(args)
     for request in requests
         # Preserve old rank-two paths while preventing collisions across ranks.
         rank_suffix=request["rank"]==2 ? "" : string(request["rank"])
-        name="$(request["group"])$(rank_suffix)_D$(request["field"]["discriminant"])"
+        name="$(request["group"])$(rank_suffix)_D$(ArithmeticVoronoi.request_discriminant(request))"
         path=joinpath(root,name*".json")
         if resume && isfile(path)
             previous=JSON.parse(read(path,String),Dict{String,Any})

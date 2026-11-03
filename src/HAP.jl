@@ -316,19 +316,64 @@ function hap_complex(C::VoronoiComplex;resolution_length=100)
     GAP.Globals.HAPArithmeticVoronoiComplex(GAP.GapObj(data;recursive=true),resolution_length)
 end
 
-"""A fresh native Julia Voronoi complex as a HAP non-free resolution object."""
-function hap_voronoi_complex(D::Int;group=:GL,rank=2,resolution_length=100,progress=false)
+"""
+    hap_voronoi_complex(D; group=:GL, rank=2, resolution_length=100, progress=false)
+    hap_voronoi_complex(; group=:GL, rank=2, resolution_length=100, progress=false)
+    hap_voronoi_complex(request; resolution_length=100, progress=false)
+    hap_voronoi_complex(problem; group=:GL, resolution_length=100, progress=false)
+
+Compute a fresh complex and return a HAP non-free resolution. `D` is a quadratic
+field discriminant; omitting it selects Z. Records describe the field, order,
+lattice, group and rank. GL is supported over Z and maximal quadratic orders;
+SL and PSL over Z and imaginary quadratic maximal orders. All use free lattices
+of rank at least two. PSL divides by the full scalar centre of SL.
+
+HAP is loaded automatically; no provider registration or GAP record conversion
+is needed. Apply `GAP.Globals.FreeGResolution(K, n+1)` to compute homology through
+degree n. A contracting homotopy is not provided.
+"""
+function hap_voronoi_complex(D::Integer;group=:GL,rank=2,resolution_length=100,progress=false)
     hap_voronoi_complex(voronoi_request(D;group,rank);resolution_length,progress)
 end
 
-"""Construct a HAP complex from a field/order/lattice/group request record."""
-function hap_voronoi_complex(request::VoronoiRequestRecord;resolution_length=100,progress=false)
+function hap_voronoi_complex(;group=:GL,rank=2,resolution_length=100,progress=false)
+    hap_voronoi_complex(voronoi_request(;group,rank);resolution_length,progress)
+end
+
+function hap_request(request)
     r=normalize_voronoi_request(request)
-    group=Symbol(r["group"])
-    group==:SL && r["field"]["discriminant"]>0 && throw(ArgumentError("real-quadratic SL complexes are not implemented"))
+    r["group"]!="GL" && request_discriminant(r)>1 &&
+        throw(ArgumentError("real-quadratic SL/PSL cell complexes are not implemented; their presentations are available through run_field_pipeline"))
+    r
+end
+
+function hap_voronoi_complex(request::VoronoiRequestRecord;resolution_length=100,progress=false)
+    r=hap_request(request)
+    hap_voronoi_complex(arithmetic_problem(r);group=Symbol(r["group"]),resolution_length,progress)
+end
+
+function hap_voronoi_complex(P::ArithmeticVoronoiProblem;group=:GL,resolution_length=100,progress=false)
+    group in (:GL,:SL,:PSL) || throw(ArgumentError("choose group=:GL, :SL or :PSL"))
+    group!=:GL && P.degree!=1 && !is_hermitian(P) &&
+        throw(ArgumentError("real-quadratic SL/PSL cell complexes are not implemented; their presentations are available through run_field_pipeline"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
-    E=enumerate_perfect_forms(arithmetic_problem(r);backend=:native,progress)
-    hap_complex(voronoi_complex(E;group,progress);resolution_length)
+    E=enumerate_perfect_forms(P;backend=:native,progress)
+    C=voronoi_complex(E;group=group==:PSL ? :SL : group,progress)
+    K=hap_complex(C;resolution_length)
+    group==:PSL || return K
+    units=verified_units(P)
+    order=gcd(units.torsion_order,P.rank)
+    scalar=units.torsion_generator^div(units.torsion_order,order)
+    centre=[scalar^j*identity_matrix(P.field,P.rank) for j in 0:order-1]
+    # The quotient keeps the same cells and orientations because every central
+    # scalar fixes every form. Verify the kernel in every finite stabilizer.
+    ensure(all(g->det(g)==1 && g^order==identity_matrix(P.field,P.rank),centre),
+           "invalid PSL scalar centre")
+    ensure(all(layer->all(S->all(g->g in S,centre),layer),C.stabilizers),
+           "PSL scalar centre is absent from a cell stabilizer")
+    wire(g)=[[BigInt(ZZ(x)) for x in row] for row in matrix_rows(encode_matrix(P,g))]
+    Z=GAP.Globals.Group(GAP.GapObj(wire.(centre);recursive=true))
+    GAP.Globals.HAPArithmeticVoronoiQuotient(K,Z)
 end
 
 """

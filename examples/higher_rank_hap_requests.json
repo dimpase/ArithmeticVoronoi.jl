@@ -8,5 +8,20 @@
     "group": "SL", "rank": 3,
     "field": {"kind": "quadratic", "discriminant": -4},
     "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "GL", "rank": 3,
+    "field": {"kind": "rational"},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "SL", "rank": 3,
+    "field": {"kind": "rational"},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
+  },
+  {
+    "group": "PSL", "rank": 3,
+    "field": {"kind": "rational"},
+    "order": {"kind": "maximal"}, "lattice": {"kind": "free"}
   }
 ]

@@ -24,8 +24,8 @@ K = hap_voronoi_complex(request; resolution_length=3);
 All these calls use native Julia enumeration by default. The presentation
 runner `run_field_pipeline` takes a GL request of any supported rank and
 computes GL, SL and PSL presentations; `run_gl_pipeline` computes GL only.
-HAP complexes currently support quadratic GL and imaginary-quadratic SL. For the latter,
-use `voronoi_request(-7; group=:SL)`.
+HAP complexes support rational/quadratic GL and rational/imaginary-quadratic
+SL and PSL. For example, use `voronoi_request(-7; group=:PSL)`.
 
 Julia accepts named tuples, dictionaries with string or symbol keys, and
 JSON records. `normalize_voronoi_request(request)` validates the supported
@@ -35,13 +35,14 @@ field can specify either a fundamental `discriminant` or a squarefree
 `discriminant=-4`.
 
 Native enumeration, both presentation runners and HAP complexes accept any integer rank at least two,
-a quadratic field, its maximal order, and the free lattice `O^rank`.
+a rational or quadratic field, its maximal order, and the free lattice `O^rank`.
 For example, `voronoi_request(-4; rank=3)` requests GL₃ over the Gaussian
 integers. Other fields, nonmaximal orders, nonfree lattices and unknown record
-fields are rejected before enumeration. The lower-level
-`classical_problem(; rank=3)` API supports rational forms as well; the request
-adapter covers quadratic fields. Only the optional C++ adapter requires rank
-two. See [higher-rank validation](higher_rank.md).
+fields are rejected before enumeration. Use `voronoi_request(; rank=3)` for
+GL₃(Z): its field record is `(kind="rational",)`, with no radicand or
+discriminant. Integer inputs remain quadratic discriminants, so `1` is still
+rejected. Only the optional C++ adapter requires rank two. See
+[higher-rank validation](higher_rank.md).
 
 ```julia
 R = run_field_pipeline(voronoi_request(-4; rank=3);
@@ -75,14 +76,14 @@ julia --project=. scripts/run_hap.jl --requests=examples/voronoi_requests.json -
 The imaginary presentation runner also accepts `--requests=FILE`; supply only
 negative discriminants and GL requests. It retains its independent comparisons
 against HAP's stored SL/PSL complexes. `run_hap.jl` instead constructs fresh
-complexes using the Julia provider and accepts imaginary SL requests too.
+complexes using the Julia provider and accepts rational and imaginary SL/PSL requests too.
 Its `summary.json` and individual group files contain the request, timings,
 and homology invariant factors (`0` denotes an infinite cyclic summand).
 The expanded [rank-two HAP batch](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/examples/hap_requests.json) adds SL,
 Gaussian units, and a GL example at discriminant −15; pass it with
 `--requests=examples/hap_requests.json` to the same runner.
 
-For rank-three Gaussian GL and SL in one Julia session:
+For rank-three rational/imaginary GL, SL and PSL in one Julia session:
 
 ```sh
 julia --project=. scripts/run_hap.jl --requests=examples/higher_rank_hap_requests.json --degree=1 --output=results/rank3_homology
@@ -99,17 +100,23 @@ recomputed. Presentation runs keep their existing history and certificates.
 
 ## General HAP interface
 
-Inside Julia, register the provider and call HAP with the record:
+For the shortest Julia calling sequence, pass the request directly:
 
 ```julia
 using ArithmeticVoronoi, Oscar
 import Oscar: GAP
+K = hap_voronoi_complex(voronoi_request(; rank=3, group=:SL);
+    resolution_length=3);
+R = GAP.Globals.FreeGResolution(K, 3);
+GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R), 1)) # []
+```
+
+To use HAP's own dispatcher instead, register the in-process provider once:
+
+```julia
 enable_hap_julia_backend(; resolution_length=3)
 construct = GAP.evalstr("r -> VoronoiComplex(r : backend := \"julia\")");
-K = construct(GAP.GapObj(voronoi_request(-7); recursive=true));
-R = GAP.Globals.FreeGResolution(K, 3);
-GAP.gap_to_julia(GAP.Globals.Homology(
-    GAP.Globals.TensorWithIntegers(R), 2)) # [2,12]
+K = construct(GAP.GapObj(voronoi_request(-7; group=:PSL); recursive=true));
 ```
 
 The interface merged in [HAP PR #167](https://github.com/gap-packages/hap/pull/167)

@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: gap-packages/hap
-          ref: fa63c46f5974d15d26e27359e5f515a421fd186c
+          ref: 69b346b83b82dfcfa0261109f4062a6d43462bb8
           path: hap-upstream
       - uses: julia-actions/setup-julia@v3
         with:
