@@ -11,12 +11,18 @@ permissions:
 
 jobs:
   native:
-    name: Native Julia (${{ matrix.os }})
+    name: Native Julia ${{ matrix.julia }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-15]
+        include:
+          - os: ubuntu-latest
+            julia: '1.10'
+          - os: ubuntu-latest
+            julia: '1'
+          - os: macos-15
+            julia: '1'
     env:
       JULIA_NUM_THREADS: '1'
       OPENBLAS_NUM_THREADS: '1'
@@ -24,16 +30,20 @@ jobs:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: '1.13.2'
+          version: ${{ matrix.julia }}
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: 'false'
-      - name: Install Julia dependencies
-        run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate(;allow_autoprecomp=false)'
-      - name: Native engine tests (no LFS, data checkout, C++ or HAP)
-        run: julia --startup-file=no --project=. -e 'using Pkg; Pkg.test()'
-      - name: Install without the repository manifest or unregistered dependencies
-        run: julia --startup-file=no --project=. test/registry_install.jl
+      - name: Fresh client installation and native tests with coverage
+        run: julia --startup-file=no test/registry_install.jl --test
+      - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: src
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-julia-${{ matrix.julia }}-${{ matrix.os }}
+          path: lcov.info
+          if-no-files-found: error
 
   hap:
     name: HAP integration (bundled and upstream)
@@ -51,7 +61,7 @@ jobs:
           path: hap-upstream
       - uses: julia-actions/setup-julia@v3
         with:
-          version: '1.13.2'
+          version: '1'
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: 'false'

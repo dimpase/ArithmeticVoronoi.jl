@@ -20,5 +20,5 @@ defined only in that module. Generic certificate verification stays in the
 engine: it derives its checks from the supplied inputs, without expected
 counts, presentations or homology tables.
 
-See [code and data boundaries](../docs/code_and_data.md), including explicit
+See [code and data boundaries](../docs/src/code_and_data.md), including explicit
 use of recorded results as auxiliary inputs to future algorithms.

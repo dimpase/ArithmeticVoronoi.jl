@@ -97,7 +97,7 @@ an unfinished case.
 `test/sl_presentations.jl` constructs rational and imaginary-quadratic SL/PSL
 examples from scratch, including the rank-three Eisenstein centre of order
 three. It checks matrix words in raw and simplified alphabets and rejects
-corrupt lift scalars. The [higher-rank guide](docs/higher_rank.md) describes
+corrupt lift scalars. The [higher-rank guide](../higher_rank.md) describes
 independent HAP and Magma comparisons. These tests use no stored presentations.
 
 The historical rank-two validation is described below.

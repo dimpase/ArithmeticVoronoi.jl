@@ -72,7 +72,7 @@ null and the exact source artifact hashes identify the implementation.
 ## Verification entry points and strength
 
 From the engine repository root, after downloading and unpacking the dataset
-in the separate data checkout as shown in [the user guide](USER_GUIDE.md#optional-historical-archives),
+in the separate data checkout as shown in [the user guide](../guide.md#optional-historical-archives),
 install this checkout's Julia dependencies and run:
 
 ```sh

@@ -4,7 +4,7 @@ Executed 2026-10-17 for `oscar_arithmetic_voronoi_codex_handoff.md`.
 
 This is a historical audit. The C++ sources and build now live in
 [PerfectForms.jl](https://github.com/dimpase/PerfectForms.jl); paths below
-describe the original workspace. Use [the user guide](USER_GUIDE.md) for
+describe the original workspace. Use [the user guide](../guide.md) for
 current installation and native Julia computations.
 
 **Verdict: usable after the listed local fixes.** This verdict covers the
@@ -29,8 +29,8 @@ they are lost by a top-level query; it constructs no lower complex.
 
 All required facets close, and all representatives have exact minimum one.
 Counts are measured output, not hardcoded enumeration bounds. The final
-machine-readable records are [D5](results/D5.json), [D8](results/D8.json),
-[classical2](results/classical2.json) and [summary](results/examples_summary.json).
+machine-readable records are [D5](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/D5.json), [D8](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/D8.json),
+[classical2](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/classical2.json) and [summary](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/examples_summary.json).
 
 ## Pinned build and ownership
 
@@ -49,25 +49,25 @@ machine-readable records are [D5](results/D5.json), [D8](results/D8.json),
   Eigen 3.4.1, Boost 1.90. MPI, FLINT, SCIP, Boost number types and GMP pool
   disabled. GMP integers/rationals are the only exporter arithmetic.
 - Julia 1.13.2, OSCAR 1.8.2, Hecke 0.39.22, GAP.jl 0.17.6 / GAP 4.16.1,
-  JSON3 1.14.3. The local [Project](Project.toml) and [Manifest](Manifest.toml)
+  JSON3 1.14.3. The local [Project](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/Project.toml) and [Manifest](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/734a4d63238dd8857204e92aebbac811499fa745/Manifest.toml)
   pin the environment. Resolving this isolated environment adjusted bundled
   networking JLLs for installed Julia; the root projects were not edited.
-- [Build records](results/build/) retain the command, compiler/dependency
+- [Build records](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/build) retain the command, compiler/dependency
   versions, CMake cache, source diff, recursive pins, compile commands, nauty
   configure log, warnings/logs, source SHA and executable SHA. Historical
   refreshes are separate from fresh compilation timings.
 
 Nine pristine source trees, including recursive submodules and nauty with
-their license notices, are retained in [pinned_sources.tar.gz](backend/pinned_sources.tar.gz).
+their license notices, are retained in [pinned_sources.tar.gz](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/backend/pinned_sources.tar.gz).
 Its internal manifest hashes each nested source tar; the outer SHA is in
-[pinned_sources.sha256](backend/pinned_sources.sha256). The 8.5 MB archive was
+[pinned_sources.sha256](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/backend/pinned_sources.sha256). The 8.5 MB archive was
 created and independently read back with `scripts/archive_backend_sources.py`.
 Local changes remain separately reviewable; this is source preservation,
 not an offline dependency installer.
 
 The accepted release SHA-256 is
 `36af80176b246cd47a08e295158c8842c292cf10fc211333d161aeb541a8400c`.
-Its explicit [configuration](backend/config.json) selects the retained
+Its explicit [configuration](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/backend/config.json) selects the retained
 `backend/bin/AV_ExportPerfectOrbits`, rather than any newest build or PATH entry.
 The original driver SHA is
 `b9cea76e9a2f54f092a38e0d68869fc5a622069b51442f59904bd780aba23c2b`.
@@ -86,7 +86,7 @@ about every target or compiler.
 
 | Pinned source observation | Executed evidence / accepted treatment |
 | --- | --- |
-| `ComputeComplex` is declared, but the serial driver calls full-complex construction regardless. | With `ComputeComplex=F`, the official classical probe exported counts `[1,1,0]`; D5 exported `[2,4,5,4,1,0]`. These include lower levels. Inputs, output, status and timings remain in [upstream_probe](results/upstream_probe/). Use the narrow exporter, not the flag as a performance guarantee. |
+| `ComputeComplex` is declared, but the serial driver calls full-complex construction regardless. | With `ComputeComplex=F`, the official classical probe exported counts `[1,1,0]`; D5 exported `[2,4,5,4,1,0]`. These include lower levels. Inputs, output, status and timings remain in [upstream_probe](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/upstream_probe). Use the narrow exporter, not the flag as a performance guarantee. |
 | GAP `__PERFCOMP_Write_t_space` has cache emission commented out. | The adapter writes its exact namelist and owns all cache configuration. Backend archives are disabled with `CacheFile="none"`. |
 | GAP `PERFCOMP_general_query` concatenates shell text and reads GAP code, without explicit child-exit validation there. | Julia uses an argv vector, private files, captured stdout/stderr, process status/signal and a request nonce. JSON contains exact rational strings; no GAP evaluation, `eval`, or `ReadAsFunction` is used. The executable and request paths with spaces pass. |
 | `GetBinaryFilename` can choose the newest matching build. | One absolute real path and expected SHA are configured. Replacing the executable is rejected; sanitizer builds stay separate. |
@@ -111,7 +111,7 @@ successful narrow gate is not a whole-repository engineering endorsement.
 
 ## Independent mathematical checks
 
-[Model tests](test/model.jl) check both maximal-order bases, exact trace
+[Model tests](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/test/model.jl) check both maximal-order bases, exact trace
 evaluation, dimension six, positivity, encode/decode round trips,
 `A_F E = Eᵗ A_F`, action composition and matrix conversion. A genuine integral
 Galois isometry of the identity trace form is rejected for not commuting with
@@ -119,7 +119,7 @@ field multiplication. D8's nonsymmetric multiplication matrix catches the
 otherwise easy transpose error. Nonidentity lattice bases and rational Gram
 scaling test Hecke's lattice-coordinate and squared-length conventions.
 
-[Validation](src/Validation.jl) independently recomputes exhaustive signed
+[Validation](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/src/Validation.jl) independently recomputes exhaustive signed
 shortest vectors in Hecke, relative perfection, and exact cone facets in
 OSCAR/polymake. Every stabilizer generator is integral, unimodular and K-linear,
 and preserves its form. Generated closure equals the independently computed
@@ -144,9 +144,9 @@ minimal vectors by infinite units, or enlarge the group to semilinear maps.
 
 ## Engineering regression results
 
-[Final test transcript](results/test_summary.txt): **231 passing assertions**
+[Final test transcript](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/test_summary.txt): **231 passing assertions**
 (97 model, 6 shortest-vector conventions, 128 process/cache/label contracts).
-[Structured contract evidence](results/contracts_summary.json) identifies
+[Structured contract evidence](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/contracts_summary.json) identifies
 the preserved input/log/process directory for each failure case.
 
 - Missing/nonexecutable and relative executable; changed executable SHA.
@@ -180,7 +180,7 @@ The Clang 22.1.8 build uses ASan+UBSan, C assertions (`-UNDEBUG`),
 `SANITY_CHECK`, `-Wall -Wextra`, and frame pointers. Classical2, D5 and D8
 complete cleanly. Malformed input and unsupported arithmetic/boundary requests
 also terminate with their intended statuses and no sanitizer diagnostics.
-[Sanitizer report](results/sanitizer/summary.json) includes each input hash,
+[Sanitizer report](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/sanitizer/summary.json) includes each input hash,
 argv, exit, timing, sampled maximum resident memory, and options. Their outputs
 were independently revalidated and matched to release orbits in OSCAR/Hecke.
 
@@ -198,7 +198,7 @@ cases require revisiting those limits; this audit does not prove generic
 overflow safety. The release has ordinary `NDEBUG`; the sanitizer build removes
 it. No disabled assertion is being counted as executed release validation.
 
-[Example timings](results/examples_summary.json) separate process and exact
+[Example timings](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/results/examples_summary.json) separate process and exact
 validation time, and cold versus warm caches. First in-process use includes
 Julia compilation. The final D5 run used about 0.063 s in C++,
 7.64 s in first D5 validation and 0.034 s on a subsequent validated warm load.
@@ -208,7 +208,7 @@ builds are serial; ten-thread HSR settings are unrelated to this backend.
 
 ## Reproduction and next gate
 
-Current commands and prerequisites are in [the user guide](USER_GUIDE.md#optional-c-backend).
+Current commands and prerequisites are in [the user guide](../guide.md#optional-c-backend).
 The commands below record the historical workspace layout. From the
 workspace root, the principal checks actually executed are:
 
@@ -237,4 +237,4 @@ the original `backend/NOTICE.txt`. No Magma runtime or borrowed
 SLnCohomology code was used. The acceptance gate was completed without
 publication, upstream pushes or maintainer contact. Subsequently, the user
 requested three upstream issue reports; exact texts, reproductions and verified
-receipts are in [upstream_reports/README.txt](upstream_reports/README.txt).
+receipts are in [upstream_reports/README.txt](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/upstream_reports/README.txt).

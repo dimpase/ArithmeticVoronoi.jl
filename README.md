@@ -1,5 +1,9 @@
 # ArithmeticVoronoi
 
+[![CI](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](docs/src/index.md)
+[![Documentation build](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/documentation.yml/badge.svg)](https://github.com/dimpase/ArithmeticVoronoi.jl/actions/workflows/documentation.yml)
+
 Compute presentations and verified matrix-to-word expressions for
 **GL(n,O), SL(n,O) and PSL(n,O)** (`n ≥ 2`), where O is Z or the maximal order
 of a real or imaginary quadratic field, acting on the free lattice Oⁿ.
@@ -16,7 +20,7 @@ finite presentation and constructive membership algorithm.
 
 ## Start a computation
 
-Use Julia 1.13 (tested with 1.13.2). While General registration is pending:
+Use Julia 1.10 or later. While General registration is pending:
 
 ```julia
 using Pkg
@@ -25,7 +29,7 @@ Pkg.add("Oscar") # for the group operations below
 ```
 
 After registration, use `Pkg.add("ArithmeticVoronoi")`. See the
-[user guide](USER_GUIDE.md#install-and-start-julia) for a development checkout.
+[user guide](docs/src/guide.md#install-and-start-julia) for a development checkout.
 
 At the Julia prompt, compute all three groups for O = Z[√3] and work with SL:
 
@@ -56,24 +60,27 @@ Recorded presentations are available through the separate
 loaded explicitly. Git LFS is used only there; the engine and its default
 tests need neither that repository nor its data.
 
-The [repository transition](docs/repository_transition.md) records the temporary
+The [repository transition](docs/src/repository_transition.md) records the temporary
 compatibility copy used by HAP.
 
 ## Documentation and results
 
-- [User guide](USER_GUIDE.md): installation, group operations, matrix words,
+The [Documenter manual](docs/src/index.md) includes
+the user guide, algorithms, validation records and an API reference from docstrings.
+
+- [User guide](docs/src/guide.md): installation, group operations, matrix words,
   batches, saved results, optional C++ backend and troubleshooting.
-- [Native algorithm](docs/native_backend.md) and
-  [presentation justification](PRESENTATION_JUSTIFICATION.md).
-- [16 real quadratic fields](docs/native_survey.md): full presentations and
+- [Native algorithm](docs/src/native_backend.md) and
+  [presentation justification](docs/src/theory/presentations.md).
+- [16 real quadratic fields](docs/src/native_survey.md): full presentations and
   exact comparisons with the C++ enumerator.
-- [Five imaginary quadratic fields](docs/imaginary_quadratic.md): full
+- [Five imaginary quadratic fields](docs/src/imaginary_quadratic.md): full
   presentations and comparisons with Yasaki, HAP and Aurel Page's Magma code.
-- [Native higher homology with HAP and Schönnenbeck comparisons](docs/hap_and_vmh.md).
-- [Higher-rank presentations and HAP complexes](docs/higher_rank.md), with Magma regression comparisons.
-- [Shared request records and JSON experiment batches](docs/requests.md).
+- [Native higher homology with HAP and Schönnenbeck comparisons](docs/src/hap_and_vmh.md).
+- [Higher-rank presentations and HAP complexes](docs/src/higher_rank.md), with Magma regression comparisons.
+- [Shared request records and JSON experiment batches](docs/src/requests.md).
 
 See [LICENSE](LICENSE) and [dependency attribution](DEPENDENCIES.txt).
 
 Parts of the implementation, tests and documentation were developed with
-OpenAI Codex assistance; see the [validation guides](docs/higher_rank.md).
+OpenAI Codex assistance; see the [validation guides](docs/src/higher_rank.md).

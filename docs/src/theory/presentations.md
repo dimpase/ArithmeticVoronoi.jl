@@ -13,8 +13,8 @@ formalizations.
 
 The argument below is written for real quadratic forms and the original
 five-field certificates. The current native implementation also covers the
-[16-field real survey](docs/native_survey.md) and
-[imaginary quadratic Hermitian forms](docs/imaginary_quadratic.md).
+[16-field real survey](../native_survey.md) and
+[imaginary quadratic Hermitian forms](../imaginary_quadratic.md).
 The GL, SL and PSL constructions are now rank-independent; the changes of dimension and
 the supported arithmetic scope are specified below.
 
@@ -125,7 +125,7 @@ Scalar units remain matrices in this group and have not been factored out.
 The unchanged M2 validator in `src/Validation.jl` verifies exhaustive minima,
 perfection, the complete finite field-linear stabilizers, inequivalence of
 representatives, every irredundant facet, and its exact outward neighbour and
-transporter. See `BACKEND_AUDIT.md`, [the user guide](USER_GUIDE.md), and the retained M2 results.
+transporter. See `BACKEND_AUDIT.md`, [the user guide](../guide.md), and the retained M2 results.
 The representative counts are two for D5/D8, three for D12, nine for D13
 and 52 for D40. Each complete facet
 list has a verified neighbour in those representatives. By connectedness of

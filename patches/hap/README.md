@@ -6,7 +6,7 @@ Current HAP source already contains this interface. Do not apply the archived
 patch to it. Older released HAP works with our compatibility wrapper.
 
 The dispatcher already accepts arbitrary ranks. Higher-rank support is
-implemented in the Julia provider; see [examples and validation](../../docs/higher_rank.md).
+implemented in the Julia provider; see [examples and validation](../../docs/src/higher_rank.md).
 No further HAP API patch is needed for it. The original patch and its validation
 record below are retained for reference.
 
@@ -16,7 +16,7 @@ commit `007df75debde04c7469124891ac78d555d5de20b`. It applies to the current
 HAP workflow (blob `b9022ef40dc907165094629f1f6920b69b0490f6`). This patch is
 prepared for review and has not been submitted upstream. Keep the original
 repository available until the change lands and HAP's Julia CI passes;
-see [the repository transition](../../docs/repository_transition.md).
+see [the repository transition](../../docs/src/repository_transition.md).
 
 To check and apply only this URL update in a HAP checkout:
 
@@ -102,8 +102,8 @@ dispatch. Installed HAP files are not modified. The callback runs in the
 existing Julia process; standalone GAP would need its own registered
 provider or a Julia-enabled environment.
 
-See [request records and experiment runners](../../docs/requests.md) for the
-shared Julia/JSON interface, and [the HAP guide](../../docs/hap_and_vmh.md) for supported groups and the
+See [request records and experiment runners](../../docs/src/requests.md) for the
+shared Julia/JSON interface, and [the HAP guide](../../docs/src/hap_and_vmh.md) for supported groups and the
 direct `hap_voronoi_complex` Julia API. Native integration tests run with:
 
 ```sh
