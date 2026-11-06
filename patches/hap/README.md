@@ -10,10 +10,12 @@ implemented in the Julia provider; see [examples and validation](../../docs/src/
 No further HAP API patch is needed for it. The original patch and its validation
 record below are retained for reference.
 
-## Current follow-up (local, not submitted)
+## Submitted follow-up: HAP PR #169
 
-`0003-arithmetic-voronoi-interface.patch` is prepared against HAP
-`69b346b83b82dfcfa0261109f4062a6d43462bb8`. It supersedes the older URL-only
+[HAP PR #169](https://github.com/gap-packages/hap/pull/169) was submitted on
+6 November 2026, after ArithmeticVoronoi v0.1.0 was registered in General.
+`0003-arithmetic-voronoi-interface.patch` records its changes against HAP
+`85917bcb6bbb57363d68b03b83b39c13054b0eaf`. It supersedes the older URL-only
 `0002-update-julia-provider-repository.patch`; apply only `0003` to that base.
 It updates the provider repository to `dimpase/ArithmeticVoronoi.jl`, pins the
 new provider implementation, uses current stable Julia, documents the direct
@@ -26,10 +28,15 @@ products in PSL homology. A separate GAP regression checks inverses and a
 finite direct product; the Julia adapter detects this bug in older HAP and
 installs a compatibility method without changing installed files.
 
-The provider revision named in the workflow must be published in the engine
-repository before this HAP patch can run on GitHub. Both branches are local
-pending review; no HAP PR has been opened. Keep the original engine repository
-available until this update lands and HAP's Julia CI passes; see
+The provider implementation is published as
+[`c6942b9`](https://github.com/dimpase/ArithmeticVoronoi.jl/commit/c6942b97936e69a392ee88523fbf3574edcc6e26)
+on the engine's `hap-interface` branch. Its rational request and projective-complex
+API extends registered v0.1.0; the HAP tutorial explicitly installs this tested
+revision. Local validation against the refreshed HAP base passed all 416
+integration checks and all 39 CI-example checks, plus the GAP regressions,
+complete tutorial validation and installation in a fresh Julia environment.
+Keep the original engine repository available until the PR lands and HAP's
+Julia CI passes; see
 [the repository transition](../../docs/src/repository_transition.md).
 
 ```sh

@@ -183,10 +183,10 @@ index 7d1dff5d..a9b826d6 100644
  gap> Print(VoronoiComplex(rec() : backend := "hap-test-fail"),"\n");
  fail
 diff --git a/tutorial/tutorialBianchi.xml b/tutorial/tutorialBianchi.xml
-index 748a91fc..81ce33ea 100644
+index c0938e1e..784c6660 100644
 --- a/tutorial/tutorialBianchi.xml
 +++ b/tutorial/tutorialBianchi.xml
-@@ -446,8 +446,41 @@ radicand, not a field discriminant. Without the backend option, or with
+@@ -474,8 +474,50 @@ radicand, not a field discriminant. Without the backend option, or with
  <C>backend := "magma"</C>, these two convenience functions retain the
  Magma implementation described above.
  <P/>
@@ -195,7 +195,16 @@ index 748a91fc..81ce33ea 100644
 +<URL Text="ArithmeticVoronoi.jl">https://github.com/dimpase/ArithmeticVoronoi.jl</URL>
 +computes these complexes natively and can register an in-process callback
  under the name <C>"julia"</C>. HAP itself does not install or load Julia.
-+From Julia, the direct interface loads HAP automatically:
++The rational request and projective-complex examples below extend the first
++registered release, v0.1.0. Install the tested provider revision used by this
++CI job in your chosen Julia environment, along with OSCAR for its GAP interface:
++<Log><![CDATA[
++import Pkg
++Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoi.jl.git",
++        rev="c6942b97936e69a392ee88523fbf3574edcc6e26")
++Pkg.add("Oscar")
++]]></Log>
++The direct Julia interface loads HAP automatically:
 +<Log><![CDATA[
 +using ArithmeticVoronoi, Oscar
 +import Oscar: GAP
@@ -223,7 +232,7 @@ index 748a91fc..81ce33ea 100644
 +]]></Log>
 +These last commands use GAP syntax, which can be evaluated through GAP.jl.
 +See the
-+<URL Text="ArithmeticVoronoi HAP guide">https://dimpase.github.io/ArithmeticVoronoi.jl/hap_and_vmh/</URL>
++<URL Text="ArithmeticVoronoi HAP guide">https://github.com/dimpase/ArithmeticVoronoi.jl/blob/c6942b97936e69a392ee88523fbf3574edcc6e26/docs/src/hap_and_vmh.md</URL>
 +for installation, the direct Julia calls and supported computations.
 +<P/>
  An unregistered backend name is an error. Providers must supply complete stabilizers, the orientation action
