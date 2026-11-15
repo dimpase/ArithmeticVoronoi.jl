@@ -62,7 +62,11 @@ No provider registration or GAP record conversion is needed for these Julia
 calls. SL retains its full scalar centre. PSL quotients by **all** scalar
 matrices `zI` with `z^n=1`, using HAP's `QuotientOfContractibleGcomplex`;
 this is not always just `{I,-I}`. In odd rational rank the centre is trivial.
-Real-quadratic SL/PSL cell complexes and nonfree lattices remain unsupported.
+Real-quadratic SL/PSL cell complexes and nonfree lattices remain unsupported by
+these standard entry points. An explicitly loaded
+[experimental real-quadratic SL₂ construction](real_quadratic_sl.md) supplies
+certified level complexes and a HAP export; it has been validated on
+discriminants 5 and 12.
 The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and
 maximal quadratic orders; a presentation alone does not provide the cell
 stabilizers and boundaries needed here.
