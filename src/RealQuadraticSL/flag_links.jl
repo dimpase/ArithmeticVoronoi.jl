@@ -284,7 +284,7 @@ function ascending_vertices(data,bases,orbit,sgn;link=data["links"][orbit])
     findall(x->sgn*x>0,delta)
 end
 
-function certify_morse_graphs(data;bases=nothing,progress=false)
+function certify_morse_graphs(data;bases=nothing,progress=false,on_certificate=nothing)
     bases=rational_morse_heights(data;bases)
     reports=Any[]
     last_report=time()
@@ -313,7 +313,9 @@ function certify_morse_graphs(data;bases=nothing,progress=false)
             end
             @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
             @assert replay_morse_graph_certificate(link,vertices,result)
-            push!(reports,(;orbit=i,sgn,result,graph_vertices,graph_edges))
+            report=(;orbit=i,sgn,result,graph_vertices,graph_edges)
+            push!(reports,report)
+            isnothing(on_certificate) || on_certificate(report,bases)
         end
         if progress && (i%100==0 || i==length(data["links"]) || time()-last_report>=10)
             println("Certified Morse links: ",i,"/",length(data["links"]));flush(stdout)

@@ -182,3 +182,29 @@ end
     triangles=[(1,2),(1,3),(2,3),(4,5),(4,3),(5,3)]
     @test RQSL.replay_flag_collapse(1:5,triangles,[(1,2,3),(4,5,3),(1,3),(2,3),(4,3),(5,3)])
 end
+
+@testset "collapsible links beyond cones" begin
+    path=[(1,2),(2,3),(3,4)]
+    edges=[path;[(v,a) for a in (5,6) for v in 1:4]]
+    generators=[[1,2,3,4,6,5]]
+    colours=[0,1,0,1,2,2]
+    inner=[(1,2),(2,3),(3,4)]
+    steps=Any[Dict("vertex"=>5,"link_steps"=>inner);inner]
+    @test RQSL.replay_orbit_flag_collapse(1:6,edges,generators,colours,steps)
+    @test RQSL.replay_orbit_flag_collapse(1:6,edges,generators,colours,JSON.parse(JSON.json(steps)))
+    bad=Any[Dict("vertex"=>5,"link_steps"=>inner[2:end]);inner]
+    @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:6,edges,generators,colours,bad)
+    # Expand the relative star collapses independently into elementary pairs.
+    pairs=Any[]
+    for a in (5,6)
+        append!(pairs,[((v,a),(v,v+1,a)) for v in 1:3])
+        push!(pairs,((a,),(4,a)))
+    end
+    append!(pairs,[((v,),(v,v+1)) for v in 1:3])
+    facets=[(v,v+1,a) for a in (5,6) for v in 1:3]
+    @test RQSL.replay_collapse(facets,pairs)
+    # A circular link cannot be used to delete the vertex of a cone.
+    cycle=vcat(path,[(1,4)],[(v,5) for v in 1:4])
+    @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:5,cycle,Vector{Int}[],colours[1:5],
+        Any[Dict("vertex"=>5,"link_steps"=>inner)])
+end

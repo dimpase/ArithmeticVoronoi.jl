@@ -135,6 +135,11 @@ therefore describes the same elementary collapses without listing every equivale
 step. Tests also expand these compact witnesses and replay individual removals.
 Saved certificates carry a format version and distinguish orbit steps from ordinary
 graph steps. No numerical topology test is substituted for the certificate.
+When cone removals stop, the search also tests vertex links for a complete graph
+collapse. A successful witness collapses the vertex's star onto its link: cone
+each inner collapse pair with the removed vertex, then collapse the final edge.
+The replay checks the entire inner witness before removing the vertex orbit.
+Tests expand this relative collapse into elementary simplicial pairs as well.
 Failure to produce a witness aborts construction.
 
 By the Morse lemma and Corollary 2.6 of

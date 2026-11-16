@@ -1,8 +1,10 @@
-# A stabilizer preserves the proper dimension colours of its link graph.
-# Members of a vertex or edge orbit cannot belong to a common simplex unless
-# identical. Removing their cone stars therefore commutes. Record one checked
-# representative per orbit, then independently validate the graph action and
-# replay complete orbits. This avoids storing millions of equivalent steps.
+# Proper dimension colours are invariant under the stabilizer. Two distinct
+# members of a vertex or edge orbit cannot occur in a common simplex. Their
+# removals therefore commute: deleting one cannot change the link of another.
+# Record one witness per orbit and independently verify the graph action and
+# every complete removal orbit. A cone link gives an immediate witness. If a
+# vertex link instead collapses to a point, coning its collapse pairs with the
+# removed vertex collapses its star relative to its link, ending with one edge.
 function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=false)
     graph=flag_adjacency(vertices,edges)
     @assert all(colours[u]!=colours[v] for (u,v) in edges)
@@ -30,7 +32,7 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
         end
         queue
     end
-    orbit_steps=Union{NTuple{2,Int},NTuple{3,Int}}[]
+    orbit_steps=Any[]
     expanded_steps=0
     pending=collect(eachindex(reps))
     degrees=Dict{Int,Int}();buckets=Dict{Int,Set{Int}}();minimum_degree=Ref(typemax(Int))
@@ -81,7 +83,31 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
         end
         length(graph)==1 && break
         if !initialized;foreach(enqueue,eachindex(reps));initialized=true;end
-        isempty(degrees) && break
+        if isempty(degrees)
+            # A collapsible link suffices even when it has no cone vertex.
+            candidates=sort!([o for o in eachindex(reps) if haskey(graph,reps[o])];by=o->(length(graph[reps[o]]),o))
+            removed=false
+            for o in candidates
+                v=reps[o];neighbours=setdiff(graph[v],Set([v]))
+                link_edges=[(x,y) for x in neighbours for y in intersect(neighbours,graph[x]) if x<y]
+                trial=collapse_flag_graph(neighbours,link_edges)
+                trial.passed || continue
+                push!(orbit_steps,Dict("vertex"=>v,"link_steps"=>trial.steps))
+                affected=BitSet()
+                for x in members[o]
+                    for u in graph[x]
+                        u==x && continue
+                        push!(affected,orbit[u]);delete!(graph[u],x)
+                    end
+                    delete!(graph,x);expanded_steps+=1
+                end
+                foreach(enqueue,affected);pending=collect(affected);removed=true
+                if progress;println("Collapsible-link orbit: ",length(members[o])," vertices removed; ",length(graph)," remain; ",length(trial.steps)," inner steps");flush(stdout);end
+                break
+            end
+            removed || break
+            continue
+        end
         while !haskey(buckets,minimum_degree[]) || isempty(buckets[minimum_degree[]]);minimum_degree[]+=1;end
         o=first(buckets[minimum_degree[]]);dequeue(o);u=reps[o]
         next=BitSet()
@@ -126,6 +152,24 @@ function replay_orbit_flag_collapse(vertices,edges,generators,colours,steps)
         end
     end
     for entry in steps
+        if entry isa AbstractDict
+            @assert Set(keys(entry))==Set(["vertex","link_steps"])
+            v=Int(entry["vertex"]);@assert haskey(G,v)
+            neighbours=setdiff(G[v],Set([v]))
+            link_edges=[(x,y) for x in neighbours for y in intersect(neighbours,G[x]) if x<y]
+            @assert replay_flag_collapse(neighbours,link_edges,entry["link_steps"])
+            stack=[v];seen=Set{Int}()
+            while !isempty(stack)
+                x=pop!(stack);x in seen && continue;push!(seen,x)
+                for g in generators;push!(stack,g[x]);end
+            end
+            for x in seen
+                @assert haskey(G,x)
+                for u in G[x];u==x || delete!(G[u],x);end
+                delete!(G,x)
+            end
+            continue
+        end
         step=Tuple(Int.(entry))
         @assert length(step) in (2,3)
         @assert length(unique(colours[v] for v in step))==length(step)
