@@ -21,9 +21,13 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
             skeleton := data.computedCellDimension;
         fi;
     fi;
+    if IsBound(data.levelModel) then
+        metadata.levelModel := data.levelModel;
+        metadata.retainedOriginalDimension := data.retainedOriginalDimension;
+    fi;
     dimension := function(n)
         if skeleton <> fail and n > skeleton then
-            Error("This certified level skeleton was computed only through dimension ",
+            Error("This certified partial level was computed only through dimension ",
                   skeleton, "; request a longer resolution to compute more cells.");
         fi;
         if n < 0 or n >= Length(dims) then return 0; fi;

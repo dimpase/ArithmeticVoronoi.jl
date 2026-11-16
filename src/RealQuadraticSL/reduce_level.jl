@@ -1,5 +1,5 @@
 # Algebraic cancellation of isomorphic induced orientation-module summands.
-# The unreduced object remains the actual certified contractible cell complex.
+# The unreduced object remains the geometric full or bounded-degree complex.
 struct ReducedLevelComplex
     experiment::MorseExperiment
     certificate::Any
@@ -13,6 +13,8 @@ struct ReducedLevelComplex
     original_indices::Vector{Vector{Int}}
 end
 level_orientation(L::ReducedLevelComplex,k,i,g)=level_orientation(L.original,k,L.original_indices[k][i],g)
+level_model(L::ReducedLevelComplex)=level_model(L.original)
+retained_parent_dimension(L::ReducedLevelComplex)=retained_parent_dimension(L.original)
 function reduce_level_complex(L;progress=false)
     P=L.experiment.complex.enumeration.problem
     active=[trues(length(layer)) for layer in L.cells]

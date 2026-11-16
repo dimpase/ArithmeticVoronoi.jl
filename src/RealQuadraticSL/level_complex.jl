@@ -153,6 +153,8 @@ end
 # Flag stabilizers fix every vertex. Coarser cell models can override this
 # character when a stabilizer reverses the orientation of its cell.
 level_orientation(L::MorseLevelComplex,k,i,g)=1
+level_model(L::MorseLevelComplex)=:flags
+retained_parent_dimension(L::MorseLevelComplex)=length(L.experiment.complex.cells)-1
 
 function validate_level_complex(L)
     P=L.experiment.complex.enumeration.problem;I=identity_matrix(P.field,P.rank)
@@ -200,7 +202,7 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
     computed_dimension=length(L.cells)-1
     certified_dimension=length(L.experiment.complex.cells)-2
     if computed_dimension<certified_dimension && resolution_length>computed_dimension
-        throw(ArgumentError("the computed skeleton supports resolutions only through degree $computed_dimension"))
+        throw(ArgumentError("the computed partial level supports resolutions only through degree $computed_dimension"))
     end
     P=L.experiment.complex.enumeration.problem
     GAP=Oscar.GAP
@@ -227,6 +229,8 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
         "boundaries"=>boundaries,"generators"=>wire.(generators),
         "name"=>"SL($(P.rank),O), D=$(P.discriminant), certified determinant-height level complex",
         "discriminant"=>P.discriminant,"rank"=>P.rank,"groupKind"=>"SL")
+    data["levelModel"]=String(level_model(L))
+    data["retainedOriginalDimension"]=retained_parent_dimension(L)
     data["certifiedCellDimension"]=certified_dimension
     data["computedCellDimension"]=computed_dimension
     GAP.Globals.HAPArithmeticVoronoiComplex(GAP.GapObj(data;recursive=true),resolution_length)

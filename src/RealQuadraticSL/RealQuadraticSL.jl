@@ -5,6 +5,7 @@ include("morse_links.jl")
 include("flag_links.jl")
 include("orbit_links.jl")
 include("level_complex.jl")
+include("section_complex.jl")
 include("reduce_level.jl")
 
 export compute_real_sl_complex
@@ -12,7 +13,7 @@ export compute_real_sl_complex
 """
     compute_real_sl_complex(D; rank=2, resolution_length=4, reduce=true, progress=false,
                             certificate_directory=nothing, max_cell_dimension=nothing,
-                            hap_root="hap")
+                            cell_model=:flags, hap_root="hap")
 
 Compute a fresh, certified determinant-height level complex for SL(rank,O), where D
 is a positive quadratic field discriminant. Returns `geometric`, its optional
@@ -20,7 +21,12 @@ algebraically reduced `chain`, and `hap` (a HAP non-free resolution), together w
 link-collapse certificates and timings. `max_cell_dimension=m` explicitly requests
 only the m-skeleton of the certified full level. For a proper skeleton,
 `resolution_length` must not exceed m; homology is then supported through degree
-`resolution_length-1`. The default constructs all dimensions.
+`resolution_length-1`. The default constructs all dimensions. `cell_model=:flags` uses all intersecting
+flag cells. `cell_model=:sections` merges independently certified ball sections
+and subdivides the remaining sections compatibly. A bounded section calculation
+can omit higher pieces after a verified relative-connectivity argument; its
+geometric output is then a partial level subcomplex, exact below the requested
+resolution degree, and is not asserted to be contractible.
 
 Stabilizers retain the full scalar centre
 of SL: -I is retained in even rank and excluded in odd rank.
@@ -38,7 +44,7 @@ end
 
 function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4,reduce=true,
         progress=false,certificate_directory=nothing,max_cell_dimension=nothing,
-        hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
+        cell_model=:flags,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
     P.degree==2 && P.discriminant>1 || throw(ArgumentError("a real quadratic problem is required"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     if !isnothing(max_cell_dimension)
@@ -47,6 +53,7 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
         max_cell_dimension<P.rank^2-1 && resolution_length>max_cell_dimension &&
             throw(ArgumentError("a proper skeleton must include cells through resolution_length"))
     end
+    cell_model in (:flags,:sections) || throw(ArgumentError("cell_model must be :flags or :sections"))
     D=P.discriminant
     timings=Dict{String,Float64}()
     function stage(label,f)
@@ -61,7 +68,13 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
     M=stage("cell orbit data",()->morse_experiment(C;progress,maximal_flags=false))
     data,links,faces=stage("ascending and descending links",()->morse_link_graphs(M;progress))
     certificate=stage("exact collapse certification",()->certify_morse_graphs(data;progress))
-    L=stage("SL level cells",()->build_level_complex(M,data,certificate;progress,max_cell_dimension,faces))
+    L=stage("SL level cells",()->begin
+        if cell_model==:sections
+            build_section_level_complex(M,certificate;progress,max_cell_dimension,faces)
+        else
+            build_level_complex(M,data,certificate;progress,max_cell_dimension,faces)
+        end
+    end)
     @assert validate_level_complex(L)
     reduced=reduce ? stage("equivariant chain cancellations",()->reduce_level_complex(L;progress)) : L
     @assert validate_level_complex(reduced)
@@ -75,11 +88,17 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
             "links"=>[Dict("orbit"=>r.orbit,"direction"=>r.sgn,
                 "model"=>String(r.result.model),"collapse_steps"=>r.result.steps,
                 "expanded_steps"=>r.result.expanded_steps) for r in certificate.reports])
+        if L isa MorseSectionLevelComplex
+            witness["section_cores"]=[Dict("parent"=>r.parent,"exponent"=>r.exponent,"component"=>r.component,
+                "core_dimension"=>r.core_dimension,"model"=>String(r.result.model),"collapse_steps"=>r.result.steps,
+                "is_ball"=>r.result.passed) for r in L.section_certificates]
+        end
         open(joinpath(certificate_directory,"collapse_certificate.json"),"w") do io
             JSON.json(io,witness)
         end
         write(joinpath(certificate_directory,"construction.json"),JSON.json(Dict(
             "discriminant"=>D,"rank"=>P.rank,"actual_SL_complex"=>true,
+            "cell_model"=>String(level_model(L)),"retained_original_dimension"=>retained_parent_dimension(L),
             "certified_dimension"=>length(C.cells)-2,"computed_dimension"=>length(L.cells)-1,"cell_orbits"=>length.(L.cells),
             "chain_module_orbits"=>length.(reduced.cells),"timings"=>timings,
             "level_selection"=>get(data,"level_selection",nothing),"precomputed_data_used"=>false);pretty=4))

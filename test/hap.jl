@@ -131,6 +131,7 @@ end
 
 include("hap_projective.jl")
 include("hap_real_quadratic_sl.jl")
+include("real_quadratic_sl_sections.jl")
 include("higher_rank.jl")
 include("gl_presentations.jl")
 test_gl_presentations(;with_hap=true)

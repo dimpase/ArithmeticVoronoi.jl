@@ -159,16 +159,67 @@ coorientation, with zero-cells normalized to positive augmentation.
 
 The implementation verifies equivariant `∂²=0`, augmentation, and invariance of
 each boundary under its stabilizer. Optional algebraic cancellations remove pairs
-of isomorphic permutation modules; conjugacy of the stabilizers is checked at
-every pivot. The full geometric object is retained separately. The reduced
+of isomorphic induced orientation modules; stabilizer conjugacy and compatibility
+of their orientation characters are checked at every pivot. The full geometric object is retained separately. The reduced
 object is a chain model, not a claim that its basis still consists of geometric
 product cells. Both can be exported as HAP non-free resolutions.
+
+## Certified cell sections
+
+The detailed interface also accepts `cell_model=:sections`. This avoids many
+unnecessary barycentric cells while keeping an exact certificate:
+
+```julia
+result = ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex(5;
+    rank=3, cell_model=:sections, resolution_length=2,
+    max_cell_dimension=2, progress=true);
+K = result.hap;
+```
+
+For an original d-dimensional cell, radial projection identifies a level
+component with a regular neighborhood of its opposite-sign boundary core.
+The core is a full induced subcomplex of the subdivided boundary sphere.
+If it collapses to one vertex, its neighborhood is a PL ball, so the component
+can be retained as one cell. This uses the regular-neighborhood criteria in
+[Buoncristiano, Part I §4.5](https://www.maths.gla.ac.uk/~mpowell/sandro.pdf).
+Every proposed collapse is independently replayed. A failed ball proof triggers
+subdivision of that section and its boundary; it never permits an unproved merge.
+
+A bounded-degree calculation can omit some higher-dimensional sections as well.
+Suppose a core collapses onto a residual flag complex of dimension r. The
+implementation verifies the complete partial collapse and computes the residual
+clique dimension exactly. Its regular neighborhood N is still a neighborhood
+of the remaining core. General position and the mapping-cylinder description
+of regular neighborhoods imply that `(N, ∂N)` is `(d−r−2)`-connected; see
+[Bryant, Theorems 3.5 and 3.16 and §4](https://webhomes.maths.ed.ac.uk/~v1ranick/papers/pltop.pdf)
+and the dimension argument in
+[Ferry, Lemma 10.12](https://webhomes.maths.ed.ac.uk/~v1ranick/papers/ferrygt.pdf).
+This is an application of those results to the level sections.
+
+For a resolution through m, the code chooses an original-cell dimension D
+so that every omitted section has `d−r−2 ≥ m`, and retains every section of
+original cells through D. Adding the omitted pieces cannot change homotopy
+below m. Thus the retained subcomplex is `(m−1)`-connected, and its m-skeleton
+provides the exact augmented cellular chains needed through resolution degree m.
+It need not be contractible. The full level's contractibility certificate is
+still required, and requests beyond the computed resolution degree are rejected.
+The HAP metadata records `levelModel`, `retainedOriginalDimension`,
+`computedCellDimension` and the full level's `certifiedCellDimension`.
+
+Ball sections may have orientation-reversing stabilizers. Their actual even
+stabilizers are passed to HAP. The boundary validator and chain cancellations
+use the orientation characters, including signs from reducing transporter
+cosets. Subdivided sections use the original flag-cell orientations. Geometric
+cells and the reduced chain model remain separate objects.
 
 ## Validation and separation from computation
 
 The HAP integration CI tests `hap_voronoi_complex` and the registered GAP
 provider on discriminants 5 and 12, checking integral homology through degree
 three. These tests are in `test/hap_real_quadratic_sl.jl`.
+`test/real_quadratic_sl_sections.jl` additionally compares coarse, mixed and
+fully subdivided cell models, checks orientation-aware cancellation, and rejects
+requests beyond the certified partial degree. Both run in HAP CI.
 
 Extended optional tests are in `test/real_quadratic_sl.jl`; they are not in the
 default small test suite. They check certificate replay, reject incomplete
