@@ -89,10 +89,14 @@ function validate_comparisons(obj;directory,degree=3,magma_directory=nothing)
         vertices=ascending_vertices(obj.data,obj.certificate.bases,r.orbit,r.sgn)
         @test replay_morse_graph_certificate(link,vertices,r.result)
         @test_throws AssertionError replay_morse_graph_certificate(link,vertices,merge(r.result,(steps=r.result.steps[2:end],)))
-        b=[[copy(x) for x in layer] for layer in obj.L.boundaries]
-        j,g=b[2][1][1];b[2][1][1]=(-j,g)
-        bad=MorseLevelComplex(obj.L.experiment,obj.L.certificate,obj.L.flag_orbits,obj.L.cells,obj.L.stabilizers,b)
-        @test_throws AssertionError validate_level_complex(bad)
+        boundary=obj.L.boundaries[2][1]
+        entry=boundary[1]
+        boundary[1]=(-entry[1],entry[2])
+        try
+            @test_throws AssertionError validate_level_complex(obj.L)
+        finally
+            boundary[1]=entry
+        end
         h=test_homology(obj.K,degree)
         receipt["SL_homology"]=h
         println(label," direct SL homology: ",h);flush(stdout)

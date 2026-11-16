@@ -175,7 +175,7 @@ function validate_level_complex(L)
         b=L.boundaries[k][i]
         L isa MorseLevelComplex && @assert !isempty(b)
         @assert all(t->det(t[2])==1,b)
-        if k==2;@assert sum(sign(j) for (j,g) in b)==0;end
+        if k==2;@assert sum((sign(j) for (j,g) in b);init=0)==0;end
         if k>=3
             coefficients=Dict{Any,Int}()
             for (j,g) in b,(l,h) in L.boundaries[k-1][abs(j)]

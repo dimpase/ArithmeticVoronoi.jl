@@ -23,6 +23,7 @@ function compare_real_sl_magma_tangents(reference,output)
     write(joinpath(output,"compare.m"),"""
     AttachSpec($(literal(joinpath(source,"VMH-spec"))));
     Attach("kernel_orientation.m");
+    procedure RunComparison()
     SetSeed(1);
     V:=VoronoiAlgorithm();
     MinimalClasses(V);
@@ -35,8 +36,11 @@ function compare_real_sl_magma_tangents(reference,output)
       end for;
      end for;
     end for;
+    assert checks gt 0;
     printf "Orientation comparisons passed: %o\\n",checks;
     Write("complete.txt",IntegerToString(checks));
+    end procedure;
+    RunComparison();
     quit;
     """)
     write(joinpath(output,"source.json"),JSON.json(Dict(

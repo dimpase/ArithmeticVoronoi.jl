@@ -250,7 +250,7 @@ For a higher-rank reference, call the runner's Julia function explicitly:
 include("test/prepare_real_sl_magma.jl")
 prepare_real_sl_magma("/path/to/VMH-TotallyRealNumberFields", "/path/to/new-references";
                      cases=((D=5,rank=3),), deduplicate_faces=true, max_cell_dimension=2,
-                     memoize_cell_data=true, linear_tangent_spaces=true)
+                     memoize_cell_data=true, linear_tangent_spaces=true, incremental_boundaries=true)
 include("test/real_quadratic_sl.jl")
 run_real_sl_tests("/path/to/new-test-output"; magma_directory="/path/to/new-references",
                   discriminants=(5,), ranks=(3,), degree=1)
@@ -266,16 +266,35 @@ and returned values are unchanged; cached values are produced by Magma within
 that run. The optional `linear_tangent_spaces=true` computes the same affine
 tangent space as the common kernel of the minimum-vector evaluation equations, using VMH's
 `FindAllPerp`. This avoids enumerating boundary embeddings for orientation queries;
-the subsequent boundary computation still uses VMH's original algorithm. Its
+the subsequent boundary computation uses VMH's original algorithm unless
+`incremental_boundaries=true` is also requested. Its
 orientation signs have been checked against the original calculation for every
 stabilizer element of the full rank-two reference complexes at discriminants 5
-and 12 (318 comparisons). All three options are opt-in. Source changes, including
+and 12 (318 comparisons). All performance options are opt-in. Source changes, including
 the dimension bounds below, are recorded with original and modified hashes.
 The orientation comparison is reproducible with an original prepared reference:
 
 ```sh
 julia --project=. test/compare_real_sl_magma_tangents.jl /path/to/original-references/magma_D5 /path/to/new-orientation-check
 ```
+
+`incremental_boundaries=true` searches the same ordered independent images of
+VMH's chosen minimum-vector basis, testing each linear relation as soon as its
+last nonzero coordinate is assigned. A rejected prefix cannot extend to an
+embedding. The integral-unit test and stabilizer-coset test are unchanged, and
+all vectors still come from Magma. Exact comparisons with the original search
+passed for all 331 adjacent-class pairs in the two rank-two references, and 16
+independently constructed positive-form pairs in rank three. To reproduce them:
+
+```sh
+julia --project=. test/compare_real_sl_magma_boundaries.jl /path/to/original-references/magma_D5 /path/to/new-boundary-check
+# A rank-three prepared reference can test small forms without a full enumeration:
+julia --project=. test/compare_real_sl_magma_boundaries.jl /path/to/original-references/magma_rank3_D5 /path/to/new-rank3-check --configurations-only
+```
+
+The optional Magma runners write their completion marker inside the procedure
+that performs the calculation, so a failed assertion or runtime error cannot
+be followed by a success marker.
 
 `max_cell_dimension=m` explicitly limits the Magma reference to its m-skeleton.
 The comparison requires `m ≥ degree+1`; it never treats the skeleton as a

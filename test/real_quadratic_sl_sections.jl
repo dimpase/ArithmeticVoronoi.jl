@@ -68,3 +68,52 @@ end
     @test SectionRQSL.section_parent_dimension(plan,9,4)==5
     @test SectionRQSL.section_parent_dimension(plan,9,5)==8
 end
+
+@testset "Cancellation with noncentral conjugate stabilizers" begin
+    P=arithmetic_problem(5;rank=3)
+    I=identity_matrix(P.field,P.rank)
+    r=diagonal_matrix(P.field,[-1,-1,1])
+    g=deepcopy(I);g[1,3]=1
+    lower=Any[I,r]
+    upper=Any[g*h*inv(g) for h in lower]
+    @test Set(lower)!=Set(upper)
+    M=SectionRQSL.MorseExperiment((enumeration=(problem=P,),),nothing,nothing,
+        Dict{Any,SectionRQSL.MorseVertex}(),Dict{Any,SectionRQSL.MorseVertex}(),
+        IdDict{Any,Any}(),Dict{Any,Int}(),Vector{BigInt}[],nothing)
+    cell=SectionRQSL.LevelCell(0,I,0,1)
+    L=SectionRQSL.MorseLevelComplex(M,nothing,SectionRQSL.FlagOrbit[],
+        [[cell,cell],[cell]],[[lower,upper],[upper]],
+        [[Tuple{Int,Any}[],Tuple{Int,Any}[]],[Tuple{Int,Any}[(1,g),(-2,I)]]])
+    @test SectionRQSL.validate_level_complex(L)
+    R=SectionRQSL.reduce_level_complex(L)
+    @test length.(R.cells)==[1,0]
+    @test SectionRQSL.validate_level_complex(R)
+end
+
+@testset "Cancellation updates in several chain degrees" begin
+    P=arithmetic_problem(5;rank=3);I=identity_matrix(P.field,P.rank)
+    M=SectionRQSL.MorseExperiment((enumeration=(problem=P,),),nothing,nothing,
+        Dict{Any,SectionRQSL.MorseVertex}(),Dict{Any,SectionRQSL.MorseVertex}(),
+        IdDict{Any,Any}(),Dict{Any,Int}(),Vector{BigInt}[],nothing)
+    cell=SectionRQSL.LevelCell(0,I,0,1)
+    for n in 3:6
+        simplices=[[findall(i->!iszero(mask & (1<<(i-1))),1:n)
+            for mask in reverse(1:(1<<n)-1) if count_ones(mask)==k] for k in 1:n]
+        indices=[Dict(Tuple(s)=>i for (i,s) in enumerate(layer)) for layer in simplices]
+        cells=[[cell for _ in layer] for layer in simplices]
+        stabs=[[Any[I] for _ in layer] for layer in simplices]
+        boundaries=[[k==1 ? Tuple{Int,Any}[] : Tuple{Int,Any}[
+            ((-1)^(j-1)*indices[k-1][Tuple(s[l] for l in eachindex(s) if l!=j)],I)
+            for j in eachindex(s)] for s in layer] for (k,layer) in enumerate(simplices)]
+        for full in (true,false)
+            last=full ? n : n-1
+            L=SectionRQSL.MorseLevelComplex(M,nothing,SectionRQSL.FlagOrbit[],
+                cells[1:last],stabs[1:last],boundaries[1:last])
+            @test SectionRQSL.validate_level_complex(L)
+            R=SectionRQSL.reduce_level_complex(L)
+            expected=zeros(Int,last);expected[1]=1;full || (expected[end]=1)
+            @test length.(R.cells)==expected
+            @test SectionRQSL.validate_level_complex(R)
+        end
+    end
+end
