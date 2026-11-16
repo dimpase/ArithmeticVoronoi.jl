@@ -151,7 +151,7 @@ end
 # rebuilds each removal orbit by a separate depth-first traversal, checks the
 # representative cone, and uses invariant proper colours to ensure that orbit
 # members cannot delete one another's apices or cone edges.
-function replay_orbit_flag_collapse(vertices,edges,generators,colours,steps)
+function replay_orbit_flag_reduction(vertices,edges,generators,colours,steps)
     G=flag_adjacency(vertices,edges)
     @assert all(colours[u]!=colours[v] for (u,v) in edges)
     for permutation in generators
@@ -216,6 +216,31 @@ function replay_orbit_flag_collapse(vertices,edges,generators,colours,steps)
             end
         end
     end
-    @assert length(G)==1
+    G
+end
+
+function replay_orbit_flag_collapse(vertices,edges,generators,colours,steps)
+    residual=replay_orbit_flag_reduction(vertices,edges,generators,colours,steps)
+    @assert length(residual)==1
     true
+end
+
+# The residual graph need not be a comparability graph after edge collapses.
+# Compute its clique dimension directly, pruning by the invariant proper colours.
+# This is an exact bound on the remaining simplicial core, not a homology test.
+function flag_graph_dimension(graph,colours)
+    @assert all(u==v || colours[u]!=colours[v] for (u,neighbours) in graph for v in neighbours)
+    best=Ref(0)
+    function search(candidates,depth)
+        best[]=max(best[],depth)
+        depth+length(candidates)<=best[] && return
+        depth+length(unique(colours[v] for v in candidates))<=best[] && return
+        while !isempty(candidates)
+            v=pop!(candidates)
+            search([w for w in candidates if w in graph[v]],depth+1)
+            depth+length(candidates)<=best[] && return
+        end
+    end
+    search(sort!(collect(keys(graph));by=v->length(graph[v])),0)
+    best[]-1
 end

@@ -1,4 +1,4 @@
-# Algebraic cancellation of isomorphic permutation-module summands.
+# Algebraic cancellation of isomorphic induced orientation-module summands.
 # The unreduced object remains the actual certified contractible cell complex.
 struct ReducedLevelComplex
     experiment::MorseExperiment
@@ -9,7 +9,10 @@ struct ReducedLevelComplex
     boundaries::Any
     generators::Vector{Any}
     cancellation_pairs::Any
+    original::Any
+    original_indices::Vector{Vector{Int}}
 end
+level_orientation(L::ReducedLevelComplex,k,i,g)=level_orientation(L.original,k,L.original_indices[k][i],g)
 function reduce_level_complex(L;progress=false)
     P=L.experiment.complex.enumeration.problem
     active=[trues(length(layer)) for layer in L.cells]
@@ -23,15 +26,15 @@ function reduce_level_complex(L;progress=false)
             matrices=[g*s for s in L.stabilizers[k][i]]
             keys=[AV.matrix_key(AV.encode_matrix(P,h)) for h in matrices]
             j=argmin(keys)
-            (keys[j],matrices[j])
+            (keys[j],matrices[j],level_orientation(L,k,i,L.stabilizers[k][i][j]))
         end
     end
     function simplify(k,terms)
         counts=Dict{Any,Int}();representatives=Dict{Any,Any}()
         for (j,g) in terms
-            key,h=canonical(k,abs(j),g)
+            key,h,orientation=canonical(k,abs(j),g)
             id=(abs(j),key)
-            counts[id]=get(counts,id,0)+sign(j)
+            counts[id]=get(counts,id,0)+sign(j)*orientation
             representatives[id]=h
         end
         result=Tuple{Int,Any}[]
@@ -68,6 +71,8 @@ function reduce_level_complex(L;progress=false)
         b=abs(j);s=sign(j);inverse=inv(g)
         @assert Set(AV.matrix_key(AV.encode_matrix(P,inverse*h*g)) for h in L.stabilizers[k-1][b])==
                 Set(AV.matrix_key(AV.encode_matrix(P,h)) for h in L.stabilizers[k][i])
+        @assert all(level_orientation(L,k,i,h)==level_orientation(L,k-1,b,g*h*inverse)
+                    for h in L.stabilizers[k][i]) "pivot orientation characters are incompatible"
         remainder=[(l,h) for (l,h) in boundaries[k][i] if abs(l)!=b]
         for q in eachindex(boundaries[k])
             q==i && continue
@@ -98,5 +103,5 @@ function reduce_level_complex(L;progress=false)
     result=[[[(sign(j)*remaps[k-1][abs(j)],g) for (j,g) in b] for (i,b) in enumerate(layer) if active[k][i]]
         for (k,layer) in enumerate(boundaries)]
     if progress;println("Reduced level complex: ",length.(cells));flush(stdout);end
-    ReducedLevelComplex(L.experiment,L.certificate,L.flag_orbits,cells,stabs,result,generators,cancellations)
+    ReducedLevelComplex(L.experiment,L.certificate,L.flag_orbits,cells,stabs,result,generators,cancellations,L,findall.(active))
 end

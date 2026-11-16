@@ -150,40 +150,46 @@ function build_level_complex(M,data,certificate;progress=false,max_cell_dimensio
     MorseLevelComplex(M,certificate,orbits,cells,stabilizers,boundaries)
 end
 
+# Flag stabilizers fix every vertex. Coarser cell models can override this
+# character when a stabilizer reverses the orientation of its cell.
+level_orientation(L::MorseLevelComplex,k,i,g)=1
+
 function validate_level_complex(L)
-    P=L.experiment.complex.enumeration.problem
-    I=identity_matrix(P.field,P.rank)
+    P=L.experiment.complex.enumeration.problem;I=identity_matrix(P.field,P.rank)
     centre=iseven(P.rank) ? (I,-I) : (I,)
-    @assert all(layer->all(S->all(z->z in S,centre) && all(g->det(g)==1,S),layer),L.stabilizers)
-    function term_key(k,i,g)
-        minimum(AV.matrix_key(AV.encode_matrix(P,g*s)) for s in L.stabilizers[k][i])
+    for k in eachindex(L.cells),i in eachindex(L.cells[k])
+        S=L.stabilizers[k][i]
+        @assert all(z->z in S,centre) && all(g->det(g)==1,S)
+        k==1 && @assert all(g->level_orientation(L,k,i,g)==1,S)
     end
-    for k in 2:length(L.cells),(i,c) in enumerate(L.cells[k])
+    function add!(coefficients,k,j,g,value)
+        products=[g*s for s in L.stabilizers[k][abs(j)]]
+        keys=[AV.matrix_key(AV.encode_matrix(P,h)) for h in products]
+        chosen=argmin(keys);key=(abs(j),keys[chosen])
+        factor=level_orientation(L,k,abs(j),L.stabilizers[k][abs(j)][chosen])
+        coefficients[key]=get(coefficients,key,0)+sign(j)*factor*value
+    end
+    for k in 2:length(L.cells),i in eachindex(L.cells[k])
         b=L.boundaries[k][i]
         L isa MorseLevelComplex && @assert !isempty(b)
         @assert all(t->det(t[2])==1,b)
-        if k==2
-            @assert sum(sign(j) for (j,g) in b)==0
-        else
+        if k==2;@assert sum(sign(j) for (j,g) in b)==0;end
+        if k>=3
             coefficients=Dict{Any,Int}()
             for (j,g) in b,(l,h) in L.boundaries[k-1][abs(j)]
-                key=(abs(l),term_key(k-2,abs(l),g*h))
-                coefficients[key]=get(coefficients,key,0)+sign(j)*sign(l)
+                add!(coefficients,k-2,l,g*h,sign(j))
             end
             @assert all(iszero,values(coefficients)) "equivariant boundary squared is nonzero"
         end
         expected=Dict{Any,Int}()
-        for (j,g) in b
-            key=(abs(j),term_key(k-1,abs(j),g))
-            expected[key]=get(expected,key,0)+sign(j)
-        end
+        for (j,g) in b;add!(expected,k-1,j,g,1);end
+        filter!(p->last(p)!=0,expected)
         for s in L.stabilizers[k][i]
             actual=Dict{Any,Int}()
-            for (j,g) in b
-                key=(abs(j),term_key(k-1,abs(j),s*g))
-                actual[key]=get(actual,key,0)+sign(j)
-            end
-            @assert actual==expected "boundary is not invariant under its stabilizer"
+            for (j,g) in b;add!(actual,k-1,j,s*g,1);end
+            filter!(p->last(p)!=0,actual)
+            factor=level_orientation(L,k,i,s)
+            @assert actual==Dict(key=>factor*v for (key,v) in expected) "equivariant boundary has incorrect stabilizer action"
         end
     end
     true
@@ -211,11 +217,13 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
     for layer in L.stabilizers,S in layer,g in S;index(g);end
     boundaries=[[[[j,index(g)] for (j,g) in b] for b in layer] for layer in L.boundaries]
     stabs=[[AV.cell_generators(P,S) for S in layer] for layer in L.stabilizers]
+    evens=[[AV.cell_generators(P,[g for g in S if level_orientation(L,k,i,g)==1])
+            for (i,S) in enumerate(layer)] for (k,layer) in enumerate(L.stabilizers)]
     generators=hasproperty(L,:generators) ? L.generators : unique([g for layer in stabs for S in layer for g in S] ∪ [g for layer in L.boundaries for b in layer for (j,g) in b])
     wire(g)=[[BigInt(ZZ(x)) for x in row] for row in AV.matrix_rows(AV.encode_matrix(P,g))]
     data=Dict("dimensions"=>length.(L.cells),"elts"=>wire.(elts),
         "stabilizers"=>[[wire.(S) for S in layer] for layer in stabs],
-        "evenStabilizers"=>[[wire.(S) for S in layer] for layer in stabs],
+        "evenStabilizers"=>[[wire.(S) for S in layer] for layer in evens],
         "boundaries"=>boundaries,"generators"=>wire.(generators),
         "name"=>"SL($(P.rank),O), D=$(P.discriminant), certified determinant-height level complex",
         "discriminant"=>P.discriminant,"rank"=>P.rank,"groupKind"=>"SL")

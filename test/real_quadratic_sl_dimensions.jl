@@ -232,3 +232,28 @@ end
         end
     end
 end
+
+@testset "Partial collapses and residual core dimension" begin
+    edges=[(1,2),(2,3),(3,4),(4,1),(1,5)]
+    colours=[0,1,0,1,2]
+    residual=RQSL.replay_orbit_flag_reduction(1:5,edges,Vector{Int}[],colours,[(5,1)])
+    @test Set(keys(residual))==Set(1:4)
+    @test RQSL.flag_graph_dimension(residual,colours)==1
+    @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:5,edges,Vector{Int}[],colours,[(5,1)])
+    @test_throws AssertionError RQSL.replay_orbit_flag_reduction(1:5,edges,Vector{Int}[],colours,[(1,2)])
+    # Exhaustively compare the clique bound with independent subset enumeration.
+    pairs=[(i,j) for i in 1:5 for j in i+1:5]
+    for mask in 0:(1<<length(pairs))-1
+        edges=[pairs[k] for k in eachindex(pairs) if !iszero(mask & (1<<(k-1)))]
+        graph=RQSL.flag_adjacency(1:5,edges)
+        # Membership is checked against the original edge set, independently
+        # of the branch-and-bound graph traversal.
+        edge_set=Set(edges);expected=0
+        for subset in 1:31
+            vertices=[i for i in 1:5 if !iszero(subset & (1<<(i-1)))]
+            all((i,j) in edge_set for i in vertices for j in vertices if i<j) || continue
+            expected=max(expected,length(vertices)-1)
+        end
+        @test RQSL.flag_graph_dimension(graph,collect(1:5))==expected
+    end
+end
