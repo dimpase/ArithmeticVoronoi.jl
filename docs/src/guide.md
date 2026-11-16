@@ -18,17 +18,16 @@ Use Julia 1.10 or later. CI tests the LTS release and the current stable
 release, with dependencies resolved from their compatibility bounds.
 The original mathematical comparisons used Julia 1.13.2, OSCAR 1.8.2 and
 Hecke 0.39.22; those are recorded versions, not installation pins.
-Until registration in General is merged, install with:
+Install from the General registry:
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoi.jl.git")
+Pkg.add("ArithmeticVoronoi")
 Pkg.add("Oscar") # for the group operations in this guide
 using ArithmeticVoronoi
 ```
 
-After registration use `Pkg.add("ArithmeticVoronoi")` instead. Computations
-write under `results/` in your current working directory unless you provide
+Computations write under `results/` in your current working directory unless you provide
 `directory=...`; the installed package directory is not used for output.
 
 For development, scripts and optional C++ comparisons, use a checkout.
