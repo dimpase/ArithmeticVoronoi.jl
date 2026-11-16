@@ -17,7 +17,24 @@ function deduplicate_vmh_faces!(path)
     write(path,text)
 end
 
-function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),deduplicate_faces=false)
+# A reference for H_k needs cells only through degree k+1. Truncating the
+# two dimension loops leaves all requested cells and boundary computations
+# unchanged; this option does not assert contractibility of the skeleton.
+function truncate_vmh_dimensions!(path,dimension)
+    text=read(path,String)
+    for condition in ("dimsym-codim ge 1", "dimsym-codim ge 0")
+        original="while $condition do"
+        count(original,text)==1 || error("VMH MinClass.m changed; review dimension truncation")
+        text=replace(text,original=>"while $condition and codim le $dimension do")
+    end
+    write(path,text)
+end
+
+function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
+        deduplicate_faces=false,max_cell_dimension=nothing)
+    isnothing(max_cell_dimension) ||
+        (max_cell_dimension isa Integer && !(max_cell_dimension isa Bool) && max_cell_dimension>=2) ||
+        throw(ArgumentError("max_cell_dimension must be an integer at least two"))
     source,output=abspath(source),abspath(output)
     isfile(joinpath(source,"Magma","VMH-spec")) || error("VMH source directory not found")
     revision=readchomp(`git -C $source rev-parse HEAD`)
@@ -33,6 +50,7 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
         class_source=joinpath(target,"Magma","ReQuad","Voronoi","MinClass.m")
         original_hash=bytes2hex(sha256(read(class_source)))
         deduplicate_faces && deduplicate_vmh_faces!(class_source)
+        isnothing(max_cell_dimension) || truncate_vmh_dimensions!(class_source,max_cell_dimension)
         write(joinpath(target,"Magma","BasicData.m"),
             "K:=QuadraticField($d); n:=$n; V:=KMatrixSpace(K,n,1); L:=[IntegralBasis(K)[i]*V.j: i in [1..Degree(K)],j in [1..n]];\n")
         write(joinpath(target,"compute.m"),"""
@@ -44,7 +62,7 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
         quit;
         """)
         write(joinpath(target,"source.json"),JSON.json(Dict("repository"=>source,"revision"=>revision,"discriminant"=>D,"rank"=>n,
-            "exact_face_deduplication"=>deduplicate_faces,"original_MinClass_sha256"=>original_hash,
+            "max_cell_dimension"=>max_cell_dimension,"exact_face_deduplication"=>deduplicate_faces,"original_MinClass_sha256"=>original_hash,
             "used_MinClass_sha256"=>bytes2hex(sha256(read(class_source))))))
         open(joinpath(target,"magma.log"),"w") do io
             run(pipeline(Cmd(`magma -b compute.m`;dir=target);stdout=io,stderr=io))

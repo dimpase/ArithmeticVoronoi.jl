@@ -124,3 +124,41 @@ end
     @test product.shift==120
     @test product.key==RQSL.morse_vertex_key(v.dim,ArithmeticVoronoi.cell_image(P,factor^2,M.complex.cells[1][1].vectors))
 end
+
+@testset "exact regular-level selection" begin
+    # Sweep predictions agree with an independent direct count in every
+    # interval between critical heights, including translated edge endpoints.
+    bases=BigInt[1,3,7].//10
+    edges=[(1,2,0,2),(2,3,1,1),(3,1,-1,2)]
+    offset,before,after=RQSL.least_vertex_level(bases,edges)
+    function count_at(t)
+        sum(edges) do (i,j,q,w)
+            lo,hi=minmax(bases[i],bases[j]+q)
+            w*count(k->lo+k<t<hi+k,-5:5)
+        end
+    end
+    candidates=[big(0)//1,1//5,1//2,17//20]
+    @test before==count_at(0)
+    @test after==count_at(offset)==minimum(count_at,candidates)
+    @test all(!isinteger,bases .- offset)
+    @test [a-b for a in bases for b in bases]==[a-b for a in bases.-offset for b in bases.-offset]
+    P=arithmetic_problem(5)
+    M=RQSL.morse_experiment(voronoi_complex(enumerate_perfect_forms(P;backend=:native));maximal_flags=false)
+    data,_,faces=RQSL.morse_link_graphs(M)
+    certificate=RQSL.certify_morse_graphs(data)
+    L=RQSL.build_level_complex(M,data,certificate;max_cell_dimension=0,faces)
+    @test length(only(L.cells))==data["level_selection"]["zero_cells_after"]
+end
+
+@testset "dimension-preserving symmetry collapses" begin
+    edges=[(1,2),(2,3),(3,4),(4,1),(1,5),(2,5),(3,5),(4,5)]
+    colours=[0,1,0,1,2]
+    generators=[[3,4,1,2,5]]
+    result=RQSL.orbit_collapse_flag_graph(1:5,edges,generators,colours)
+    @test result.passed
+    @test RQSL.replay_flag_collapse(1:5,edges,result.steps)
+    @test_throws AssertionError RQSL.orbit_collapse_flag_graph(1:5,edges,[[2,3,4,1,5]],colours)
+    # An orbit of two cone edges expands to ordinary valid removals.
+    triangles=[(1,2),(1,3),(2,3),(4,5),(4,3),(5,3)]
+    @test RQSL.replay_flag_collapse(1:5,triangles,[(1,2,3),(4,5,3),(1,3),(2,3),(4,3),(5,3)])
+end

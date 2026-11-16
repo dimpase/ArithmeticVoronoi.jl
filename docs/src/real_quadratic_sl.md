@@ -107,7 +107,11 @@ and GLₙ(O) acts by integer translations on height.
 The rational b(c) are proposed from approximate determinant heights of invariant
 interior forms, with small rational perturbations. Approximation is used only to
 choose a candidate. All subsequent comparisons, unit exponents and certificates
-are exact.
+are exact. An exact sweep over the edge-flag orbits then translates all heights
+by a common rational constant to minimise the number of SL vertex orbits in the
+regular level. This preserves every ascending/descending comparison. The chosen
+offset and before/after vertex counts are recorded in the construction metadata.
+Flag enumeration skips branches whose entire height interval misses the level.
 
 The construction enumerates the entire incidence poset at each barycentric
 vertex orbit. Comparable cells form edges; chains form simplices, so each link
@@ -119,8 +123,13 @@ removal has a cone link, checked by exact neighbour-set inclusion, and expands
 into elementary simplicial collapses. An independent replay checks every cone
 condition and requires exactly one vertex to remain. See
 [Boissonnat–Pritam, *Edge Collapse and Persistence of Flag Complexes*](https://doi.org/10.4230/LIPIcs.SoCG.2020.19).
-No numerical topology test is substituted for the certificate. Failure to
-produce a witness aborts construction.
+The search can remove entire orbits under a cell stabiliser. Cell dimensions
+are invariant colours: a removed vertex has a different colour from its apex,
+and a removed edge uses two colours different from its apex. Thus members of
+a removal orbit cannot delete the cone data needed by another member. Every
+orbit removal is expanded into individual steps and checked again by the same
+independent replay. No numerical topology test is substituted for the certificate.
+Failure to produce a witness aborts construction.
 
 By the Morse lemma and Corollary 2.6 of
 [Bestvina–Brady, *Morse theory and finiteness properties of groups*, §2](https://people.math.osu.edu/davis.12/courses/8800-20/Bestvina-Brady.pdf),
@@ -178,7 +187,7 @@ For a higher-rank reference, call the runner's Julia function explicitly:
 ```julia
 include("test/prepare_real_sl_magma.jl")
 prepare_real_sl_magma("/path/to/VMH-TotallyRealNumberFields", "/path/to/new-references";
-                     cases=((D=5,rank=3),), deduplicate_faces=true)
+                     cases=((D=5,rank=3),), deduplicate_faces=true, max_cell_dimension=2)
 include("test/real_quadratic_sl.jl")
 run_real_sl_tests("/path/to/new-test-output"; magma_directory="/path/to/new-references",
                   discriminants=(5,), ranks=(3,), degree=1)
@@ -189,6 +198,11 @@ copied VMH reference source: it avoids expanding different facet tuples with
 exactly the same minimum-vector intersection. It supplies no Julia cells or
 answers to Magma. The original and patched source hashes are saved in
 `source.json`. Omit the option to use the pristine VMH algorithm.
+
+`max_cell_dimension=m` explicitly limits the Magma reference to its m-skeleton.
+The comparison requires `m ≥ degree+1`; it never treats the skeleton as a
+contractible full complex. This skips unneeded higher-dimensional classes and
+is recorded with the reference source hashes. Omit it to compute all dimensions.
 
 These are expensive optional comparisons, not the default CI suite.
 `test/real_quadratic_sl_dimensions.jl` checks determinant-height translation,

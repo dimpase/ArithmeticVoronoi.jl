@@ -3,6 +3,7 @@ module RealQuadraticSL
 # The certified real-quadratic level construction used by the HAP provider.
 include("morse_links.jl")
 include("flag_links.jl")
+include("orbit_links.jl")
 include("level_complex.jl")
 include("reduce_level.jl")
 
@@ -80,7 +81,7 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
             "discriminant"=>D,"rank"=>P.rank,"actual_SL_complex"=>true,
             "certified_dimension"=>length(C.cells)-2,"computed_dimension"=>length(L.cells)-1,"cell_orbits"=>length.(L.cells),
             "chain_module_orbits"=>length.(reduced.cells),"timings"=>timings,
-            "precomputed_data_used"=>false);pretty=4))
+            "level_selection"=>get(data,"level_selection",nothing),"precomputed_data_used"=>false);pretty=4))
     end
     (;geometric=L,chain=reduced,hap=K,timings,certificate,M,data,links,L,reduced,K)
 end

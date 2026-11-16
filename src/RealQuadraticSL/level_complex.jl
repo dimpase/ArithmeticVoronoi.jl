@@ -24,7 +24,13 @@ function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex
     orbits=FlagOrbit[]
     lookup=[[Dict{Any,Tuple{Int,Any}}() for c in layer] for layer in C.cells]
     I=identity_matrix(P.field,P.rank)
-    meets_level(flag)=isnothing(height) || floor(BigInt,-maximum(height,flag))+1<=ceil(BigInt,-minimum(height,flag))-1
+    crosses(lo,hi)=floor(BigInt,-hi)+1<=ceil(BigInt,-lo)-1
+    meets_level(flag)=isnothing(height) || crosses(minimum(height,flag),maximum(height,flag))
+    bounds=isnothing(height) ? nothing : [[begin
+        lo=hi=height(M.vertices[k][i])
+        for v in faces[k][i];h=height(v);lo=min(lo,h);hi=max(hi,h);end
+        (lo,hi)
+    end for i in eachindex(layer)] for (k,layer) in enumerate(C.cells)]
     for (k,layer) in enumerate(C.cells),i in eachindex(layer)
         table=lookup[k][i]
         function descend(flag,S)
@@ -40,6 +46,14 @@ function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex
             length(flag)>=max_length && return
             v=first(flag)
             v.dim==0 && return
+            if !isnothing(bounds)
+                lo,hi=bounds[v.dim+1][v.orbit]
+                lo=min(minimum(height,flag),lo+v.shift)
+                hi=max(maximum(height,flag),hi+v.shift)
+                # Every extension lies among these faces. If their entire
+                # height interval misses the level, no subflag can meet it.
+                crosses(lo,hi) || return
+            end
             candidates=[morse_act(M,v.translate,w) for w in faces[v.dim+1][v.orbit]]
             seen=Set{Any}()
             scalar=all(s->s==I || s==-I,S)
@@ -73,7 +87,10 @@ function build_level_complex(M,data,certificate;progress=false,max_cell_dimensio
     @assert certificate.passed
     C=M.complex;P=C.enumeration.problem
     ids=[[sum(length,C.cells[1:k-1];init=0)+i for i in eachindex(layer)] for (k,layer) in enumerate(C.cells)]
-    height(v)=certificate.bases[ids[v.dim+1][v.orbit]]+v.shift
+    heights=Dict{NTuple{3,Int},Rational{BigInt}}()
+    height(v)=get!(heights,(v.dim,v.orbit,v.shift)) do
+        certificate.bases[ids[v.dim+1][v.orbit]]+v.shift
+    end
     top=length(C.cells)-2
     if !isnothing(max_cell_dimension)
         max_cell_dimension isa Integer && !(max_cell_dimension isa Bool) && max_cell_dimension>=0 ||

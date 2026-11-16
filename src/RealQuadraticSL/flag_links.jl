@@ -31,7 +31,34 @@ end
 struct MorseLinkGraphs <: AbstractVector{Dict{String,Any}}
     links::Vector{Dict{Any,MorseVertex}}
     ids::Vector{Vector{Int}}
+    experiment::Union{Nothing,MorseExperiment}
 end
+MorseLinkGraphs(links,ids)=MorseLinkGraphs(links,ids,nothing)
+
+function morse_link_symmetries(M,k,i,vertices)
+    P=M.complex.enumeration.problem
+    I=identity_matrix(P.field,P.rank)
+    generators=AV.cell_generators(P,M.complex.stabilizers[k][i])
+    filter!(g->g!=I && g!=-I,generators)
+    isempty(generators) && return Vector{Int}[]
+    positions=Dict(v.key=>j for (j,v) in enumerate(vertices))
+    permutations=Vector{Int}[]
+    for g in generators
+        A=AV.encode_matrix(P,g)
+        rows=Tuple(Tuple(compact_integer(BigInt(ZZ(A[a,b]))) for b in 1:ncols(A)) for a in 1:nrows(A))
+        small=all(row->all(x->x isa Int,row),rows)
+        rays=Dict{Any,Any}()
+        # A ray occurs in many cells. Transform each distinct ray once.
+        permutation=[positions[(v.dim,Tuple(sort!([get!(rays,ray) do
+            morse_ray_image(rows,small,ray)
+        end for ray in v.key[2]])))] for v in vertices]
+        @assert all(vertices[permutation[j]].orbit==v.orbit &&
+                    vertices[permutation[j]].shift==v.shift for (j,v) in enumerate(vertices))
+        push!(permutations,permutation)
+    end
+    permutations
+end
+
 Base.size(graphs::MorseLinkGraphs)=(length(graphs.links),)
 Base.IndexStyle(::Type{MorseLinkGraphs})=IndexLinear()
 function Base.getindex(graphs::MorseLinkGraphs,i::Int)
@@ -54,7 +81,14 @@ function Base.getindex(graphs::MorseLinkGraphs,i::Int)
             vertices[a].dim<v.dim && push!(edges,(a,b))
         end
     end
-    Dict{String,Any}("vertices"=>[Dict("orbit"=>graphs.ids[v.dim+1][v.orbit],"shift"=>v.shift) for v in vertices],"edges"=>edges)
+    link=Dict{String,Any}("vertices"=>[Dict("orbit"=>graphs.ids[v.dim+1][v.orbit],"shift"=>v.shift) for v in vertices],"edges"=>edges)
+    if !isnothing(graphs.experiment)
+        k=findfirst(layer->!isempty(layer) && first(layer)<=i<=last(layer),graphs.ids)
+        index=i-first(graphs.ids[k])+1
+        link["colours"]=[v.dim for v in vertices]
+        link["symmetry_generators"]=morse_link_symmetries(graphs.experiment,k,index,vertices)
+    end
+    link
 end
 
 function morse_link_graphs(M;progress=false)
@@ -67,6 +101,8 @@ function morse_link_graphs(M;progress=false)
     actions=[[collect(values(Dict(min(AV.matrix_key(AV.encode_matrix(P,s)),
         AV.matrix_key(AV.encode_matrix(P,-s)))=>s for s in S))) for S in layer] for layer in C.stabilizers]
     bases=Float64[]
+    edge_orbits=NTuple{4,Int}[]
+    negative_actions=[[[det(g)==-1 for g in S] for S in layer] for layer in actions]
     last_report=time()
     for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
         top=M.vertices[k][i]
@@ -77,7 +113,12 @@ function morse_link_graphs(M;progress=false)
             v.key in seen && continue
             # Equivalent incidences under Stab(top) give the same upper link
             # after expansion by Stab(v). Normalize only one from each orbit.
-            for s in actions[k][i];push!(seen,morse_act(M,s,v).key);end
+            flips=isodd(P.rank) # -I fixes every flag and has determinant -1 in odd rank.
+            for (s,negative) in zip(actions[k][i],negative_actions[k][i])
+                key=morse_act(M,s,v).key;push!(seen,key)
+                negative && key==v.key && (flips=true)
+            end
+            push!(edge_orbits,(ids[k][i],ids[v.dim+1][v.orbit],v.shift,flips ? 1 : 2))
             upper=links[ids[v.dim+1][v.orbit]]
             inverse=inv(v.translate)
             for s in actions[v.dim+1][v.orbit]
@@ -95,7 +136,7 @@ function morse_link_graphs(M;progress=false)
     end
     (Dict("D"=>P.discriminant,"rank"=>P.rank,"link_model"=>"flag_graph",
         "base_heights"=>bases,"orbit_dimensions"=>[k-1 for (k,l) in enumerate(C.cells) for c in l],
-        "links"=>MorseLinkGraphs(links,ids)),links,faces)
+        "flag_edge_orbits"=>edge_orbits,"links"=>MorseLinkGraphs(links,ids,M)),links,faces)
 end
 
 function flag_adjacency(vertices,edges)
@@ -193,10 +234,43 @@ function replay_flag_collapse(vertices,edges,steps)
     true
 end
 
+# Translating every height by the same rational number preserves all link
+# comparisons. Choose a regular level with the fewest SL vertex orbits. Each
+# GL edge-flag orbit contributes its determinant-sign multiplicity whenever
+# an integer translate crosses the level; changes occur only at the endpoint
+# heights modulo one. This is an exact sweep, with no field-specific choices.
+function least_vertex_level(bases,edges)
+    events=zeros(BigInt,length(bases));count=big(0)
+    for (top,lower,shift,weight) in edges
+        a=bases[top];b=bases[lower]+shift
+        low,high=a<b ? (top,lower) : (lower,top)
+        lo,hi=minmax(a,b)
+        count+=weight*(floor(BigInt,-lo)-floor(BigInt,-hi))
+        events[low]+=weight;events[high]-=weight
+    end
+    before=count;best=count;offset=big(0)//big(1)
+    fractions=mod.(bases,1);order=sortperm(fractions)
+    for (j,i) in enumerate(order)
+        count+=events[i]
+        if count<best
+            next=j==length(order) ? one(fractions[i]) : fractions[order[j+1]]
+            offset=(fractions[i]+next)/2;best=count
+        end
+    end
+    @assert count==before
+    offset,before,best
+end
+
 function rational_morse_heights(data;bases=nothing)
     if isnothing(bases)
         scale=max(big(1_000_000),big(length(data["base_heights"]))+1)
         bases=[(round(BigInt,x*1000)*scale+i)//(1000scale) for (i,x) in enumerate(data["base_heights"])]
+        if haskey(data,"flag_edge_orbits")
+            offset,before,after=least_vertex_level(bases,data["flag_edge_orbits"])
+            bases=bases .- offset
+            data["level_selection"]=Dict("offset"=>string(offset),
+                "zero_cells_before"=>before,"zero_cells_after"=>after)
+        end
     end
     @assert length(data["links"])==length(bases) "incomplete collection of vertex links"
     @assert length(unique(mod.(bases,1)))==length(bases)
@@ -227,7 +301,16 @@ function certify_morse_graphs(data;bases=nothing,progress=false)
                 println("Certifying Morse link ",i,", direction ",sgn,": ",length(vertices)," vertices");flush(stdout)
                 last_report=time()
             end
-            result=collapse_flag_graph(vertices,link["edges"];progress)
+            result=if haskey(link,"symmetry_generators")
+                orbit_collapse_flag_graph(vertices,link["edges"],link["symmetry_generators"],link["colours"];progress)
+            else
+                collapse_flag_graph(vertices,link["edges"];progress)
+            end
+            if !result.passed && haskey(link,"symmetry_generators")
+                # A different greedy order can succeed where another stops.
+                # Both searches use fresh graph data and require exact replay.
+                result=collapse_flag_graph(vertices,link["edges"];progress)
+            end
             @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
             @assert replay_flag_collapse(vertices,link["edges"],result.steps)
             push!(reports,(;orbit=i,sgn,result,graph_vertices,graph_edges))
