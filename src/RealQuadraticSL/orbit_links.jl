@@ -1,9 +1,8 @@
-# A cell stabilizer preserves the dimension colours of its link. A dominated
-# vertex and its apex have different colours; a dominated edge and its apex
-# have three different colours. Consequently deleting one orbit member cannot
-# delete an apex or a cone edge needed by another member of the same orbit.
-# Expand each orbit removal into ordinary steps, checking every cone condition;
-# the separate replay in flag_links.jl checks the final witness independently.
+# A stabilizer preserves the proper dimension colours of its link graph.
+# Members of a vertex or edge orbit cannot belong to a common simplex unless
+# identical. Removing their cone stars therefore commutes. Record one checked
+# representative per orbit, then independently validate the graph action and
+# replay complete orbits. This avoids storing millions of equivalent steps.
 function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=false)
     graph=flag_adjacency(vertices,edges)
     @assert all(colours[u]!=colours[v] for (u,v) in edges)
@@ -31,7 +30,8 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
         end
         queue
     end
-    steps=Union{NTuple{2,Int},NTuple{3,Int}}[]
+    orbit_steps=Union{NTuple{2,Int},NTuple{3,Int}}[]
+    expanded_steps=0
     pending=collect(eachindex(reps))
     degrees=Dict{Int,Int}();buckets=Dict{Int,Set{Int}}();minimum_degree=Ref(typemax(Int))
     initialized=false
@@ -58,10 +58,11 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
                     issubset(graph[v],graph[w]) || continue
                     @assert colours[v]!=colours[w]
                     pairs=images((v,w));@assert length(pairs)==length(members[o])
+                    push!(orbit_steps,(v,w))
                     affected=BitSet()
                     for (x,y) in pairs
-                        @assert haskey(graph,x) && haskey(graph,y) && issubset(graph[x],graph[y])
-                        push!(steps,(x,y))
+                        @assert haskey(graph,x) && haskey(graph,y) && y in graph[x]
+                        expanded_steps+=1
                         for u in graph[x]
                             u==x && continue
                             push!(affected,orbit[u]);delete!(graph[u],x)
@@ -73,7 +74,7 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
                     break
                 end
                 if progress && time()-last_report>=10
-                    println("Orbit collapse: ",length(graph)," vertices; ",length(steps)," steps");flush(stdout);last_report=time()
+                    println("Orbit collapse: ",length(graph)," vertices; ",expanded_steps," steps");flush(stdout);last_report=time()
                 end
             end
             pending=collect(next)
@@ -93,17 +94,72 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
             isnothing(w) && continue
             apex=candidates[w]
             @assert length(unique((colours[u],colours[v],colours[apex])))==3
+            push!(orbit_steps,(u,v,apex))
             for (x,y,z) in images((u,v,apex))
                 @assert y in graph[x] && z in graph[x] && z in graph[y]
-                @assert all(t->t==x || t==y || t in graph[z],intersect(graph[x],graph[y]))
-                push!(steps,(x,y,z));delete!(graph[x],y);delete!(graph[y],x)
+                expanded_steps+=1;delete!(graph[x],y);delete!(graph[y],x)
             end
             push!(next,o,orbit[v]);enqueue(o);enqueue(orbit[v])
         end
         pending=collect(next)
         if progress && time()-last_report>=10
-            println("Orbit collapse: ",length(graph)," vertices; ",length(steps)," steps");flush(stdout);last_report=time()
+            println("Orbit collapse: ",length(graph)," vertices; ",expanded_steps," steps");flush(stdout);last_report=time()
         end
     end
-    (;passed=length(graph)==1,steps,residual=sort!(collect(keys(graph))))
+    (;passed=length(graph)==1,steps=orbit_steps,expanded_steps,model=:orbit,residual=sort!(collect(keys(graph))))
+end
+
+# Replay validates the proposed group action against the graph itself. It
+# rebuilds each removal orbit by a separate depth-first traversal, checks the
+# representative cone, and uses invariant proper colours to ensure that orbit
+# members cannot delete one another's apices or cone edges.
+function replay_orbit_flag_collapse(vertices,edges,generators,colours,steps)
+    G=flag_adjacency(vertices,edges)
+    @assert all(colours[u]!=colours[v] for (u,v) in edges)
+    for permutation in generators
+        @assert sort(permutation)==collect(eachindex(colours))
+        @assert all(colours[permutation[v]]==colours[v] for v in eachindex(colours))
+        @assert all(haskey(G,permutation[v]) for v in keys(G))
+        for (u,neighbours) in G
+            image=G[permutation[u]]
+            @assert all(permutation[v] in image for v in neighbours) "not a graph automorphism"
+        end
+    end
+    for entry in steps
+        step=Tuple(Int.(entry))
+        @assert length(step) in (2,3)
+        @assert length(unique(colours[v] for v in step))==length(step)
+        @assert all(v->haskey(G,v),step)
+        if length(step)==2
+            v,w=step
+            @assert w in G[v] && all(x->x in G[w],G[v])
+        else
+            u,v,w=step
+            @assert v in G[u] && w in G[u] && w in G[v]
+            @assert all(x->x==u || x==v || x in G[w],intersect(G[u],G[v]))
+        end
+        stack=[step];seen=Set{Tuple}();images=Tuple[]
+        while !isempty(stack)
+            item=pop!(stack);face=item[1:end-1]
+            face in seen && continue
+            push!(seen,face);push!(images,item)
+            for permutation in generators
+                push!(stack,map(v->permutation[v],item))
+            end
+        end
+        if length(step)==2
+            for (v,w) in images
+                @assert haskey(G,v) && haskey(G,w) && w in G[v]
+                for x in G[v];x==v || delete!(G[x],v);end
+                delete!(G,v)
+            end
+        else
+            for (u,v,w) in images
+                @assert v in G[u] && w in G[u] && w in G[v]
+                delete!(G[u],v);delete!(G[v],u)
+            end
+        end
+    end
+    @assert length(G)==1
+    true
 end

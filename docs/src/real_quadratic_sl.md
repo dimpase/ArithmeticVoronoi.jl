@@ -127,8 +127,14 @@ The search can remove entire orbits under a cell stabiliser. Cell dimensions
 are invariant colours: a removed vertex has a different colour from its apex,
 and a removed edge uses two colours different from its apex. Thus members of
 a removal orbit cannot delete the cone data needed by another member. Every
-orbit removal is expanded into individual steps and checked again by the same
-independent replay. No numerical topology test is substituted for the certificate.
+orbit removal is recorded once. An independent replay verifies that the proposed
+permutations are colour-preserving graph automorphisms, checks the representative
+cone, and reconstructs its complete removal orbit. Proper dimension colours ensure
+that orbit members cannot remove one another's apices or cone edges. The certificate
+therefore describes the same elementary collapses without listing every equivalent
+step. Tests also expand these compact witnesses and replay individual removals.
+Saved certificates carry a format version and distinguish orbit steps from ordinary
+graph steps. No numerical topology test is substituted for the certificate.
 Failure to produce a witness aborts construction.
 
 By the Morse lemma and Corollary 2.6 of

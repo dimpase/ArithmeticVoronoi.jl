@@ -156,7 +156,27 @@ end
     generators=[[3,4,1,2,5]]
     result=RQSL.orbit_collapse_flag_graph(1:5,edges,generators,colours)
     @test result.passed
-    @test RQSL.replay_flag_collapse(1:5,edges,result.steps)
+    @test RQSL.replay_orbit_flag_collapse(1:5,edges,generators,colours,result.steps)
+    @test result.expanded_steps>length(result.steps)
+    saved=JSON.parse(JSON.json(result.steps))
+    @test RQSL.replay_orbit_flag_collapse(1:5,edges,generators,colours,saved)
+    @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:5,edges,generators,colours,result.steps[2:end])
+    # Independently expand each orbit into individually checked graph steps.
+    expanded=Tuple[]
+    for step in result.steps
+        queue=[step];seen=Set([step[1:end-1]])
+        for entry in queue,g in generators
+            next=map(v->g[v],entry);face=next[1:end-1]
+            if !(face in seen);push!(seen,face);push!(queue,next);end
+        end
+        append!(expanded,queue)
+    end
+    @test RQSL.replay_flag_collapse(1:5,edges,expanded)
+    # Proper colours alone are insufficient: this permutation is not a graph
+    # automorphism, and the independent replay must reject it.
+    @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:5,[(1,2),(2,3),(3,4),(4,5)],
+        [[3,2,1,4,5]],[0,1,0,1,2],Tuple[])
+    @test_throws ArgumentError RQSL.replay_morse_graph_certificate(Dict(),Int[],(model=:unknown,steps=Tuple[]))
     @test_throws AssertionError RQSL.orbit_collapse_flag_graph(1:5,edges,[[2,3,4,1,5]],colours)
     # An orbit of two cone edges expands to ordinary valid removals.
     triangles=[(1,2),(1,3),(2,3),(4,5),(4,3),(5,3)]

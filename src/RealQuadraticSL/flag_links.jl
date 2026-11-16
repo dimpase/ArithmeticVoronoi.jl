@@ -205,7 +205,7 @@ function collapse_flag_graph(vertices,edges;progress=false)
             last_report=time()
         end
     end
-    (;passed=length(graph)==1,steps,residual=sort!(collect(keys(graph))))
+    (;passed=length(graph)==1,steps,model=:graph,expanded_steps=length(steps),residual=sort!(collect(keys(graph))))
 end
 
 # Replay checks every cone condition afresh, independently of the search.
@@ -312,7 +312,7 @@ function certify_morse_graphs(data;bases=nothing,progress=false)
                 result=collapse_flag_graph(vertices,link["edges"];progress)
             end
             @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
-            @assert replay_flag_collapse(vertices,link["edges"],result.steps)
+            @assert replay_morse_graph_certificate(link,vertices,result)
             push!(reports,(;orbit=i,sgn,result,graph_vertices,graph_edges))
         end
         if progress && (i%100==0 || i==length(data["links"]) || time()-last_report>=10)
@@ -321,4 +321,15 @@ function certify_morse_graphs(data;bases=nothing,progress=false)
         end
     end
     (;passed=true,bases,reports)
+end
+
+# Dispatch on the recorded format, including after a plain-search fallback.
+function replay_morse_graph_certificate(link,vertices,result)
+    if result.model===:orbit
+        replay_orbit_flag_collapse(vertices,link["edges"],link["symmetry_generators"],link["colours"],result.steps)
+    elseif result.model===:graph
+        replay_flag_collapse(vertices,link["edges"],result.steps)
+    else
+        throw(ArgumentError("unknown graph-collapse certificate model $(result.model)"))
+    end
 end

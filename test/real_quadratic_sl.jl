@@ -1,7 +1,7 @@
 using ArithmeticVoronoi, Oscar, JSON, Test, SHA
 include(joinpath(@__DIR__,"..","experimental","RealQuadraticSL","RealQuadraticSL.jl"))
 using .RealQuadraticSL
-using .RealQuadraticSL: validate_level_complex, replay_flag_collapse, ascending_vertices, MorseLevelComplex
+using .RealQuadraticSL: validate_level_complex, replay_morse_graph_certificate, ascending_vertices, MorseLevelComplex
 const AV=ArithmeticVoronoi
 import Oscar:GAP
 function test_homology(K,degree)
@@ -87,8 +87,8 @@ function validate_comparisons(obj;directory,degree=3,magma_directory=nothing)
         r=first(x for x in obj.certificate.reports if !isempty(x.result.steps))
         link=obj.data["links"][r.orbit]
         vertices=ascending_vertices(obj.data,obj.certificate.bases,r.orbit,r.sgn)
-        @test replay_flag_collapse(vertices,link["edges"],r.result.steps)
-        @test_throws AssertionError replay_flag_collapse(vertices,link["edges"],r.result.steps[2:end])
+        @test replay_morse_graph_certificate(link,vertices,r.result)
+        @test_throws AssertionError replay_morse_graph_certificate(link,vertices,merge(r.result,(steps=r.result.steps[2:end],)))
         b=[[copy(x) for x in layer] for layer in obj.L.boundaries]
         j,g=b[2][1][1];b[2][1][1]=(-j,g)
         bad=MorseLevelComplex(obj.L.experiment,obj.L.certificate,obj.L.flag_orbits,obj.L.cells,obj.L.stabilizers,b)

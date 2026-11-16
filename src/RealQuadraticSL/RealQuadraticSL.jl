@@ -71,9 +71,10 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
         open(joinpath(certificate_directory,"links.json"),"w") do io
             JSON.json(io,data)
         end
-        witness=Dict("discriminant"=>D,"rank"=>P.rank,"link_model"=>"flag_graph","base_heights"=>string.(certificate.bases),
+        witness=Dict("discriminant"=>D,"rank"=>P.rank,"link_model"=>"flag_graph","format_version"=>2,"base_heights"=>string.(certificate.bases),
             "links"=>[Dict("orbit"=>r.orbit,"direction"=>r.sgn,
-                "graph_collapse_steps"=>r.result.steps) for r in certificate.reports])
+                "model"=>String(r.result.model),"collapse_steps"=>r.result.steps,
+                "expanded_steps"=>r.result.expanded_steps) for r in certificate.reports])
         open(joinpath(certificate_directory,"collapse_certificate.json"),"w") do io
             JSON.json(io,witness)
         end
