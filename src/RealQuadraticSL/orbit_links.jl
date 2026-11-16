@@ -1,3 +1,15 @@
+# In a properly coloured graph, a cone apex cannot share its colour with
+# another vertex of the link. This necessary condition leaves at most one
+# candidate per cell dimension, even when a common neighbourhood is huge.
+function unique_colour_candidates(vertices,colours)
+    singletons=Dict{Int,Int}()
+    for v in vertices
+        c=colours[v]
+        singletons[c]=haskey(singletons,c) ? 0 : v
+    end
+    [v for v in values(singletons) if v!=0]
+end
+
 # Proper dimension colours are invariant under the stabilizer. Two distinct
 # members of a vertex or edge orbit cannot occur in a common simplex. Their
 # removals therefore commute: deleting one cannot change the link of another.
@@ -55,7 +67,7 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
             next=BitSet()
             for o in pending
                 v=reps[o];haskey(graph,v) || continue
-                for w in sort!(collect(graph[v]);by=w->(-length(graph[w]),w))
+                for w in sort!(unique_colour_candidates(graph[v],colours);by=w->(-length(graph[w]),w))
                     w==v && continue
                     issubset(graph[v],graph[w]) || continue
                     @assert colours[v]!=colours[w]
@@ -115,7 +127,7 @@ function orbit_collapse_flag_graph(vertices,edges,generators,colours;progress=fa
             (v==u || !(v in graph[u])) && continue
             common=length(graph[u])<length(graph[v]) ? intersect(graph[u],graph[v]) : intersect(graph[v],graph[u])
             delete!(common,u);delete!(common,v)
-            candidates=sort!(collect(common);by=w->(-length(graph[w]),w))
+            candidates=sort!(unique_colour_candidates(common,colours);by=w->(-length(graph[w]),w))
             w=findfirst(w->issubset(common,graph[w]),candidates)
             isnothing(w) && continue
             apex=candidates[w]

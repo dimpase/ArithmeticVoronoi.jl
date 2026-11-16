@@ -208,3 +208,27 @@ end
     @test_throws AssertionError RQSL.replay_orbit_flag_collapse(1:5,cycle,Vector{Int}[],colours[1:5],
         Any[Dict("vertex"=>5,"link_steps"=>inner)])
 end
+
+@testset "proper colours filter all possible cone apices" begin
+    # Exhaust every graph with these proper colours. Compare the candidate
+    # filter against the full definition of a vertex/edge cone, without using
+    # colour counts in the independent test.
+    colours=[0,1,2,0,1,2]
+    possible=[(i,j) for i in 1:6 for j in i+1:6 if colours[i]!=colours[j]]
+    for mask in 0:(1<<length(possible))-1
+        edges=[e for (k,e) in enumerate(possible) if !iszero(mask & (1<<(k-1)))]
+        graph=RQSL.flag_adjacency(1:6,edges)
+        for v in 1:6
+            full=Set(w for w in graph[v] if w!=v && issubset(graph[v],graph[w]))
+            filtered=Set(w for w in RQSL.unique_colour_candidates(graph[v],colours)
+                if w!=v && issubset(graph[v],graph[w]))
+            @test full==filtered
+        end
+        for (u,v) in edges
+            common=setdiff(intersect(graph[u],graph[v]),Set([u,v]))
+            full=Set(w for w in common if issubset(common,graph[w]))
+            filtered=Set(w for w in RQSL.unique_colour_candidates(common,colours) if issubset(common,graph[w]))
+            @test full==filtered
+        end
+    end
+end
