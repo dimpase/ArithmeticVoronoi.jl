@@ -6,6 +6,7 @@ using Test
     include("engine_isolation.jl")
     include("backend_selection.jl")
     include("hashing.jl")
+    include("abelianization.jl")
     include("model.jl")
     include("requests.jl")
     include("quadratic_units.jl")

@@ -32,13 +32,70 @@ function field_metadata(P)
       lmfdb_status="not_requested")
 end
 
+# An exponent-sum row with a coefficient +/-1 eliminates that generator by
+# integral row operations. Sparse elimination removes redundant presentation
+# generators before the dense Smith form, without changing the presented group.
 function abelianization_invariants(generator_count,relations)
-    A=zero_matrix(ZZ,length(relations),generator_count)
-    for (i,word) in enumerate(relations),letter in word
-        A[i,abs(letter)]+=sign(letter)
+    generator_count isa Integer && generator_count>=0 ||
+        throw(ArgumentError("generator_count must be nonnegative"))
+    rows=Dict{Int,BigInt}[];seen=Set{Any}()
+    for word in relations
+        row=Dict{Int,BigInt}()
+        for letter in word
+            j=abs(letter)
+            1<=j<=generator_count || throw(ArgumentError("relator letter is outside the generator range"))
+            row[j]=get(row,j,big(0))+sign(letter)
+        end
+        filter!(p->!iszero(last(p)),row)
+        isempty(row) && continue
+        key=Tuple(sort!(collect(row);by=first))
+        orientation=sign(last(first(key)))
+        normalized=Tuple((j,orientation*a) for (j,a) in key)
+        normalized in seen && continue
+        push!(seen,normalized);push!(rows,row)
     end
+    incoming=[Set{Int}() for _ in 1:generator_count]
+    for (i,row) in enumerate(rows),j in keys(row);push!(incoming[j],i);end
+    active=trues(generator_count)
+    sizes=zeros(Int,length(rows));buckets=Dict{Int,Set{Int}}();minimum_size=Ref(typemax(Int))
+    function enqueue(i)
+        old=sizes[i];old>0 && delete!(buckets[old],i)
+        size=any(x->abs(x)==1,values(rows[i])) ? length(rows[i]) : 0
+        sizes[i]=size
+        if size>0
+            push!(get!(Set{Int},buckets,size),i);minimum_size[]=min(minimum_size[],size)
+        end
+    end
+    foreach(enqueue,eachindex(rows))
+    while any(!isempty,values(buckets))
+        while !haskey(buckets,minimum_size[]) || isempty(buckets[minimum_size[]]);minimum_size[]+=1;end
+        i=first(buckets[minimum_size[]]);delete!(buckets[minimum_size[]],i);sizes[i]=0
+        pivot=rows[i]
+        columns=[j for (j,a) in pivot if abs(a)==1]
+        j=argmin(j->(length(incoming[j]),j),columns);unit=pivot[j]
+        for column in keys(pivot);delete!(incoming[column],i);end
+        rows[i]=Dict{Int,BigInt}();active[j]=false
+        for k in collect(incoming[j])
+            row=rows[k];factor=row[j]*unit
+            for (column,a) in pivot
+                before=get(row,column,big(0));after=before-factor*a
+                if iszero(after)
+                    delete!(row,column);delete!(incoming[column],k)
+                else
+                    row[column]=after
+                    iszero(before) && push!(incoming[column],k)
+                end
+            end
+            enqueue(k)
+        end
+        @assert isempty(incoming[j])
+    end
+    columns=findall(active);positions=Dict(j=>i for (i,j) in enumerate(columns))
+    remaining=filter(!isempty,rows)
+    A=zero_matrix(ZZ,length(remaining),length(columns))
+    for (i,row) in enumerate(remaining),(j,a) in row;A[i,positions[j]]=a;end
     D=snf(A)
     diagonals=[abs(D[i,i]) for i in 1:min(nrows(D),ncols(D)) if D[i,i]!=0]
-    (;free_rank=generator_count-length(diagonals),torsion=[string(x) for x in diagonals if x>1],
-      method="Smith normal form of the relator exponent-sum matrix")
+    (;free_rank=length(columns)-length(diagonals),torsion=[string(x) for x in diagonals if x>1],
+      method="exact unit elimination followed by Smith normal form of the relator exponent-sum matrix")
 end
