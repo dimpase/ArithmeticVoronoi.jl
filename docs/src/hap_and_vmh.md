@@ -63,9 +63,10 @@ calls. SL retains its full scalar centre. PSL quotients by **all** scalar
 matrices `zI` with `z^n=1`, using HAP's `QuotientOfContractibleGcomplex`;
 this is not always just `{I,-I}`. In odd rational rank the centre is trivial.
 Real-quadratic SLₙ uses a [certified determinant-height level complex](real_quadratic_sl.md),
-validated on discriminants 5 and 12. For example,
-`hap_voronoi_complex(5; group=:SL, resolution_length=3)` constructs a fresh
-complex for SL₂ over Q(√5); add `rank=3` for SL₃. Finite-degree requests
+validated through H₃ in rank two at discriminants 5 and 12, and through H₁
+in rank three at discriminant 5. For example,
+`hap_voronoi_complex(5; rank=3, group=:SL, resolution_length=2)` constructs
+a fresh partial complex sufficient for H₁ of SL₃ over Q(√5). Finite-degree requests
 compute the needed skeleton after certifying the full level. Real PSL and
 nonfree-lattice complexes remain unsupported.
 The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and

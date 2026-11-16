@@ -6,6 +6,8 @@
 - Construct GL boundaries from local face incidences and certify Morse links by exact graph collapses, avoiding exhaustive flag expansion.
 - Compute the cell skeleton needed by a requested HAP resolution and report its dimension explicitly. The detailed construction interface still offers the full geometric level.
 - Generalize the independent Magma/HAP comparison to the index-`2n` subgroup `SL_n × Z`; reference data remain outside the engine.
+- Keep certified ball sections as cells, subdivide other sections compatibly, and reduce the required chain modules with exact orientation and boundary checks.
+- Avoid HAP coset searches for proved trivial orientation characters; retain the general formula for all other cases.
 
 ## 0.1.1
 

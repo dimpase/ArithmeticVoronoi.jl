@@ -8,9 +8,10 @@ level has dimension `n²−1`. Every run must pass certification; an accepted ra
 is not a promise that enumeration or certification will finish quickly.
 
 Rank two was introduced in ArithmeticVoronoi 0.1.1. Higher ranks require the
-subsequent development version. The completed end-to-end regression cases are
-SL₂ over Q(√5) and Q(√3), with discriminants 5 and 12; see the validation section
-for the separate higher-rank checks.
+subsequent development version. Validation covers integral homology through
+degree three for SL₂ over Q(√5) and Q(√3), and through degree one for SL₃ over
+Q(√5). Higher ranks use the same construction and certification, but have not
+yet been run through the full pipeline; see the validation details below.
 
 ## Run a fresh computation
 
@@ -52,13 +53,18 @@ Set `ARITHMETIC_VORONOI_HAP_ROOT` to a HAP checkout to select it explicitly.
 For constructing the complex, an installed HAP also suffices. No Magma or C++
 is called. Enumeration and certification run afresh. The optional output directory
 receives link data, exact collapse witnesses and construction timings; these files
-are outputs only and are never loaded implicitly. Use `reduce=false` to export
-the full geometric complex to HAP instead of its smaller chain-equivalent model.
+are outputs only and are never loaded implicitly. Use `reduce=false` to retain
+the geometric cells. The default algebraic reduction preserves the claimed
+resolution degree; the additional truncation for proper partial models is
+described below.
 
 For rank three, the corresponding calls are:
 
 ```julia
 K = hap_voronoi_complex(5; rank=3, group=:SL, resolution_length=2, progress=true);
+R = GAP.Globals.FreeGResolution(K, 2);
+C = GAP.Globals.TensorWithIntegers(R);
+GAP.gap_to_julia(GAP.Globals.Homology(C,1))  # []: trivial H₁
 # Or, after enable_hap_julia_backend(; resolution_length=2):
 K = GAP.evalstr("VoronoiComplexSL(3,5 : backend := \"julia\")");
 ```
@@ -234,6 +240,9 @@ three. These tests are in `test/hap_real_quadratic_sl.jl`.
 `test/real_quadratic_sl_sections.jl` additionally compares coarse, mixed and
 fully subdivided cell models, checks orientation-aware cancellation, and rejects
 requests beyond the certified partial degree. Both run in HAP CI.
+`test/hap_orientation_characters.jl` checks the adapter's shortcut for proved
+trivial orientation characters against the general coset formula, including
+transporters outside the stabilizer and an orientation-reversing example.
 
 Extended optional tests are in `test/real_quadratic_sl.jl`; they are not in the
 default small test suite. They check certificate replay, reject incomplete
@@ -323,6 +332,47 @@ incidence coverage, and agreement of graph links with exhaustive flag links.
 Omit the last argument to skip the Magma comparison. Tests and their generated
 receipts are independent of the construction; neither expected homology nor
 field-specific cell counts are encoded in the construction.
+
+## Rank-three validation
+
+For SL₃ over the maximal order of Q(√5), the certified partial level through
+resolution degree two gives **H₁(SL₃(O), Z) = 0**. The calculation independently
+replayed all 3,878 ascending and descending link certificates and all 3,718
+section certificates. Its connectivity bounds required original GL₃ cells
+through dimension five; that cutoff was computed from the certificates.
+
+| Model | 0-cells or generators | 1-cells or generators | 2-cells or generators |
+|---|---:|---:|---:|
+| Geometric partial level | 1,142 | 8,432 | 20,399 |
+| After equivariant cancellations | 11 | 35 | 13,133 |
+| After preserving only the required top boundary image | 11 | 35 | 1,514 |
+| HAP free resolution | 11 | 57 | 1,594 |
+
+The HAP result agrees with a separately constructed SL₃ presentation and with
+the determinant restriction of the native GL₃ complex, whose first homology is
+Z. An independent fresh Magma/VMH GL₃ computation also agrees: its first three
+cell-orbit counts are `[7,34,140]`, all corresponding stabilizer-order multisets
+match, and HAP gives H₁ = Z after restriction to SL₃ × Z. This comparison used
+VMH's original GAP reader; the optional Magma source performance changes above
+were recorded with source hashes and supplied no Julia cells or expected answers.
+A separate Nemo check of the exported integer boundary matrices verified
+that their product is zero, H₀ is Z and H₁ is zero using Smith normal forms.
+Both the general orientation-character formula and the optimized adapter gave
+the same result. These checks establish H₁ for this example; they do not claim
+higher homology in rank three or a completed example in rank four.
+
+On the validation host, equivariant cancellation took 81 seconds. HAP's free
+resolution took 29 seconds, evaluating its integer boundary matrices took
+31 seconds, and the final homology computation took 0.25 seconds. The independent
+Magma reference took 202 CPU seconds to enumerate its perfect forms and 4,579
+CPU seconds to construct its two-skeleton. Julia used OSCAR 1.8.2 and HAP 1.80;
+the reference used Magma 2.30-1. Enumeration,
+link and section certification are additional costs in the SL calculation;
+these are phase timings,
+not a complete first-call benchmark. Development validation explicitly reused
+SHA-verified intermediate outputs between phases. Every geometric input and
+certificate was computed from scratch, and the package computation has no
+implicit snapshot or expected-answer loader.
 
 ## Detailed construction interface
 
