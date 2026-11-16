@@ -108,14 +108,17 @@ function flag_adjacency(vertices,edges)
     graph
 end
 
-function collapse_flag_graph(vertices,edges)
+function collapse_flag_graph(vertices,edges;progress=false)
     graph=flag_adjacency(vertices,edges)
     steps=Union{NTuple{2,Int},NTuple{3,Int}}[]
-    order=sort!(collect(keys(graph)))
-    pending=copy(order)
+    pending=sort!(collect(keys(graph)))
+    edge_pending=BitSet(pending)
+    last_report=time()
     while length(graph)>1
         # Removing a vertex can create new dominated vertices only among its
-        # neighbours. An edge removal can do so only at its two endpoints.
+        # neighbours; new dominated edges have both endpoints there. Removing
+        # an edge can create new dominated vertices or edges only at its two
+        # endpoints. Revisit those neighbourhoods, not the entire graph.
         while !isempty(pending)
             next=BitSet()
             for v in pending
@@ -124,35 +127,42 @@ function collapse_flag_graph(vertices,edges)
                     w==v && continue
                     issubset(graph[v],graph[w]) || continue
                     push!(steps,(v,w))
-                    union!(next,graph[v])
+                    union!(next,graph[v]);union!(edge_pending,graph[v])
                     for u in graph[v];u==v || delete!(graph[u],v);end
                     delete!(graph,v)
                     break
+                end
+                if progress && time()-last_report>=10
+                    println("Link collapse: ",length(graph)," vertices remain; ",length(steps)," steps");flush(stdout)
+                    last_report=time()
                 end
             end
             pending=collect(next)
         end
         length(graph)==1 && break
-        length(order)>2length(graph) && filter!(v->haskey(graph,v),order)
-        changed=false
-        for u in order
-            haskey(graph,u) || continue
-            for v in sort!(collect(graph[u]))
-                v>u || continue
-                common=length(graph[u])<length(graph[v]) ? intersect(graph[u],graph[v]) : intersect(graph[v],graph[u])
-                delete!(common,u);delete!(common,v)
-                candidates=sort!(collect(common))
-                w=findfirst(w->issubset(common,graph[w]),candidates)
-                isnothing(w) && continue
-                push!(steps,(u,v,candidates[w]))
-                delete!(graph[u],v);delete!(graph[v],u)
-                pending=[u,v]
-                changed=true
-                break
-            end
-            changed && break
+        isempty(edge_pending) && break
+        u=first(edge_pending);delete!(edge_pending,u)
+        haskey(graph,u) || continue
+        next=BitSet()
+        # Visit all neighbours: u may have been queued after an edge change
+        # at a larger-numbered vertex. Process a whole neighbourhood before
+        # revisiting dominated vertices, avoiding one global scan per edge.
+        for v in sort!(collect(graph[u]))
+            v==u && continue
+            common=length(graph[u])<length(graph[v]) ? intersect(graph[u],graph[v]) : intersect(graph[v],graph[u])
+            delete!(common,u);delete!(common,v)
+            candidates=sort!(collect(common))
+            w=findfirst(w->issubset(common,graph[w]),candidates)
+            isnothing(w) && continue
+            push!(steps,(u,v,candidates[w]))
+            delete!(graph[u],v);delete!(graph[v],u)
+            push!(next,u,v);push!(edge_pending,u,v)
         end
-        changed || break
+        pending=collect(next)
+        if progress && time()-last_report>=10
+            println("Link collapse: ",length(graph)," vertices remain; ",length(steps)," steps");flush(stdout)
+            last_report=time()
+        end
     end
     (;passed=length(graph)==1,steps,residual=sort!(collect(keys(graph))))
 end
@@ -217,7 +227,7 @@ function certify_morse_graphs(data;bases=nothing,progress=false)
                 println("Certifying Morse link ",i,", direction ",sgn,": ",length(vertices)," vertices");flush(stdout)
                 last_report=time()
             end
-            result=collapse_flag_graph(vertices,link["edges"])
+            result=collapse_flag_graph(vertices,link["edges"];progress)
             @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
             @assert replay_flag_collapse(vertices,link["edges"],result.steps)
             push!(reports,(;orbit=i,sgn,result,graph_vertices,graph_edges))
