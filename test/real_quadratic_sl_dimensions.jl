@@ -1,4 +1,4 @@
-using ArithmeticVoronoi, Oscar, Test
+using ArithmeticVoronoi, Oscar, Test, JSON
 const RQSL=ArithmeticVoronoi.RealQuadraticSL
 
 @testset "dimension-independent determinant-height construction" begin
@@ -87,6 +87,10 @@ end
     legacy,oldlinks=RQSL.morse_link_data(M)
     data,newlinks,faces=RQSL.morse_link_graphs(M)
     @test data["base_heights"]==legacy["base_heights"]
+    io=IOBuffer();JSON.json(io,data)
+    saved=JSON.parse(String(take!(io)),Dict{String,Any})
+    @test length(saved["links"])==length(oldlinks)
+    @test length(saved["links"][1]["edges"])==length(data["links"][1]["edges"])
     for i in eachindex(oldlinks)
         old=oldlinks[i]
         new=sort!(collect(values(newlinks[i]));by=v->v.key)

@@ -67,11 +67,15 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
     K=stage("HAP export",()->level_hap_complex(reduced;resolution_length,hap_root))
     if !isnothing(certificate_directory)
         mkpath(certificate_directory)
-        write(joinpath(certificate_directory,"links.json"),JSON.json(data))
+        open(joinpath(certificate_directory,"links.json"),"w") do io
+            JSON.json(io,data)
+        end
         witness=Dict("discriminant"=>D,"rank"=>P.rank,"link_model"=>"flag_graph","base_heights"=>string.(certificate.bases),
             "links"=>[Dict("orbit"=>r.orbit,"direction"=>r.sgn,
                 "graph_collapse_steps"=>r.result.steps) for r in certificate.reports])
-        write(joinpath(certificate_directory,"collapse_certificate.json"),JSON.json(witness))
+        open(joinpath(certificate_directory,"collapse_certificate.json"),"w") do io
+            JSON.json(io,witness)
+        end
         write(joinpath(certificate_directory,"construction.json"),JSON.json(Dict(
             "discriminant"=>D,"rank"=>P.rank,"actual_SL_complex"=>true,
             "certified_dimension"=>length(C.cells)-2,"computed_dimension"=>length(L.cells)-1,"cell_orbits"=>length.(L.cells),

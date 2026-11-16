@@ -26,58 +26,80 @@ function morse_cell_faces(M;progress=false)
     faces
 end
 
+# Materialize one link graph at a time. Large levels have millions of faces;
+# keeping every link's edge list and adjacency table simultaneously is wasteful.
+struct MorseLinkGraphs <: AbstractVector{Dict{String,Any}}
+    links::Vector{Dict{Any,MorseVertex}}
+    ids::Vector{Vector{Int}}
+end
+Base.size(graphs::MorseLinkGraphs)=(length(graphs.links),)
+Base.IndexStyle(::Type{MorseLinkGraphs})=IndexLinear()
+function Base.getindex(graphs::MorseLinkGraphs,i::Int)
+    @boundscheck checkbounds(graphs.links,i)
+    vertices=sort!(collect(values(graphs.links[i]));by=v->v.key)
+    # Incidence is reverse inclusion of complete minimum sets. An inverted
+    # ray index finds supersets without quadratic all-pairs comparisons.
+    containing=Dict{Any,BitSet}()
+    for (j,v) in enumerate(vertices),ray in v.key[2]
+        list=get!(containing,ray) do;BitSet();end
+        push!(list,j)
+    end
+    sizes=Dict(ray=>length(list) for (ray,list) in containing)
+    edges=Tuple{Int,Int}[]
+    for (b,v) in enumerate(vertices)
+        rays=sort!(collect(v.key[2]);by=ray->sizes[ray])
+        candidates=copy(containing[first(rays)])
+        for ray in rays[2:end];intersect!(candidates,containing[ray]);end
+        for a in candidates
+            vertices[a].dim<v.dim && push!(edges,(a,b))
+        end
+    end
+    Dict{String,Any}("vertices"=>[Dict("orbit"=>graphs.ids[v.dim+1][v.orbit],"shift"=>v.shift) for v in vertices],"edges"=>edges)
+end
+
 function morse_link_graphs(M;progress=false)
     C=M.complex;P=C.enumeration.problem
     ids=[[sum(length,C.cells[1:k-1];init=0)+i for i in eachindex(layer)] for (k,layer) in enumerate(C.cells)]
     links=[Dict{Any,MorseVertex}() for layer in C.cells for c in layer]
     faces=morse_cell_faces(M;progress)
+    # The real scalar centre acts trivially on every cell; retain one matrix
+    # from each +/- pair for these orbit computations only, never in SL stabs.
+    actions=[[collect(values(Dict(min(AV.matrix_key(AV.encode_matrix(P,s)),
+        AV.matrix_key(AV.encode_matrix(P,-s)))=>s for s in S))) for S in layer] for layer in C.stabilizers]
+    bases=Float64[]
+    last_report=time()
     for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
         top=M.vertices[k][i]
         lower=links[ids[k][i]]
+        for v in faces[k][i];lower[v.key]=v;end
+        seen=Set{Any}()
         for v in faces[k][i]
-            lower[v.key]=v
+            v.key in seen && continue
+            # Equivalent incidences under Stab(top) give the same upper link
+            # after expansion by Stab(v). Normalize only one from each orbit.
+            for s in actions[k][i];push!(seen,morse_act(M,s,v).key);end
             upper=links[ids[v.dim+1][v.orbit]]
-            for s in C.stabilizers[v.dim+1][v.orbit]
-                w=morse_act(M,s*inv(v.translate),top)
+            inverse=inv(v.translate)
+            for s in actions[v.dim+1][v.orbit]
+                w=morse_act(M,s*inverse,top)
                 upper[w.key]=w
             end
         end
         clear_action_cache!(M)
-    end
-    data=Any[]
-    bases=Float64[]
-    for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
-        vertices=sort!(collect(values(links[ids[k][i]]));by=v->v.key)
-        # Incidence is reverse inclusion of complete minimum sets. An inverted
-        # ray index finds supersets directly; testing every pair of vertices
-        # would be quadratic in the size of a high-dimensional link.
-        containing=Dict{Any,BitSet}()
-        for (j,v) in enumerate(vertices),ray in v.key[2]
-            push!(get!(containing,ray,BitSet()),j)
-        end
-        edges=Tuple{Int,Int}[]
-        for (b,v) in enumerate(vertices)
-            lists=sort!([containing[ray] for ray in v.key[2]];by=length)
-            candidates=copy(first(lists))
-            for list in lists[2:end];intersect!(candidates,list);end
-            for a in candidates
-                vertices[a].dim<v.dim && push!(edges,(a,b))
-            end
-        end
-        push!(data,Dict("vertices"=>[Dict("orbit"=>ids[v.dim+1][v.orbit],"shift"=>v.shift) for v in vertices],"edges"=>edges))
         F=sum(AV.act_form(P,c.point,inv(s)) for s in C.stabilizers[k][i])/length(C.stabilizers[k][i])
         push!(bases,morse_base_height(P,M.units,F))
-        if progress && (ids[k][i]%100==0 || ids[k][i]==length(links))
-            println("Morse link graphs: ",ids[k][i],"/",length(links));flush(stdout)
+        if progress && (time()-last_report>=10 || ids[k][i]==length(links))
+            println("Morse link incidences: ",ids[k][i],"/",length(links));flush(stdout)
+            last_report=time()
         end
     end
     (Dict("D"=>P.discriminant,"rank"=>P.rank,"link_model"=>"flag_graph",
         "base_heights"=>bases,"orbit_dimensions"=>[k-1 for (k,l) in enumerate(C.cells) for c in l],
-        "links"=>data),links,faces)
+        "links"=>MorseLinkGraphs(links,ids)),links,faces)
 end
 
 function flag_adjacency(vertices,edges)
-    graph=Dict(v=>BitSet([v]) for v in vertices)
+    graph=Dict(v=>Set([v]) for v in vertices)
     for (u,v) in edges
         u==v && throw(ArgumentError("a link graph has a loop"))
         haskey(graph,u) && haskey(graph,v) || continue
@@ -88,32 +110,43 @@ end
 
 function collapse_flag_graph(vertices,edges)
     graph=flag_adjacency(vertices,edges)
-    steps=Vector{Int}[]
+    steps=Union{NTuple{2,Int},NTuple{3,Int}}[]
+    order=sort!(collect(keys(graph)))
+    pending=copy(order)
     while length(graph)>1
-        changed=false
-        for v in sort!(collect(keys(graph)))
-            haskey(graph,v) || continue
-            for w in graph[v]
-                w==v && continue
-                issubset(graph[v],graph[w]) || continue
-                push!(steps,[v,w])
-                for u in graph[v];u==v || delete!(graph[u],v);end
-                delete!(graph,v)
-                changed=true
-                break
+        # Removing a vertex can create new dominated vertices only among its
+        # neighbours. An edge removal can do so only at its two endpoints.
+        while !isempty(pending)
+            next=BitSet()
+            for v in pending
+                haskey(graph,v) || continue
+                for w in sort!(collect(graph[v]))
+                    w==v && continue
+                    issubset(graph[v],graph[w]) || continue
+                    push!(steps,(v,w))
+                    union!(next,graph[v])
+                    for u in graph[v];u==v || delete!(graph[u],v);end
+                    delete!(graph,v)
+                    break
+                end
             end
+            pending=collect(next)
         end
-        changed && continue
-        for u in sort!(collect(keys(graph)))
-            for v in graph[u]
+        length(graph)==1 && break
+        length(order)>2length(graph) && filter!(v->haskey(graph,v),order)
+        changed=false
+        for u in order
+            haskey(graph,u) || continue
+            for v in sort!(collect(graph[u]))
                 v>u || continue
-                common=intersect(graph[u],graph[v])
+                common=length(graph[u])<length(graph[v]) ? intersect(graph[u],graph[v]) : intersect(graph[v],graph[u])
                 delete!(common,u);delete!(common,v)
-                w=findfirst(w->issubset(common,graph[w]),collect(common))
+                candidates=sort!(collect(common))
+                w=findfirst(w->issubset(common,graph[w]),candidates)
                 isnothing(w) && continue
-                apex=collect(common)[w]
-                push!(steps,[u,v,apex])
+                push!(steps,(u,v,candidates[w]))
                 delete!(graph[u],v);delete!(graph[v],u)
+                pending=[u,v]
                 changed=true
                 break
             end
@@ -161,8 +194,8 @@ function rational_morse_heights(data;bases=nothing)
     bases
 end
 
-function ascending_vertices(data,bases,orbit,sgn)
-    delta=[bases[v["orbit"]]+v["shift"]-bases[orbit] for v in data["links"][orbit]["vertices"]]
+function ascending_vertices(data,bases,orbit,sgn;link=data["links"][orbit])
+    delta=[bases[v["orbit"]]+v["shift"]-bases[orbit] for v in link["vertices"]]
     @assert all(!iszero,delta)
     findall(x->sgn*x>0,delta)
 end
@@ -170,14 +203,28 @@ end
 function certify_morse_graphs(data;bases=nothing,progress=false)
     bases=rational_morse_heights(data;bases)
     reports=Any[]
-    for (i,link) in enumerate(data["links"]),sgn in (-1,1)
-        vertices=ascending_vertices(data,bases,i,sgn)
-        result=collapse_flag_graph(vertices,link["edges"])
-        @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
-        @assert replay_flag_collapse(vertices,link["edges"],result.steps)
-        push!(reports,(;orbit=i,sgn,result))
-        if progress && (i%100==0 || i==length(data["links"])) && sgn==1
+    last_report=time()
+    for i in eachindex(data["links"])
+        if progress && time()-last_report>=10
+            println("Building Morse link graph: ",i,"/",length(data["links"]));flush(stdout)
+            last_report=time()
+        end
+        link=data["links"][i]
+        graph_vertices=length(link["vertices"]);graph_edges=length(link["edges"])
+        for sgn in (-1,1)
+            vertices=ascending_vertices(data,bases,i,sgn;link)
+            if progress && time()-last_report>=10
+                println("Certifying Morse link ",i,", direction ",sgn,": ",length(vertices)," vertices");flush(stdout)
+                last_report=time()
+            end
+            result=collapse_flag_graph(vertices,link["edges"])
+            @assert result.passed "No graph-collapse certificate for link $i, direction $sgn"
+            @assert replay_flag_collapse(vertices,link["edges"],result.steps)
+            push!(reports,(;orbit=i,sgn,result,graph_vertices,graph_edges))
+        end
+        if progress && (i%100==0 || i==length(data["links"]) || time()-last_report>=10)
             println("Certified Morse links: ",i,"/",length(data["links"]));flush(stdout)
+            last_report=time()
         end
     end
     (;passed=true,bases,reports)
