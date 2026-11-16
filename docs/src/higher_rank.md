@@ -137,7 +137,8 @@ supported rank. The combined `run_field_pipeline` then extracts SLₙ and its
 full projective quotient. Only the optional C++ adapter remains rank two.
 HAP complexes support rational GLₙ/SLₙ/PSLₙ as well as quadratic GLₙ and
 imaginary-quadratic SLₙ/PSLₙ. PSL uses HAP's quotient construction with the
-full scalar centre. Real-quadratic SL/PSL complexes, nonmaximal orders,
+full scalar centre. At rank two, [certified real-quadratic SL₂ complexes](real_quadratic_sl.md)
+are also supported. Higher-rank real SL, real PSL, nonmaximal orders,
 nonfree lattices and fields of degree greater than two remain outside the
 provider's scope. The record adapter accepts rational and quadratic fields.
 

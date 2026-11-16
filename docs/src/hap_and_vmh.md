@@ -50,7 +50,7 @@ The same direct call supports every rank `n ≥ 2` on the free lattice Oⁿ:
 | --- | --- |
 | Z (omit the discriminant) | GLₙ, SLₙ, PSLₙ |
 | Imaginary quadratic maximal orders | GLₙ, SLₙ, PSLₙ |
-| Real quadratic maximal orders | GLₙ |
+| Real quadratic maximal orders | GLₙ, certified SL₂ |
 
 ```julia
 K = hap_voronoi_complex(; rank=3, group=:SL, resolution_length=3); # SL₃(Z)
@@ -62,11 +62,11 @@ No provider registration or GAP record conversion is needed for these Julia
 calls. SL retains its full scalar centre. PSL quotients by **all** scalar
 matrices `zI` with `z^n=1`, using HAP's `QuotientOfContractibleGcomplex`;
 this is not always just `{I,-I}`. In odd rational rank the centre is trivial.
-Real-quadratic SL/PSL cell complexes and nonfree lattices remain unsupported by
-these standard entry points. An explicitly loaded
-[experimental real-quadratic SL₂ construction](real_quadratic_sl.md) supplies
-certified level complexes and a HAP export; it has been validated on
-discriminants 5 and 12.
+Real-quadratic SL₂ uses a [certified determinant-height level complex](real_quadratic_sl.md),
+validated on discriminants 5 and 12. For example,
+`hap_voronoi_complex(5; group=:SL, resolution_length=3)` constructs a fresh
+complex for SL₂ over Q(√5). Higher-rank real SL, real PSL and nonfree-lattice
+complexes remain unsupported.
 The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and
 maximal quadratic orders; a presentation alone does not provide the cell
 stabilizers and boundaries needed here.

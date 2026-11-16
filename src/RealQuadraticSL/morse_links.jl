@@ -1,4 +1,5 @@
-using ArithmeticVoronoi, Oscar, JSON
+using ..ArithmeticVoronoi
+using Oscar, JSON
 const AV=ArithmeticVoronoi
 
 struct MorseVertex
