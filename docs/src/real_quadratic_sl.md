@@ -198,7 +198,8 @@ For a higher-rank reference, call the runner's Julia function explicitly:
 ```julia
 include("test/prepare_real_sl_magma.jl")
 prepare_real_sl_magma("/path/to/VMH-TotallyRealNumberFields", "/path/to/new-references";
-                     cases=((D=5,rank=3),), deduplicate_faces=true, max_cell_dimension=2)
+                     cases=((D=5,rank=3),), deduplicate_faces=true, max_cell_dimension=2,
+                     memoize_cell_data=true)
 include("test/real_quadratic_sl.jl")
 run_real_sl_tests("/path/to/new-test-output"; magma_directory="/path/to/new-references",
                   discriminants=(5,), ranks=(3,), degree=1)
@@ -208,7 +209,11 @@ run_real_sl_tests("/path/to/new-test-output"; magma_directory="/path/to/new-refe
 copied VMH reference source: it avoids expanding different facet tuples with
 exactly the same minimum-vector intersection. It supplies no Julia cells or
 answers to Magma. The original and patched source hashes are saved in
-`source.json`. Omit the option to use the pristine VMH algorithm.
+`source.json`. `memoize_cell_data=true` also avoids recomputing a cell's Magma
+stabilizer and affine tangent basis for every orientation query. The calculations
+and returned values are unchanged; cached values are produced by Magma within
+that run. Both performance options are opt-in. All source changes, including
+the dimension bounds below, are recorded with original and modified hashes.
 
 `max_cell_dimension=m` explicitly limits the Magma reference to its m-skeleton.
 The comparison requires `m ≥ degree+1`; it never treats the skeleton as a

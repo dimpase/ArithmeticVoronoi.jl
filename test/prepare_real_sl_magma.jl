@@ -30,8 +30,32 @@ function truncate_vmh_dimensions!(path,dimension)
     write(path,text)
 end
 
+# Cache only values independent of the acting matrix. These are the same
+# VMH stabilizer and affine tangent-space computations, evaluated once per
+# minimal class; no native Julia geometric data enter the reference.
+function memoize_vmh_cells!(directory)
+    types=joinpath(directory,"Types.m")
+    text=read(types,String)
+    old="Aut,CanonicalFormMinimalClass;"
+    count(old,text)==1 || error("VMH Types.m changed; review memoization")
+    write(types,replace(text,old=>"Aut,CanonicalFormMinimalClass,MinimalClassAut,OrientationTangent;"))
+    classes=joinpath(directory,"ReQuad","Voronoi","MinClass.m")
+    text=read(classes,String)
+    old=" return AutomorphismGroup(NewDAForm((CanonicalFormOfMinimalClass(A)`Matrix)^-1));"
+    count(old,text)==1 || error("VMH stabilizer source changed; review memoization")
+    write(classes,replace(text,old=>" if not assigned(A`MinimalClassAut) then\n  A`MinimalClassAut:=AutomorphismGroup(NewDAForm((CanonicalFormOfMinimalClass(A)`Matrix)^-1));\n end if;\n return A`MinimalClassAut;"))
+    functions=joinpath(directory,"Homology","Functions.m")
+    text=read(functions,String)
+    first_line=" if not assigned(W`MinimalClasses) then"
+    last_line=" Images:=[Dagger(g)*GensOfTSpace[i]*(g): i in Indices];"
+    count(first_line,text)==1 && count(last_line,text)==1 || error("VMH orientation source changed; review memoization")
+    text=replace(text,first_line=>" if not assigned(F`OrientationTangent) then\n"*first_line,
+        last_line=>" F`OrientationTangent:=<Space,[GensOfTSpace[i]:i in Indices]>;\n end if;\n Space:=F`OrientationTangent[1];\n Images:=[Dagger(g)*basis*g: basis in F`OrientationTangent[2]];")
+    write(functions,text)
+end
+
 function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
-        deduplicate_faces=false,max_cell_dimension=nothing)
+        deduplicate_faces=false,max_cell_dimension=nothing,memoize_cell_data=false)
     isnothing(max_cell_dimension) ||
         (max_cell_dimension isa Integer && !(max_cell_dimension isa Bool) && max_cell_dimension>=2) ||
         throw(ArgumentError("max_cell_dimension must be an integer at least two"))
@@ -48,8 +72,11 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
             cp(joinpath(source,directory),joinpath(target,directory))
         end
         class_source=joinpath(target,"Magma","ReQuad","Voronoi","MinClass.m")
+        source_files=("Types.m","Homology/Functions.m","ReQuad/Voronoi/MinClass.m")
+        source_hashes=Dict(file=>bytes2hex(sha256(read(joinpath(target,"Magma",file)))) for file in source_files)
         original_hash=bytes2hex(sha256(read(class_source)))
         deduplicate_faces && deduplicate_vmh_faces!(class_source)
+        memoize_cell_data && memoize_vmh_cells!(joinpath(target,"Magma"))
         isnothing(max_cell_dimension) || truncate_vmh_dimensions!(class_source,max_cell_dimension)
         write(joinpath(target,"Magma","BasicData.m"),
             "K:=QuadraticField($d); n:=$n; V:=KMatrixSpace(K,n,1); L:=[IntegralBasis(K)[i]*V.j: i in [1..Degree(K)],j in [1..n]];\n")
@@ -62,7 +89,9 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
         quit;
         """)
         write(joinpath(target,"source.json"),JSON.json(Dict("repository"=>source,"revision"=>revision,"discriminant"=>D,"rank"=>n,
-            "max_cell_dimension"=>max_cell_dimension,"exact_face_deduplication"=>deduplicate_faces,"original_MinClass_sha256"=>original_hash,
+            "max_cell_dimension"=>max_cell_dimension,"exact_face_deduplication"=>deduplicate_faces,
+            "memoized_cell_data"=>memoize_cell_data,"original_source_sha256"=>source_hashes,
+            "used_source_sha256"=>Dict(file=>bytes2hex(sha256(read(joinpath(target,"Magma",file)))) for file in source_files),"original_MinClass_sha256"=>original_hash,
             "used_MinClass_sha256"=>bytes2hex(sha256(read(class_source))))))
         open(joinpath(target,"magma.log"),"w") do io
             run(pipeline(Cmd(`magma -b compute.m`;dir=target);stdout=io,stderr=io))
