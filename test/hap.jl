@@ -129,6 +129,7 @@ end
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(2,5 : backend := \"julia\")")
 end
 
+include("hap_projective.jl")
 include("higher_rank.jl")
 include("gl_presentations.jl")
 test_gl_presentations(;with_hap=true)

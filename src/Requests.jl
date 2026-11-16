@@ -4,11 +4,14 @@ const VoronoiRequestRecord = Union{NamedTuple,AbstractDict}
 
 """
     voronoi_request(D; group=:GL, rank=2)
+    voronoi_request(; group=:GL, rank=2)
 
 Describe a group over the maximal order of the quadratic field with
-fundamental discriminant `D`, on the free lattice O^rank. The returned record can
+fundamental discriminant `D`, or over Z when `D` is omitted, on the free lattice
+O^rank. The returned record can
 be passed to `enumerate_perfect_forms` and both presentation pipelines (GL),
-`hap_voronoi_complex` (GL, or imaginary-quadratic SL), and serialized as JSON.
+`hap_voronoi_complex` (GL, or rational/imaginary-quadratic SL and PSL), and
+serialized as JSON.
 `run_field_pipeline` derives GL, SL and PSL from a GL request in any supported rank.
 """
 function voronoi_request(D::Integer;group=:GL,rank=2)
@@ -16,6 +19,15 @@ function voronoi_request(D::Integer;group=:GL,rank=2)
         field=(;kind="quadratic",discriminant=D),
         order=(;kind="maximal"),lattice=(;kind="free")))
 end
+
+function voronoi_request(;group=:GL,rank=2)
+    normalize_voronoi_request((;group,rank,field=(;kind="rational"),
+        order=(;kind="maximal"),lattice=(;kind="free")))
+end
+
+# The rational field has discriminant 1; keep its request distinct from a
+# quadratic discriminant so integer inputs never change their meaning.
+request_discriminant(r)=r["field"]["kind"]=="rational" ? 1 : r["field"]["discriminant"]
 
 function request_record(value, context, allowed, required=allowed)
     value isa VoronoiRequestRecord || throw(ArgumentError("$context must be a record"))
@@ -42,39 +54,48 @@ Validate a Julia/JSON request against the arithmetic currently implemented by
 ArithmeticVoronoi. HAP's dispatcher accepts more general records; this provider
 rejects unsupported fields, orders, lattices and ranks instead of ignoring them.
 Quadratic fields accept exactly one of `discriminant` and `radicand`; the result
-uses a fundamental discriminant. This does not construct a field or enumerate.
+uses a fundamental discriminant. Rational fields use only `kind="rational"`.
+This does not construct a field or enumerate.
 """
 function normalize_voronoi_request(request::VoronoiRequestRecord)
     r=request_record(request,"request",["group","rank","field","order","lattice"])
-    r["group"] in ("GL","SL",:GL,:SL) || throw(ArgumentError("the Julia provider supports group GL or SL"))
+    r["group"] in ("GL","SL","PSL",:GL,:SL,:PSL) || throw(ArgumentError("the Julia provider supports group GL, SL or PSL"))
     n=request_integer(r["rank"],"rank")
     n>=2 || throw(ArgumentError("the Julia Voronoi provider requires rank at least 2"))
     f=request_record(r["field"],"field",["kind","discriminant","radicand"],["kind"])
-    f["kind"]=="quadratic" || throw(ArgumentError("the Julia provider currently requires a quadratic field"))
-    xor(haskey(f,"discriminant"),haskey(f,"radicand")) ||
-        throw(ArgumentError("quadratic field requires exactly one of discriminant or radicand"))
-    D=if haskey(f,"radicand")
-        d=request_integer(f["radicand"],"field.radicand")
-        d!=0 && d!=1 && is_squarefree(ZZ(d)) ||
-            throw(ArgumentError("field.radicand must define a squarefree quadratic extension"))
-        request_integer(mod(d,4)==1 ? BigInt(d) : 4BigInt(d),"field.discriminant")
+    field=if f["kind"]=="rational"
+        length(f)==1 || throw(ArgumentError("a rational field record accepts only kind"))
+        Dict{String,Any}("kind"=>"rational")
+    elseif f["kind"]=="quadratic"
+        xor(haskey(f,"discriminant"),haskey(f,"radicand")) ||
+            throw(ArgumentError("quadratic field requires exactly one of discriminant or radicand"))
+        D=if haskey(f,"radicand")
+            d=request_integer(f["radicand"],"field.radicand")
+            d!=0 && d!=1 && is_squarefree(ZZ(d)) ||
+                throw(ArgumentError("field.radicand must define a squarefree quadratic extension"))
+            request_integer(mod(d,4)==1 ? BigInt(d) : 4BigInt(d),"field.discriminant")
+        else
+            request_integer(f["discriminant"],"field.discriminant")
+        end
+        (D<0 || D>1) && Hecke.is_fundamental_discriminant(D) ||
+            throw(ArgumentError("a fundamental quadratic discriminant is required"))
+        Dict{String,Any}("kind"=>"quadratic","discriminant"=>D)
     else
-        request_integer(f["discriminant"],"field.discriminant")
+        throw(ArgumentError("the Julia provider supports rational and quadratic fields"))
     end
-    (D<0 || D>1) && Hecke.is_fundamental_discriminant(D) ||
-        throw(ArgumentError("a fundamental quadratic discriminant is required"))
     o=request_record(r["order"],"order",["kind"])
     o["kind"]=="maximal" || throw(ArgumentError("the Julia provider currently requires the maximal order"))
     l=request_record(r["lattice"],"lattice",["kind"])
     l["kind"]=="free" || throw(ArgumentError("the Julia provider currently requires the free lattice O^rank"))
     Dict{String,Any}("group"=>string(r["group"]),"rank"=>n,
-        "field"=>Dict{String,Any}("kind"=>"quadratic","discriminant"=>D),
+        "field"=>field,
         "order"=>Dict("kind"=>"maximal"),"lattice"=>Dict("kind"=>"free"))
 end
 
 function arithmetic_problem(request::VoronoiRequestRecord)
     r=normalize_voronoi_request(request)
-    arithmetic_problem(r["field"]["discriminant"];rank=r["rank"])
+    r["field"]["kind"]=="rational" ? classical_problem(;rank=r["rank"]) :
+        arithmetic_problem(r["field"]["discriminant"];rank=r["rank"])
 end
 
 function enumeration_request(request)

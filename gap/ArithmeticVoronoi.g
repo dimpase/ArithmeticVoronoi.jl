@@ -39,3 +39,26 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
                     ["length",length],["characteristic",0]]));
 end);
 fi;
+
+# HAP component objects use !. access, rather than ordinary record access.
+if not IsBound(HAPArithmeticVoronoiQuotient) then
+BindGlobal("HAPArithmeticVoronoiQuotient", function(K,Z)
+    local Q;
+    Q := QuotientOfContractibleGcomplex(K,Z);
+    Q!.arithmeticVoronoi := ShallowCopy(K!.arithmeticVoronoi);
+    Q!.arithmeticVoronoi.groupKind := "PSL";
+    Q!.arithmeticVoronoi.centerOrder := Size(Z);
+    SetName(Q!.group, Concatenation("PSL(",String(Q!.arithmeticVoronoi.rank),
+        ",O), D=",String(Q!.arithmeticVoronoi.discriminant),", native Julia"));
+    return Q;
+end);
+fi;
+
+# Older HAP returns an opposite-group element from InverseMutable on a
+# quotient element. Detect the actual bug, so corrected HAP keeps its method.
+# This matters for the finite stabilizer direct products used in PSL homology.
+if not IsHapQuotientElement(InverseMutable(QuotientGroup((),[()]))) then
+    InstallOtherMethod(InverseMutable,
+        "inverse preserving the HAP quotient element type",
+        [IsHapQuotientElement], x -> x^-1);
+fi;

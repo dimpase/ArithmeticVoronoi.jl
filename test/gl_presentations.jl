@@ -9,7 +9,7 @@ function test_gl_presentations(; with_hap=false)
         end
         for (D,n,expected) in ((1,2,[2,2]),(1,3,[2]),(-4,3,[4]))
             mktempdir() do directory
-                input=D==1 ? classical_problem(;rank=n) : voronoi_request(D;rank=n)
+                input=D==1 ? voronoi_request(;rank=n) : voronoi_request(D;rank=n)
                 R=withenv("PERFECT_FORMS_BACKEND_CONFIG"=>"/no/such/backend/config.json") do
                     run_gl_pipeline(input;directory,progress=false)
                 end

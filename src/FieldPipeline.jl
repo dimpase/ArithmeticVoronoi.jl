@@ -31,7 +31,7 @@ function run_field_pipeline(P::ArithmeticVoronoiProblem;directory=nothing,
                             simplify=true,backend=:native,timeout=backend==:native ? Inf : 600.0,
                             resume::Bool=false,progress=false)
     D=P.discriminant
-    request=P.degree==1 ? nothing : voronoi_request(D;rank=P.rank)
+    request=P.degree==1 ? voronoi_request(;rank=P.rank) : voronoi_request(D;rank=P.rank)
     label=P.rank==2 ? "D$D" : "rank$(P.rank)/D$D"
     isnothing(directory) && (directory=joinpath(pwd(),"results/fields",label))
     mkpath(directory);start=time_ns();timings=Dict{String,Float64}()

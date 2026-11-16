@@ -3,6 +3,20 @@ include(joinpath(@__DIR__,"../scripts/request_arguments.jl"))
 
 @testset "arithmetic request records" begin
     q=voronoi_request(-7)
+    rational=voronoi_request(;rank=3)
+    @test rational["field"]==Dict("kind"=>"rational")
+    @test normalize_voronoi_request(JSON.parse(JSON.json(rational)))==rational
+    @test arithmetic_problem(rational).degree==1
+    @test arithmetic_problem(rational).rank==3
+    @test enumerate_perfect_forms(rational).completion_status==:complete
+    @test voronoi_request(-7;group=:PSL)["group"]=="PSL"
+    @test voronoi_request(;group=:PSL)["group"]=="PSL"
+    for extra in ("radicand","discriminant")
+        bad=deepcopy(rational);bad["field"][extra]=1
+        @test_throws ArgumentError normalize_voronoi_request(bad)
+    end
+    @test_throws ArgumentError enumerate_perfect_forms(voronoi_request(;group=:PSL))
+    @test_throws ArgumentError hap_voronoi_complex(voronoi_request(5;group=:PSL))
     @test q["field"]["discriminant"]==-7
     @test normalize_voronoi_request(JSON.parse(JSON.json(q)))==q
     @test normalize_voronoi_request((;group=:GL,rank=2,
@@ -14,7 +28,7 @@ include(joinpath(@__DIR__,"../scripts/request_arguments.jl"))
     for D in (0,1,-12,20,45)
         @test_throws ArgumentError voronoi_request(D)
     end
-    for (key,value) in (("rank",1),("rank",2.0),("rank",true),("group","PSL"),
+    for (key,value) in (("rank",1),("rank",2.0),("rank",true),("group","PGL"),
         ("field",Dict("kind"=>"number_field","polynomial"=>[-1,-1,0,1])),
         ("order",Dict("kind"=>"nonmaximal")),("lattice",Dict("kind"=>"projective")),
         ("lattice",Dict("kind"=>"free","ideal"=>"nonprincipal")),

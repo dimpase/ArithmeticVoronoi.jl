@@ -10,20 +10,57 @@ implemented in the Julia provider; see [examples and validation](../../docs/src/
 No further HAP API patch is needed for it. The original patch and its validation
 record below are retained for reference.
 
-The separate `0002-update-julia-provider-repository.patch` changes HAP's CI
-checkout URL to `dimpase/ArithmeticVoronoi.jl`, preserving its pinned provider
-commit `007df75debde04c7469124891ac78d555d5de20b`. It applies to the current
-HAP workflow (blob `b9022ef40dc907165094629f1f6920b69b0490f6`). This patch is
-prepared for review and has not been submitted upstream. Keep the original
-repository available until the change lands and HAP's Julia CI passes;
-see [the repository transition](../../docs/src/repository_transition.md).
+## Submitted follow-up: HAP PR #169
 
-To check and apply only this URL update in a HAP checkout:
+[HAP PR #169](https://github.com/gap-packages/hap/pull/169) was submitted on
+6 November 2026, after ArithmeticVoronoi v0.1.0 was registered in General.
+`0003-arithmetic-voronoi-interface.patch` records its changes against HAP
+`85917bcb6bbb57363d68b03b83b39c13054b0eaf`. It supersedes the older URL-only
+`0002-update-julia-provider-repository.patch`; apply only `0003` to that base.
+It updates the provider repository to `dimpase/ArithmeticVoronoi.jl`, pins the
+new provider implementation, uses current stable Julia, documents the direct
+Julia calling sequence, and exercises quadratic GL/SL/PSL and rational and
+Gaussian rank-three cases in one CI process. Its mock GAP test also forwards
+a rational PSL request unchanged. HAP's dispatcher needs no code change.
+The patch also corrects the return type of `InverseMutable` for quotient
+elements: returning an opposite-group element breaks finite stabilizer direct
+products in PSL homology. A separate GAP regression checks inverses and a
+finite direct product; the Julia adapter detects this bug in older HAP and
+installs a compatibility method without changing installed files.
+
+The provider implementation is published as
+[`c6942b9`](https://github.com/dimpase/ArithmeticVoronoi.jl/commit/c6942b97936e69a392ee88523fbf3574edcc6e26)
+on the engine's `hap-interface` branch. Its rational request and projective-complex
+API extends registered v0.1.0; the HAP tutorial explicitly installs this tested
+revision. Local validation against the refreshed HAP base passed all 416
+integration checks and all 39 CI-example checks, plus the GAP regressions,
+complete tutorial validation and installation in a fresh Julia environment.
+Keep the original engine repository available until the PR lands and HAP's
+Julia CI passes; see
+[the repository transition](../../docs/src/repository_transition.md).
 
 ```sh
-git apply --check /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
-git apply /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0002-update-julia-provider-repository.patch
+git apply --check /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0003-arithmetic-voronoi-interface.patch
+git apply /absolute/path/to/ArithmeticVoronoi.jl/patches/hap/0003-arithmetic-voronoi-interface.patch
 ```
+
+The current Julia API requires no explicit registration for direct calls:
+
+```julia
+using ArithmeticVoronoi, Oscar
+import Oscar: GAP
+K = hap_voronoi_complex(; rank=3, group=:SL, resolution_length=3);
+R = GAP.Globals.FreeGResolution(K, 3);
+GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R), 1)) # []
+```
+
+Rational and imaginary-quadratic GL/SL/PSL and real-quadratic GL are supported
+on free maximal-order lattices in ranks at least two. PSL divides by the full
+scalar centre. Real-quadratic SL/PSL cell complexes remain unsupported; the
+separate presentation pipeline handles those groups. No Magma, C++ build or
+precomputed data is used by the CI examples.
+
+## Historical merged patch
 
 `0001-optional-voronoi-backends.patch` is prepared against
 [`gap-packages/hap` at `91bd7baad0ef56c91022cbd6ba2a709942ce2e15`](https://github.com/gap-packages/hap/tree/91bd7baad0ef56c91022cbd6ba2a709942ce2e15).
