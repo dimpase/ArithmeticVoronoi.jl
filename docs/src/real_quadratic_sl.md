@@ -199,7 +199,7 @@ For a higher-rank reference, call the runner's Julia function explicitly:
 include("test/prepare_real_sl_magma.jl")
 prepare_real_sl_magma("/path/to/VMH-TotallyRealNumberFields", "/path/to/new-references";
                      cases=((D=5,rank=3),), deduplicate_faces=true, max_cell_dimension=2,
-                     memoize_cell_data=true)
+                     memoize_cell_data=true, linear_tangent_spaces=true)
 include("test/real_quadratic_sl.jl")
 run_real_sl_tests("/path/to/new-test-output"; magma_directory="/path/to/new-references",
                   discriminants=(5,), ranks=(3,), degree=1)
@@ -212,8 +212,19 @@ answers to Magma. The original and patched source hashes are saved in
 `source.json`. `memoize_cell_data=true` also avoids recomputing a cell's Magma
 stabilizer and affine tangent basis for every orientation query. The calculations
 and returned values are unchanged; cached values are produced by Magma within
-that run. Both performance options are opt-in. All source changes, including
+that run. The optional `linear_tangent_spaces=true` computes the same affine
+tangent space as the common kernel of the minimum-vector evaluation equations, using VMH's
+`FindAllPerp`. This avoids enumerating boundary embeddings for orientation queries;
+the subsequent boundary computation still uses VMH's original algorithm. Its
+orientation signs have been checked against the original calculation for every
+stabilizer element of the full rank-two reference complexes at discriminants 5
+and 12 (318 comparisons). All three options are opt-in. Source changes, including
 the dimension bounds below, are recorded with original and modified hashes.
+The orientation comparison is reproducible with an original prepared reference:
+
+```sh
+julia --project=. test/compare_real_sl_magma_tangents.jl /path/to/original-references/magma_D5 /path/to/new-orientation-check
+```
 
 `max_cell_dimension=m` explicitly limits the Magma reference to its m-skeleton.
 The comparison requires `m ≥ degree+1`; it never treats the skeleton as a

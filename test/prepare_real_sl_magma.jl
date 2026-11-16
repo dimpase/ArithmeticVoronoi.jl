@@ -54,8 +54,35 @@ function memoize_vmh_cells!(directory)
     write(functions,text)
 end
 
+# A minimal class is cut out by fixed minimum-vector evaluations. Its tangent
+# space is therefore their common kernel. VMH already computes that kernel in
+# FindAllPerp; using it avoids enumerating every boundary embedding just to
+# recover the affine tangent space. All arithmetic and minimum vectors here
+# are Magma's own, and the option leaves boundary enumeration unchanged.
+function linear_vmh_tangents!(path)
+    text=read(path,String)
+    pattern=r"intrinsic OrientationSignByDeterminant\(.*?end intrinsic;"s
+    count(pattern,text)==1 || error("VMH orientation source changed; review tangent-space patch")
+    replacement="""
+    intrinsic OrientationSignByDeterminant(F::DAForm,g::Mtrx,W::VData) -> RngIntElt
+     {Computes orientation on the kernel of the minimum-vector equations.}
+     k:=PerfectionCorank(F);
+     if k eq 0 then return 1; end if;
+     Tangent:=FindAllPerp([s*Dagger(s):s in MinimalVectors(F)]);
+     assert #Tangent eq k;
+     CoordinatesTangent:=[SymmetricCoordinates(t):t in Tangent];
+     assert Rank(Matrix(CoordinatesTangent)) eq k;
+     Space:=KSpaceWithBasis(KMatrixSpace(Rationals(),k,dimsym)!CoordinatesTangent);
+     Images:=[SymmetricCoordinates(Dagger(g)*t*g):t in Tangent];
+     Rep:=[Coordinates(Space,Space!x):x in Images];
+     return Sign(Determinant(MatrixRing(Rationals(),k)!Rep));
+    end intrinsic;
+    """
+    write(path,replace(text,pattern=>replacement))
+end
+
 function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
-        deduplicate_faces=false,max_cell_dimension=nothing,memoize_cell_data=false)
+        deduplicate_faces=false,max_cell_dimension=nothing,memoize_cell_data=false,linear_tangent_spaces=false)
     isnothing(max_cell_dimension) ||
         (max_cell_dimension isa Integer && !(max_cell_dimension isa Bool) && max_cell_dimension>=2) ||
         throw(ArgumentError("max_cell_dimension must be an integer at least two"))
@@ -77,6 +104,7 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
         original_hash=bytes2hex(sha256(read(class_source)))
         deduplicate_faces && deduplicate_vmh_faces!(class_source)
         memoize_cell_data && memoize_vmh_cells!(joinpath(target,"Magma"))
+        linear_tangent_spaces && linear_vmh_tangents!(joinpath(target,"Magma","Homology","Functions.m"))
         isnothing(max_cell_dimension) || truncate_vmh_dimensions!(class_source,max_cell_dimension)
         write(joinpath(target,"Magma","BasicData.m"),
             "K:=QuadraticField($d); n:=$n; V:=KMatrixSpace(K,n,1); L:=[IntegralBasis(K)[i]*V.j: i in [1..Degree(K)],j in [1..n]];\n")
@@ -90,7 +118,8 @@ function prepare_real_sl_magma(source,output;cases=((D=5,rank=2),(D=12,rank=2)),
         """)
         write(joinpath(target,"source.json"),JSON.json(Dict("repository"=>source,"revision"=>revision,"discriminant"=>D,"rank"=>n,
             "max_cell_dimension"=>max_cell_dimension,"exact_face_deduplication"=>deduplicate_faces,
-            "memoized_cell_data"=>memoize_cell_data,"original_source_sha256"=>source_hashes,
+            "memoized_cell_data"=>memoize_cell_data,"linear_tangent_spaces"=>linear_tangent_spaces,
+            "original_source_sha256"=>source_hashes,
             "used_source_sha256"=>Dict(file=>bytes2hex(sha256(read(joinpath(target,"Magma",file)))) for file in source_files),"original_MinClass_sha256"=>original_hash,
             "used_MinClass_sha256"=>bytes2hex(sha256(read(class_source))))))
         open(joinpath(target,"magma.log"),"w") do io
