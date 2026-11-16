@@ -325,8 +325,10 @@ end
 Compute a fresh complex and return a HAP non-free resolution. `D` is a quadratic
 field discriminant; omitting it selects Z. Records describe the field, order,
 lattice, group and rank. GL is supported over Z and maximal quadratic orders;
-SL and PSL over Z and imaginary quadratic maximal orders. All use free lattices
-of rank at least two. PSL divides by the full scalar centre of SL.
+SL and PSL over Z and imaginary quadratic maximal orders. Real-quadratic SL₂
+uses a certified determinant-height level complex; construction stops if the
+link certificates cannot be obtained. All use free lattices of rank at least
+two. PSL divides by the full scalar centre of SL.
 
 HAP is loaded automatically; no provider registration or GAP record conversion
 is needed. Apply `GAP.Globals.FreeGResolution(K, n+1)` to compute homology through
@@ -342,8 +344,8 @@ end
 
 function hap_request(request)
     r=normalize_voronoi_request(request)
-    r["group"]!="GL" && request_discriminant(r)>1 &&
-        throw(ArgumentError("real-quadratic SL/PSL cell complexes are not implemented; their presentations are available through run_field_pipeline"))
+    r["group"]!="GL" && request_discriminant(r)>1 && !(r["group"]=="SL" && r["rank"]==2) &&
+        throw(ArgumentError("real-quadratic SL/PSL cell complexes currently support only SL at rank two; presentations are available through run_field_pipeline"))
     r
 end
 
@@ -354,9 +356,12 @@ end
 
 function hap_voronoi_complex(P::ArithmeticVoronoiProblem;group=:GL,resolution_length=100,progress=false)
     group in (:GL,:SL,:PSL) || throw(ArgumentError("choose group=:GL, :SL or :PSL"))
-    group!=:GL && P.degree!=1 && !is_hermitian(P) &&
-        throw(ArgumentError("real-quadratic SL/PSL cell complexes are not implemented; their presentations are available through run_field_pipeline"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
+    if group!=:GL && P.degree!=1 && !is_hermitian(P)
+        group==:SL && P.degree==2 && P.rank==2 ||
+            throw(ArgumentError("real-quadratic SL/PSL cell complexes currently support only SL at rank two; presentations are available through run_field_pipeline"))
+        return RealQuadraticSL.compute_real_sl_complex(P.discriminant;resolution_length,progress).hap
+    end
     E=enumerate_perfect_forms(P;backend=:native,progress)
     C=voronoi_complex(E;group=group==:PSL ? :SL : group,progress)
     K=hap_complex(C;resolution_length)

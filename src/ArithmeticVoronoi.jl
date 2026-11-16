@@ -266,5 +266,6 @@ include("GLPipeline.jl")
 include("Words.jl")
 include("Dataset.jl")
 include("HAP.jl")
+include("RealQuadraticSL/RealQuadraticSL.jl")
 
 end

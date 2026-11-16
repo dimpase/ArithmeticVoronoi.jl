@@ -126,10 +126,11 @@ end
           hap_homology(GAP.Globals.ResolutionGL2QuadraticIntegers(2,2),1)
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(1,-7 : backend := \"julia\")")
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(2,-12 : backend := \"julia\")")
-    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(2,5 : backend := \"julia\")")
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(3,5 : backend := \"julia\")")
 end
 
 include("hap_projective.jl")
+include("hap_real_quadratic_sl.jl")
 include("higher_rank.jl")
 include("gl_presentations.jl")
 test_gl_presentations(;with_hap=true)

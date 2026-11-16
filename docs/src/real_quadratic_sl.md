@@ -1,31 +1,41 @@
-# Experimental real-quadratic SL₂ complexes
+# Certified real-quadratic SL₂ complexes
 
-The local `real-quadratic-sl-complex` branch contains a prototype that constructs
-an actual three-dimensional contractible SL₂(O)-equivariant cell complex.
-It is explicitly loaded from `experimental/RealQuadraticSL`; the normal HAP
-provider and registered package entry points are unchanged. It has been exercised
-on O for Q(√5) and Q(√3), whose field discriminants are 5 and 12.
+ArithmeticVoronoi 0.1.1 constructs three-dimensional contractible
+SL₂(O)-equivariant cell complexes through the standard Julia HAP interface.
+The construction has been validated on O for Q(√5) and Q(√3), whose field
+discriminants are 5 and 12. Every computation must pass exact link certification.
 
 ## Run a fresh computation
 
-From a checkout with its Julia dependencies instantiated:
+In a Julia environment containing ArithmeticVoronoi 0.1.1 or later:
 
 ```julia
 using ArithmeticVoronoi, Oscar
 import Oscar: GAP
-include("experimental/RealQuadraticSL/RealQuadraticSL.jl")
-using .RealQuadraticSL
-
-result = compute_real_sl_complex(5; progress=true);
-length.(result.geometric.cells)  # geometric cell orbits, starting at dimension 0
-length.(result.chain.cells)      # algebraically reduced permutation modules
-K = result.hap;
+K = hap_voronoi_complex(5; group=:SL, resolution_length=4, progress=true);
 R = GAP.Globals.FreeGResolution(K, 4);
 C = GAP.Globals.TensorWithIntegers(R);
 [GAP.gap_to_julia(GAP.Globals.Homology(C,n)) for n in 1:3]
 ```
 
-The equivalent command-line runner is:
+The registered HAP provider accepts the same request, with a squarefree
+radicand in HAP's convenience call:
+
+```julia
+enable_hap_julia_backend(; resolution_length=4)
+K = GAP.evalstr("VoronoiComplexSL(2,5 : backend := \"julia\")");
+```
+
+To inspect the geometric cells, reduced chain model and exact witnesses:
+
+```julia
+result = ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex(5);
+length.(result.geometric.cells)
+length.(result.chain.cells)
+result.certificate
+```
+
+The original command-line runner remains available in a source checkout:
 
 ```sh
 julia --project=. experimental/RealQuadraticSL/run.jl 5 /absolute/path/to/output
@@ -38,7 +48,7 @@ receives link data, exact collapse witnesses and construction timings; these fil
 are outputs only and are never loaded implicitly. Use `reduce=false` to export
 the full geometric complex to HAP instead of its smaller chain-equivalent model.
 
-The prototype currently requires a positive quadratic field discriminant and the
+The level construction requires a positive quadratic field discriminant and the
 free rank-two lattice over its maximal order. It returns no complex if its chosen
 height cannot be certified. This is not a proof that such a complex does not exist
 for that field. A contracting homotopy for HAP cup-product calculations is not
@@ -99,10 +109,14 @@ product cells. Both can be exported as HAP non-free resolutions.
 
 ## Validation and separation from computation
 
-Optional tests are in `test/real_quadratic_sl.jl`; they are not in the default
-small test suite. They check certificate replay, reject incomplete witnesses and
-changed boundary orientations, and compare H₁ with an independently constructed
-SL presentation.
+The HAP integration CI tests `hap_voronoi_complex` and the registered GAP
+provider on discriminants 5 and 12, checking integral homology through degree
+three. These tests are in `test/hap_real_quadratic_sl.jl`.
+
+Extended optional tests are in `test/real_quadratic_sl.jl`; they are not in the
+default small test suite. They check certificate replay, reject incomplete
+witnesses and changed boundary orientations, and compare H₁ with an
+independently constructed SL presentation.
 
 For homology through degree three they separately restrict a GL₂ complex to
 `det⁻¹((O×)²) ≅ SL₂(O) × Z`, then check the integral Künneth formula. The same
@@ -120,4 +134,10 @@ ARITHMETIC_VORONOI_HAP_ROOT=/path/to/hap julia --project=. test/real_quadratic_s
 
 Omit the last argument to skip the Magma comparison. Tests and their generated
 receipts are independent of the construction; neither expected homology nor
-field-specific cell counts are encoded in the prototype.
+field-specific cell counts are encoded in the construction.
+
+## Detailed construction interface
+
+```@docs
+ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex
+```

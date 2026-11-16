@@ -43,7 +43,10 @@ include(joinpath(@__DIR__,"../scripts/request_arguments.jl"))
     r=deepcopy(q);delete!(r,"order")
     @test_throws ArgumentError normalize_voronoi_request(r)
     @test_throws ArgumentError enumerate_perfect_forms(voronoi_request(-7;group=:SL))
-    @test_throws ArgumentError hap_voronoi_complex(voronoi_request(5;group=:SL))
+    # Validate the new request without loading HAP in the native-only suite.
+    real_sl=voronoi_request(5;group=:SL)
+    @test ArithmeticVoronoi.hap_request(real_sl)==real_sl
+    @test_throws ArgumentError hap_voronoi_complex(voronoi_request(5;group=:SL,rank=3))
     @test_throws ArgumentError hap_voronoi_complex(q;resolution_length=0)
     withenv("PERFECT_FORMS_BACKEND_CONFIG"=>"/no/such/config.json") do
         E=enumerate_perfect_forms(q)

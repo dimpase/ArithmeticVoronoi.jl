@@ -1,6 +1,6 @@
 name = "ArithmeticVoronoi"
 uuid = "ad54a9ab-83c5-468c-8b76-196f5a70a2f9"
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -8,11 +8,13 @@ Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [compat]
 Dates = "1"
 LinearAlgebra = "1"
+Random = "1"
 SHA = "0.7, 1"
 Test = "1"
 Hecke = "0.39"

@@ -25,7 +25,8 @@ All these calls use native Julia enumeration by default. The presentation
 runner `run_field_pipeline` takes a GL request of any supported rank and
 computes GL, SL and PSL presentations; `run_gl_pipeline` computes GL only.
 HAP complexes support rational/quadratic GL and rational/imaginary-quadratic
-SL and PSL. For example, use `voronoi_request(-7; group=:PSL)`.
+SL and PSL, plus certified real-quadratic SL₂. For example, use
+`voronoi_request(-7; group=:PSL)` or `voronoi_request(5; group=:SL)`.
 
 Julia accepts named tuples, dictionaries with string or symbol keys, and
 JSON records. `normalize_voronoi_request(request)` validates the supported
@@ -76,7 +77,8 @@ julia --project=. scripts/run_hap.jl --requests=examples/voronoi_requests.json -
 The imaginary presentation runner also accepts `--requests=FILE`; supply only
 negative discriminants and GL requests. It retains its independent comparisons
 against HAP's stored SL/PSL complexes. `run_hap.jl` instead constructs fresh
-complexes using the Julia provider and accepts rational and imaginary SL/PSL requests too.
+complexes using the Julia provider and accepts rational and imaginary SL/PSL
+requests, plus real-quadratic SL₂ requests.
 Its `summary.json` and individual group files contain the request, timings,
 and homology invariant factors (`0` denotes an infinite cyclic summand).
 The expanded [rank-two HAP batch](https://github.com/dimpase/ArithmeticVoronoi.jl/blob/main/examples/hap_requests.json) adds SL,

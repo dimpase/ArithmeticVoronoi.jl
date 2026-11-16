@@ -21,16 +21,15 @@ finite presentation and constructive membership algorithm.
 
 ## Start a computation
 
-Use Julia 1.10 or later. While General registration is pending:
+Use Julia 1.10 or later and install from the General registry:
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/dimpase/ArithmeticVoronoi.jl.git")
+Pkg.add("ArithmeticVoronoi")
 Pkg.add("Oscar") # for the group operations below
 ```
 
-After registration, use `Pkg.add("ArithmeticVoronoi")`. See the
-[user guide](docs/src/guide.md#install-and-start-julia) for a development checkout.
+See the [user guide](docs/src/guide.md#install-and-start-julia) for a development checkout.
 
 At the Julia prompt, compute all three groups for O = Z[√3] and work with SL:
 
