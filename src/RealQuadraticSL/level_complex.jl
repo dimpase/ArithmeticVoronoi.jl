@@ -19,7 +19,7 @@ struct MorseLevelComplex
     boundaries::Vector{Vector{Vector{Tuple{Int,Any}}}}
 end
 
-function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex.cells),height=nothing,progress=false)
+function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex.cells),lookup_max_length=max_length,height=nothing,progress=false)
     C=M.complex;P=C.enumeration.problem
     orbits=FlagOrbit[]
     lookup=[[Dict{Any,Tuple{Int,Any}}() for c in layer] for layer in C.cells]
@@ -36,10 +36,15 @@ function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex
         function descend(flag,S)
             if meets_level(flag)
                 id=length(orbits)+1
-                for s in C.stabilizers[k][i]
-                    image=Tuple(morse_act(M,s,v).key for v in flag)
-                    @assert !haskey(table,image) || first(table[image])==id "a partial-flag orbit was repeated"
-                    table[image]=(id,s)
+                # Boundary lookup needs only proper subflags. In a large
+                # skeleton, indexing all translates of its top cells costs
+                # far more space than retaining their orbit representatives.
+                if length(flag)<=lookup_max_length
+                    for s in C.stabilizers[k][i]
+                        image=Tuple(morse_act(M,s,v).key for v in flag)
+                        @assert !haskey(table,image) || first(table[image])==id "a partial-flag orbit was repeated"
+                        table[image]=(id,s)
+                    end
                 end
                 push!(orbits,FlagOrbit(flag,S))
             end
@@ -97,7 +102,7 @@ function build_level_complex(M,data,certificate;progress=false,max_cell_dimensio
             throw(ArgumentError("max_cell_dimension must be a nonnegative integer"))
         top=min(top,max_cell_dimension)
     end
-    orbits,lookup=all_flag_orbits(M;faces,max_length=top+2,height,progress)
+    orbits,lookup=all_flag_orbits(M;faces,max_length=top+2,lookup_max_length=top+1,height,progress)
     if progress;println("Level-intersecting barycentric simplex orbits: ",length(orbits));flush(stdout);end
     cells=[LevelCell[] for _ in 0:top]
     stabilizers=[Vector{Any}[] for _ in 0:top]
