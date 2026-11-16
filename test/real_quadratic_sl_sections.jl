@@ -53,7 +53,12 @@ end
         end
         partial=SectionRQSL.assemble_section_level(M,certificate,plan;faces,top=2,parent_max_dimension=3)
         @test SectionRQSL.validate_level_complex(partial)
-        K=SectionRQSL.level_hap_complex(SectionRQSL.reduce_level_complex(partial);resolution_length=2)
+        reduced=SectionRQSL.reduce_level_complex(partial)
+        trimmed=SectionRQSL.trim_partial_level_complex(reduced)
+        @test SectionRQSL.validate_level_complex(trimmed)
+        @test length(trimmed.cells[end])<=length(reduced.cells[end])
+        @test SectionRQSL.trim_partial_level_complex(flag)===flag
+        K=SectionRQSL.level_hap_complex(trimmed;resolution_length=2)
         @test only(section_test_homology(K,1))==first(expected)
         @test_throws ArgumentError SectionRQSL.level_hap_complex(partial;resolution_length=3)
         @test_throws Oscar.GAP.GAPError Oscar.GAP.evalstr("K -> K!.dimension(3)")(K)
@@ -116,4 +121,31 @@ end
             @test SectionRQSL.validate_level_complex(R)
         end
     end
+end
+
+@testset "Partial top modules preserve the boundary image" begin
+    # An abstract chain with one loop and boundaries 2a, 2a, -2a and 0.
+    # It tests the cokernel directly, without claiming to resolve a group.
+    P=arithmetic_problem(5;rank=3);I=identity_matrix(P.field,P.rank)
+    M=SectionRQSL.MorseExperiment((enumeration=(problem=P,),cells=fill(nothing,5)),nothing,nothing,
+        Dict{Any,SectionRQSL.MorseVertex}(),Dict{Any,SectionRQSL.MorseVertex}(),
+        IdDict{Any,Any}(),Dict{Any,Int}(),Vector{BigInt}[],nothing)
+    cell=SectionRQSL.LevelCell(0,I,0,1)
+    cells=[[cell],[cell],fill(cell,4)]
+    stabs=[[Any[I] for _ in layer] for layer in cells]
+    row=Tuple{Int,Any}[(1,I),(1,I)]
+    boundaries=[[Tuple{Int,Any}[]],[Tuple{Int,Any}[(1,I),(-1,I)]],
+        [row,copy(row),Tuple{Int,Any}[(-j,g) for (j,g) in row],Tuple{Int,Any}[]]]
+    source=SectionRQSL.MorseLevelComplex(M,nothing,SectionRQSL.FlagOrbit[],cells,stabs,boundaries)
+    L=SectionRQSL.ReducedLevelComplex(M,nothing,SectionRQSL.FlagOrbit[],cells,stabs,boundaries,
+        Any[I],Any[],source,[collect(eachindex(layer)) for layer in cells])
+    @test SectionRQSL.validate_level_complex(L)
+    T=SectionRQSL.trim_partial_level_complex(L)
+    @test SectionRQSL.validate_level_complex(T)
+    @test length.(T.cells)==[1,1,2]
+    @test T.top_indices==[1,3]
+    @test T.omitted_top_generators==[(cell=2,same_boundary_as=1),(cell=4,same_boundary_as=nothing)]
+    @test T.boundaries[1]===L.boundaries[1] && T.boundaries[2]===L.boundaries[2]
+    image_index(X)=foldl(gcd,(sum((sign(j) for (j,g) in b);init=0) for b in X.boundaries[end]);init=0)
+    @test image_index(L)==image_index(T)==2
 end

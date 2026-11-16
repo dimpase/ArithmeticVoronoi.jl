@@ -159,3 +159,62 @@ function reduce_level_complex(L;progress=false)
     if progress;println("Reduced level complex: ",length.(cells));flush(stdout);end
     ReducedLevelComplex(L.experiment,L.certificate,L.flag_orbits,cells,stabs,result,generators,cancellations,L,findall.(active))
 end
+
+# A proper m-dimensional partial model is certified only below degree m.
+# Removing a top generator with zero boundary, or with the same boundary and
+# orientation module as a retained generator, preserves im(d_m) exactly.
+# This is not a chain homotopy equivalence in the unclaimed top degree.
+struct PartialLevelChainComplex
+    experiment::MorseExperiment
+    certificate::Any
+    flag_orbits::Vector{FlagOrbit}
+    cells::Any
+    stabilizers::Any
+    boundaries::Any
+    generators::Vector{Any}
+    original::Any
+    top_indices::Vector{Int}
+    omitted_top_generators::Any
+end
+level_orientation(L::PartialLevelChainComplex,k,i,g)=
+    level_orientation(L.original,k,k==length(L.cells) ? L.top_indices[i] : i,g)
+level_model(L::PartialLevelChainComplex)=level_model(L.original)
+retained_parent_dimension(L::PartialLevelChainComplex)=retained_parent_dimension(L.original)
+
+function trim_partial_level_complex(L;progress=false)
+    top=length(L.cells)
+    top-1<length(L.experiment.complex.cells)-2 || return L
+    @assert top>=2 "a partial resolution needs at least the one-skeleton"
+    P=L.experiment.complex.enumeration.problem
+    indices=Int[];omitted=Any[];seen=Dict{Any,Int}()
+    for i in eachindex(L.cells[top])
+        b=L.boundaries[top][i]
+        if isempty(b)
+            push!(omitted,(cell=i,same_boundary_as=nothing))
+            continue
+        end
+        # These exact keys are sufficient for equality of the module maps;
+        # no incomplete search or expected homology is used for pruning.
+        # Variable-length vectors avoid compiling a new large tuple hash for
+        # every distinct boundary size. Keys are never subsequently mutated.
+        domain=sort!([(AV.matrix_key(AV.encode_matrix(P,g)),level_orientation(L,top,i,g))
+            for g in L.stabilizers[top][i]])
+        image=sort!([(j,AV.matrix_key(AV.encode_matrix(P,g))) for (j,g) in b])
+        key=(domain,image)
+        if haskey(seen,key)
+            push!(omitted,(cell=i,same_boundary_as=seen[key]))
+        else
+            seen[key]=i;push!(indices,i)
+        end
+    end
+    isempty(omitted) && return L
+    cells=[L.cells[1:end-1];[L.cells[end][indices]]]
+    stabs=[L.stabilizers[1:end-1];[L.stabilizers[end][indices]]]
+    boundaries=[L.boundaries[1:end-1];[L.boundaries[end][indices]]]
+    if progress
+        println("Partial chain top generators: ",length(indices)," retained; ",length(omitted),
+            " zero or repeated boundaries omitted (exact below degree ",top-1,")");flush(stdout)
+    end
+    PartialLevelChainComplex(L.experiment,L.certificate,L.flag_orbits,cells,stabs,boundaries,
+        L.generators,L,indices,omitted)
+end

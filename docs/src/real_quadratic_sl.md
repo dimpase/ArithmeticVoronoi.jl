@@ -69,10 +69,12 @@ of the full level. The returned HAP object supports a free resolution through
 that degree, hence homology through degree `m−1`. Its
 `arithmeticVoronoi.computedCellDimension` and `certifiedCellDimension` metadata
 record the distinction. Asking it for uncomputed higher cells raises an error.
-A later call with a larger resolution length computes a larger skeleton afresh.
+A later call with a larger resolution length computes a larger model afresh.
+The default section model retains a certified partial level subcomplex before
+taking its skeleton; the connectivity argument is described below.
 
 The detailed `compute_real_sl_complex` interface constructs the full level by
-default. Set `max_cell_dimension=m` explicitly to request a skeleton; then
+default. Set `max_cell_dimension=m` explicitly to request a partial model; then
 `resolution_length` must not exceed `m` if the skeleton is proper. A skeleton
 is not itself asserted to be contractible. `reduce=false` keeps its geometric
 cells instead of performing algebraic chain cancellations.
@@ -166,8 +168,9 @@ product cells. Both can be exported as HAP non-free resolutions.
 
 ## Certified cell sections
 
-The detailed interface also accepts `cell_model=:sections`. This avoids many
-unnecessary barycentric cells while keeping an exact certificate:
+The default `cell_model=:sections` avoids many barycentric cells while keeping
+an exact certificate. The detailed interface also accepts `cell_model=:flags`
+to retain every intersecting flag cell. For example:
 
 ```julia
 result = ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex(5;
@@ -211,6 +214,17 @@ stabilizers are passed to HAP. The boundary validator and chain cancellations
 use the orientation characters, including signs from reducing transporter
 cosets. Subdivided sections use the original flag-cell orientations. Geometric
 cells and the reduced chain model remain separate objects.
+
+For a proper partial model through degree m, the reduced chain model also omits
+top generators whose boundary is zero or exactly repeats that of a retained
+generator with the same orientation module. Each omission records its source
+and, for a repeat, the retained source in `omitted_top_generators`; these indices
+refer to `chain.original.cells[end]`. This preserves
+the image of the top boundary map exactly, and therefore preserves homology below
+m and the claimed resolution degree. It can change the unclaimed top homology;
+it is not a chain homotopy equivalence in all degrees. The geometric complex
+retains every cell. Full-dimensional models are left intact by this step.
+HAP metadata reports the number of `omittedTopGenerators`.
 
 ## Validation and separation from computation
 

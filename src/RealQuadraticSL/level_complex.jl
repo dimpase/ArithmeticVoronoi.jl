@@ -233,5 +233,6 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
     data["retainedOriginalDimension"]=retained_parent_dimension(L)
     data["certifiedCellDimension"]=certified_dimension
     data["computedCellDimension"]=computed_dimension
+    data["omittedTopGenerators"]=hasproperty(L,:omitted_top_generators) ? length(L.omitted_top_generators) : 0
     GAP.Globals.HAPArithmeticVoronoiComplex(GAP.GapObj(data;recursive=true),resolution_length)
 end

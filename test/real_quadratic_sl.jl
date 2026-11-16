@@ -1,7 +1,7 @@
 using ArithmeticVoronoi, Oscar, JSON, Test, SHA
 include(joinpath(@__DIR__,"..","experimental","RealQuadraticSL","RealQuadraticSL.jl"))
 using .RealQuadraticSL
-using .RealQuadraticSL: validate_level_complex, replay_morse_graph_certificate, ascending_vertices, MorseLevelComplex
+using .RealQuadraticSL: validate_level_complex, replay_morse_graph_certificate, ascending_vertices
 const AV=ArithmeticVoronoi
 import Oscar:GAP
 function test_homology(K,degree)

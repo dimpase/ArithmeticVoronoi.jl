@@ -25,6 +25,9 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
         metadata.levelModel := data.levelModel;
         metadata.retainedOriginalDimension := data.retainedOriginalDimension;
     fi;
+    if IsBound(data.omittedTopGenerators) then
+        metadata.omittedTopGenerators := data.omittedTopGenerators;
+    fi;
     dimension := function(n)
         if skeleton <> fail and n > skeleton then
             Error("This certified partial level was computed only through dimension ",

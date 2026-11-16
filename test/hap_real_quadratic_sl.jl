@@ -3,6 +3,8 @@ import Oscar: GAP
 
 @testset "certified real-quadratic SL2 provider" begin
     enable_hap_julia_backend(;resolution_length=4)
+    selected=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","")
+    isempty(selected) || @test realpath(GAP.Packages.locate_package("hap"))==realpath(selected)
     # Independent fresh Magma/VMH GL complexes, restricted to SL₂×Z, give
     # these homology groups via Künneth. Expected answers live only in tests.
     cases=((D=5,construct=()->hap_voronoi_complex(5;group=:SL,resolution_length=4),
@@ -17,6 +19,7 @@ import Oscar: GAP
             @test Int(metadata.discriminant)==c.D
             @test Int(metadata.rank)==2
             @test metadata.groupKind==GAP.GapObj("SL")
+            @test metadata.levelModel==GAP.GapObj("sections")
             P=arithmetic_problem(c.D)
             generators=GAP.Globals.GeneratorsOfGroup(GAP.evalstr("K -> K!.group")(K))
             @test all(generators) do g
@@ -35,6 +38,7 @@ import Oscar: GAP
     # never silently advertise missing higher cells as zero chain modules.
     K=hap_voronoi_complex(5;group=:SL,resolution_length=2)
     metadata=GAP.evalstr("K -> K!.arithmeticVoronoi")(K)
+    @test metadata.levelModel==GAP.GapObj("sections")
     @test Int(metadata.computedCellDimension)==2
     @test Int(metadata.certifiedCellDimension)==3
     R=GAP.Globals.FreeGResolution(K,2)

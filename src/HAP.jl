@@ -387,7 +387,7 @@ end
 function hap_complex(C::VoronoiComplex;resolution_length=100)
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     validate_voronoi_complex(C)
-    GAP.Packages.load("hap") || error("HAP is not installed; use GAP.Packages.install(\"hap\")")
+    GAP.Packages.load(get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap")) || error("HAP is not installed; use GAP.Packages.install(\"hap\")")
     GAP.Globals.Read(GAP.GapObj(joinpath(PACKAGE_ROOT,"gap","ArithmeticVoronoi.g")))
     P=C.enumeration.problem
     elts=Any[identity_matrix(P.field,P.rank)]
@@ -486,7 +486,7 @@ quadratic GL/SL convenience constructors still accept squarefree radicands.
 """
 function enable_hap_julia_backend(;progress=false,resolution_length=100)
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
-    GAP.Packages.load("hap") || error("HAP is not installed")
+    GAP.Packages.load(get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap")) || error("HAP is not installed")
     GAP.Globals.Read(GAP.GapObj(joinpath(PACKAGE_ROOT,"gap","VoronoiBackends.g")))
     provider=function(request)
         hap_voronoi_complex(GAP.gap_to_julia(request;recursive=true);progress,resolution_length)

@@ -13,20 +13,25 @@ export compute_real_sl_complex
 """
     compute_real_sl_complex(D; rank=2, resolution_length=4, reduce=true, progress=false,
                             certificate_directory=nothing, max_cell_dimension=nothing,
-                            cell_model=:flags, hap_root="hap")
+                            cell_model=:sections, hap_root="hap")
 
 Compute a fresh, certified determinant-height level complex for SL(rank,O), where D
 is a positive quadratic field discriminant. Returns `geometric`, its optional
 algebraically reduced `chain`, and `hap` (a HAP non-free resolution), together with
 link-collapse certificates and timings. `max_cell_dimension=m` explicitly requests
-only the m-skeleton of the certified full level. For a proper skeleton,
+a level model through dimension m. For a proper partial model,
 `resolution_length` must not exceed m; homology is then supported through degree
-`resolution_length-1`. The default constructs all dimensions. `cell_model=:flags` uses all intersecting
-flag cells. `cell_model=:sections` merges independently certified ball sections
-and subdivides the remaining sections compatibly. A bounded section calculation
+`resolution_length-1`. The default constructs all dimensions.
+`cell_model=:sections` merges independently certified ball sections and
+subdivides the remaining sections compatibly. `cell_model=:flags` uses all
+intersecting flag cells. A bounded section calculation
 can omit higher pieces after a verified relative-connectivity argument; its
 geometric output is then a partial level subcomplex, exact below the requested
-resolution degree, and is not asserted to be contractible.
+resolution degree, and is not asserted to be contractible. With `reduce=true`,
+the partial chain model also omits top generators with zero or repeated boundary
+maps; when any are omitted, `chain.omitted_top_generators` records these
+dependencies against `chain.original`. This preserves
+exactness below the computed degree, but does not preserve top homology.
 
 Stabilizers retain the full scalar centre
 of SL: -I is retained in even rank and excluded in odd rank.
@@ -44,7 +49,7 @@ end
 
 function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4,reduce=true,
         progress=false,certificate_directory=nothing,max_cell_dimension=nothing,
-        cell_model=:flags,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
+        cell_model=:sections,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
     P.degree==2 && P.discriminant>1 || throw(ArgumentError("a real quadratic problem is required"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     if !isnothing(max_cell_dimension)
@@ -78,6 +83,9 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
     @assert validate_level_complex(L)
     reduced=reduce ? stage("equivariant chain cancellations",()->reduce_level_complex(L;progress)) : L
     @assert validate_level_complex(reduced)
+    if reduce
+        reduced=stage("partial chain top generators",()->trim_partial_level_complex(reduced;progress))
+    end
     K=stage("HAP export",()->level_hap_complex(reduced;resolution_length,hap_root))
     if !isnothing(certificate_directory)
         mkpath(certificate_directory)
@@ -101,6 +109,7 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
             "cell_model"=>String(level_model(L)),"retained_original_dimension"=>retained_parent_dimension(L),
             "certified_dimension"=>length(C.cells)-2,"computed_dimension"=>length(L.cells)-1,"cell_orbits"=>length.(L.cells),
             "chain_module_orbits"=>length.(reduced.cells),"timings"=>timings,
+            "omitted_top_generators"=>hasproperty(reduced,:omitted_top_generators) ? reduced.omitted_top_generators : Any[],
             "level_selection"=>get(data,"level_selection",nothing),"precomputed_data_used"=>false);pretty=4))
     end
     (;geometric=L,chain=reduced,hap=K,timings,certificate,M,data,links,L,reduced,K)
