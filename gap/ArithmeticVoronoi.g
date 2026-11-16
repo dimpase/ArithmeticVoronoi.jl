@@ -3,7 +3,7 @@
 if not IsBound(HAPArithmeticVoronoiComplex) then
 BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
     local dims, elts, stabs, evens, boundaries, group, dimension, stabilizer,
-          boundary, action;
+          boundary, action, metadata, skeleton;
     dims := ShallowCopy(data.dimensions);
     elts := StructuralCopy(data.elts);
     stabs := List(data.stabilizers, layer -> List(layer, Group));
@@ -11,7 +11,21 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
     boundaries := StructuralCopy(data.boundaries);
     group := Group(data.generators);
     SetName(group, data.name);
+    skeleton := fail;
+    metadata := rec(discriminant:=data.discriminant, rank:=data.rank,
+                    groupKind:=data.groupKind, backend:="julia");
+    if IsBound(data.computedCellDimension) then
+        metadata.computedCellDimension := data.computedCellDimension;
+        metadata.certifiedCellDimension := data.certifiedCellDimension;
+        if data.computedCellDimension < data.certifiedCellDimension then
+            skeleton := data.computedCellDimension;
+        fi;
+    fi;
     dimension := function(n)
+        if skeleton <> fail and n > skeleton then
+            Error("This certified level skeleton was computed only through dimension ",
+                  skeleton, "; request a longer resolution to compute more cells.");
+        fi;
         if n < 0 or n >= Length(dims) then return 0; fi;
         return dims[n+1];
     end;
@@ -33,8 +47,7 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
     return Objectify(HapNonFreeResolution,rec(
         dimension:=dimension, elts:=elts, group:=group, stabilizer:=stabilizer,
         action:=action, boundary:=boundary, homotopy:=fail, hasse:=fail,
-        arithmeticVoronoi:=rec(discriminant:=data.discriminant,
-                              rank:=data.rank, groupKind:=data.groupKind, backend:="julia"),
+        arithmeticVoronoi:=metadata,
         properties:=[["type","resolution"],["reduced",true],
                     ["length",length],["characteristic",0]]));
 end);

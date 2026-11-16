@@ -26,7 +26,7 @@ makedocs(
             "Imaginary quadratic fields"=>"imaginary_quadratic.md",
             "Higher rank"=>"higher_rank.md",
             "HAP and Magma"=>"hap_and_vmh.md",
-            "Real SL₂ complexes"=>"real_quadratic_sl.md",
+            "Real SLₙ complexes"=>"real_quadratic_sl.md",
             "Kirchheimer–Wolfart comparison"=>"validation/kirchheimer_wolfart.md",
             "Historical C++ backend audit"=>"validation/backend_audit.md",
         ],

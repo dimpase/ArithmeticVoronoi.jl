@@ -1,0 +1,122 @@
+using ArithmeticVoronoi, Oscar, Test
+const RQSL=ArithmeticVoronoi.RealQuadraticSL
+
+@testset "dimension-independent determinant-height construction" begin
+    # An eight-dimensional simplex goes beyond every rank-two link dimension.
+    facets=[Tuple(1:9)]
+    collapse=RQSL.collapse_link(facets)
+    @test collapse.passed
+    @test RQSL.replay_collapse(facets,collapse.pairs)
+    @test_throws AssertionError RQSL.replay_collapse(facets,collapse.pairs[2:end])
+    sphere=[Tuple(i for i in 1:6 if i!=j) for j in 1:6]
+    @test !RQSL.collapse_link(sphere).passed
+    @test isempty(RQSL.subset_masks(0))
+    @test collect(RQSL.subset_masks(0;include_empty=true))==[0]
+    @test collect(Iterators.take(RQSL.subset_masks(70),3))==BigInt[1,2,3]
+    @test last(RQSL.subset_masks(70))==(big(1)<<70)-1
+    @test_throws ArgumentError RQSL.subset_masks(-1)
+    @test_throws AssertionError RQSL.certify_morse_links(Dict("base_heights"=>[0.0],"links"=>Any[]))
+    for n in (2,3,4)
+        P=arithmetic_problem(5;rank=n)
+        units=ArithmeticVoronoi.verified_units(P)
+        I=identity_matrix(P.field,n)
+        one_step=diagonal_matrix(P.field,[units.epsilon;fill(one(P.field),n-1)])
+        for (g,shift) in ((one_step,1),(units.epsilon*I,n))
+            image=ArithmeticVoronoi.act_form(P,I,inv(g))
+            @test RQSL.morse_base_height(P,units,image)≈RQSL.morse_base_height(P,units,I)+shift
+        end
+        # The full real SL centre has order two exactly in even rank.
+        V=shortest_data(trace_gram(P,I)).vectors
+        stab=ArithmeticVoronoi.cell_maps(P,V,V;determinant_one=true)
+        @test length(stab)==factorial(n)*2^(n-1)
+        @test all(g->det(g)==1,stab)
+        @test (-I in stab)==iseven(n)
+        @test ArithmeticVoronoi.hap_request(voronoi_request(5;group=:SL,rank=n))["rank"]==n
+    end
+end
+
+@testset "flag orbits cover the independently enumerated face lattice" begin
+    P=arithmetic_problem(5)
+    C=voronoi_complex(enumerate_perfect_forms(P;backend=:native))
+    M=RQSL.morse_experiment(C)
+    raw=[[Vector{RQSL.MorseVertex}[] for c in layer] for layer in C.cells]
+    key(flag)=Tuple(v.key for v in flag)
+    for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
+        top=M.vertices[k][i]
+        if k==1
+            raw[k][i]=[[top]]
+        else
+            for (j,g) in C.boundaries[k][i],flag in raw[k-1][abs(j)]
+                push!(raw[k][i],[RQSL.MorseVertex[RQSL.morse_act(M,g,v) for v in flag];top])
+            end
+        end
+        expanded=Set(key([RQSL.morse_act(M,s,v) for v in flag])
+            for flag in M.orbit_flags[k][i] for s in C.stabilizers[k][i])
+        @test expanded==Set(key.(raw[k][i]))
+        @test length(expanded)==M.full_flag_counts[k][i]
+        if k>1
+            exhaustive=Set{Any}()
+            for lower in C.cells[k-1],h in ArithmeticVoronoi.cell_maps(P,c.vectors,lower.vectors)
+                push!(exhaustive,ArithmeticVoronoi.cell_vector_key(ArithmeticVoronoi.cell_image(P,inv(h),lower.vectors)))
+            end
+            actual=Set(ArithmeticVoronoi.cell_vector_key(ArithmeticVoronoi.cell_image(P,g,C.cells[k-1][abs(j)].vectors)) for (j,g) in C.boundaries[k][i])
+            @test actual==exhaustive
+        end
+    end
+end
+
+@testset "exact graph-collapse witnesses" begin
+    edges=[[i,j] for i in 1:9 for j in i+1:9]
+    result=RQSL.collapse_flag_graph(1:9,edges)
+    @test result.passed
+    @test RQSL.replay_flag_collapse(1:9,edges,result.steps)
+    @test_throws AssertionError RQSL.replay_flag_collapse(1:9,edges,result.steps[2:end])
+    @test !RQSL.collapse_flag_graph(1:4,[[1,2],[2,3],[3,4],[4,1]]).passed
+    @test_throws AssertionError RQSL.replay_flag_collapse(1:4,[[1,2],[2,3],[3,4],[4,1]],[[1,2]])
+    triangle=[[1,2],[1,3],[2,3]]
+    steps=[[1,2,3],[1,3],[2,3]]
+    @test RQSL.replay_flag_collapse(1:3,triangle,steps)
+    # Independently expand the edge-collapse macro into elementary face pairs.
+    @test RQSL.replay_collapse([(1,2,3)],[((1,2),(1,2,3)),((1,),(1,3)),((2,),(2,3))])
+    @test_throws AssertionError RQSL.replay_flag_collapse(1:3,[[1,2],[2,3]],steps)
+end
+
+@testset "incidence-poset links equal full flag links" begin
+    P=arithmetic_problem(5)
+    M=RQSL.morse_experiment(voronoi_complex(enumerate_perfect_forms(P;backend=:native)))
+    legacy,oldlinks=RQSL.morse_link_data(M)
+    data,newlinks,faces=RQSL.morse_link_graphs(M)
+    @test data["base_heights"]==legacy["base_heights"]
+    for i in eachindex(oldlinks)
+        old=oldlinks[i]
+        new=sort!(collect(values(newlinks[i]));by=v->v.key)
+        @test Set(v.key for v in old.vertices)==Set(v.key for v in new)
+        edgekey(a,b)=minmax(a.key,b.key)
+        expected=Set(edgekey(old.vertices[f[a]],old.vertices[f[b]]) for f in old.facets for a in eachindex(f) for b in a+1:length(f))
+        actual=Set(edgekey(new[a],new[b]) for (a,b) in data["links"][i]["edges"])
+        @test actual==expected
+    end
+    @test RQSL.certify_morse_graphs(data).passed
+    # Interning must preserve an exact transporter and its determinant height.
+    for layer in faces,face_list in layer,v in face_list
+        actual=ArithmeticVoronoi.cell_image(P,v.translate,M.complex.cells[v.dim+1][v.orbit].vectors)
+        @test RQSL.morse_vertex_key(v.dim,actual)==v.key
+        @test v.shift==ArithmeticVoronoi.unit_coordinates(P,M.units,det(v.translate)).exponent
+    end
+    # Large unit powers must stay exact when compact machine integers no longer fit.
+    g=diagonal_matrix(P.field,[M.units.epsilon^100,one(P.field)])
+    v=M.vertices[1][1]
+    image=RQSL.morse_act(M,g,v)
+    @test image.shift==100
+    @test image.key==RQSL.morse_vertex_key(v.dim,ArithmeticVoronoi.cell_image(P,g,M.complex.cells[1][1].vectors))
+    @test any(abs(x)>typemax(Int) for ray in image.key[2] for x in ray)
+    half=diagonal_matrix(P.field,[M.units.epsilon^50,one(P.field)])
+    @test RQSL.morse_act(M,half,RQSL.morse_act(M,half,v)).key==image.key
+    # Both factors fit machine integers, but their product requires BigInt.
+    factor=diagonal_matrix(P.field,[M.units.epsilon^60,one(P.field)])
+    first_image=RQSL.morse_act(M,factor,v)
+    @test all(x isa Int for ray in first_image.key[2] for x in ray)
+    product=RQSL.morse_act(M,factor,first_image)
+    @test product.shift==120
+    @test product.key==RQSL.morse_vertex_key(v.dim,ArithmeticVoronoi.cell_image(P,factor^2,M.complex.cells[1][1].vectors))
+end

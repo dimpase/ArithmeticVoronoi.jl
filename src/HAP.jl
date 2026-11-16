@@ -112,46 +112,129 @@ function add_cell_orbit!(P,cells,buckets,c;determinant_one=false)
     true
 end
 
-function native_cell_orbits(E;progress=false)
+function native_cell_orbits(E;progress=false,with_incidence=false)
     P=E.problem
     cells=[VoronoiCell[] for _ in 1:length(P.form_basis)]
-    buckets=Dict{Any,Vector{VoronoiCell}}()
+    buckets=Dict{Any,Vector{Tuple{Int,VoronoiCell}}}()
+    local_data=Any[]
+    I=identity_matrix(P.field,P.rank)
+    function locate(c)
+        candidates=get!(buckets,cell_invariant(P,c),Tuple{Int,VoronoiCell}[])
+        for (j,r) in candidates
+            maps=cell_maps(P,c.vectors,r.vectors;first_only=true)
+            isempty(maps) || return (dim=cell_dimension(c),orbit=j,transporter=only(maps))
+        end
+        layer=cells[cell_dimension(c)+1]
+        push!(layer,c)
+        push!(candidates,(length(layer),c))
+        (dim=cell_dimension(c),orbit=length(layer),transporter=I)
+    end
     for (i,r) in enumerate(E.representatives)
         edges=[e for e in E.neighbours if e.source==i]
         across=[act_form(P,form_from_trace(P,edges[f.neighbour_orbit].neighbour_gram),
                          f.to_orbit_representative) for f in r.facets]
-        queue=[collect(eachindex(r.minimal_vectors))]
-        seen=Set{Tuple}([Tuple(only(queue))])
+        # The perfect-form stabilizer preserves facets. Intersect one face
+        # representative with every facet to reach every local face orbit.
+        closure=finite_matrix_closure(encode_matrix.(Ref(P),r.stabilizer),
+            P.degree*P.rank,r.stabilizer_order)
+        index=Dict(Tuple(v)=>j for (j,v) in enumerate(r.minimal_vectors))
+        actions=Dict{Tuple,Any}()
+        for g in closure.elements
+            permutation=Tuple(index[signed_key(apply_integral(g,v))] for v in r.minimal_vectors)
+            get!(actions,permutation) do;decode_matrix(P,g);end
+        end
+        permutations=collect(keys(actions))
+        matrices=[actions[p] for p in permutations]
+        function canonical(indices)
+            images=[Tuple(sort!([p[j] for j in indices])) for p in permutations]
+            j=argmin(images)
+            images[j],matrices[j]
+        end
+        queue=Tuple[Tuple(eachindex(r.minimal_vectors))]
+        seen=Set{Tuple}(queue)
+        records=Dict{Tuple,Any}()
         cursor=1
+        last_report=time()
         while cursor<=length(queue)
-            indices=queue[cursor]
+            key=queue[cursor]
+            indices=collect(key)
             V=r.minimal_vectors[indices]
             if !isnothing(cell_basis(P,V))
                 incident=findall(f->issubset(indices,f.indices),r.facets)
-                # A strict convex combination of the vertex and all neighbouring
-                # vertices across these facets has exactly this minimum set.
                 F=isempty(incident) ? r.form :
                     (r.form+sum(across[j] for j in incident)/length(incident))/2
                 ensure(findall(v->quadratic_value(trace_gram(P,F),v)==1,r.minimal_vectors)==indices,
                        "cell interior has an incorrect minimum set")
-                add_cell_orbit!(P,cells,buckets,make_voronoi_cell(P,V,F))
+                records[key]=locate(make_voronoi_cell(P,V,F))
                 for f in r.facets
                     face=intersect(indices,f.indices)
-                    isempty(face) && continue
-                    key=Tuple(face)
-                    key in seen && continue
-                    push!(seen,key);push!(queue,face)
+                    length(face)>=P.rank || continue
+                    next,_=canonical(face)
+                    next in seen && continue
+                    push!(seen,next);push!(queue,next)
                 end
             end
             cursor+=1
+            if progress && time()-last_report>=10
+                println("Native Voronoi cells: perfect form ",i,"/",length(E.representatives),
+                    "; face orbits processed ",cursor-1,"; queued ",length(queue),
+                    "; cell orbits by dimension ",length.(cells));flush(stdout)
+                last_report=time()
+            end
         end
+        push!(local_data,(;records,permutations,matrices))
         if progress
             println("Native Voronoi cells: perfect form ",i,"/",length(E.representatives),
                     "; cell orbits by dimension ",length.(cells));flush(stdout)
         end
     end
     while isempty(last(cells));pop!(cells);end
-    cells
+    with_incidence ? (;cells,local_data) : cells
+end
+
+# A face containing U and one additional ray is the intersection of all
+# perfect-cone facets containing those rays. Retain the covers of U. Every
+# bounded-cell incidence contains a perfect vertex, so these local incidences,
+# transported to global representatives and expanded by their stabilizers,
+# give every boundary facet. No search over unrelated cell pairs is needed.
+function native_gl_boundaries(E,cells,stabilizers,local_data;progress=false)
+    P=E.problem
+    boundaries=[[Tuple{Int,Any}[] for _ in layer] for layer in cells]
+    seen=[[Set{Any}() for _ in layer] for layer in cells]
+    for (r,incident_data) in zip(E.representatives,local_data)
+        for (indices,upper) in incident_data.records
+            upper.dim==0 && continue
+            containing=[f.indices for f in r.facets if issubset(indices,f.indices)]
+            covers=Set{Tuple}()
+            for v in eachindex(r.minimal_vectors)
+                v in indices && continue
+                facets=[f for f in containing if v in f]
+                face=isempty(facets) ? collect(eachindex(r.minimal_vectors)) : reduce(intersect,facets)
+                raw=Tuple(sort(face))
+                raw in covers && continue
+                push!(covers,raw)
+                images=[Tuple(sort!([p[j] for j in face])) for p in incident_data.permutations]
+                a=argmin(images)
+                ensure(haskey(incident_data.records,images[a]),"a local boundary face was omitted")
+                lower=incident_data.records[images[a]]
+                lower.dim==upper.dim-1 || continue
+                h=upper.transporter*inv(lower.transporter*incident_data.matrices[a])
+                k=upper.dim+1;i=upper.orbit;j=lower.orbit
+                for s in stabilizers[k][i]
+                    g=s*h
+                    key=cell_vector_key(cell_image(P,g,cells[k-1][j].vectors))
+                    key in seen[k][i] && continue
+                    push!(seen[k][i],key)
+                    push!(boundaries[k][i],(incidence_sign(P,cells[k][i],cells[k-1][j],g)*j,g))
+                end
+            end
+        end
+        if progress
+            println("Native Voronoi incidences: ",sum(length(b) for layer in boundaries for b in layer));flush(stdout)
+        end
+    end
+    ensure(all(!isempty(b) for layer in boundaries[2:end] for b in layer),"positive-dimensional cell has no boundary")
+    boundaries
 end
 
 function cell_tangent_image(P,c,g)
@@ -199,7 +282,8 @@ function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=fals
     group in (:GL,:SL) || throw(ArgumentError("choose group=:GL or :SL"))
     group==:SL && P.degree!=1 && !is_hermitian(P) && throw(ArgumentError("SL cell complexes currently require rational or imaginary quadratic coefficients"))
     ensure(E.completion_status==:complete && isempty(E.pending_facets),"cell complex requires a complete enumeration")
-    cells=native_cell_orbits(E;progress)
+    enumeration=native_cell_orbits(E;progress,with_incidence=true)
+    cells=enumeration.cells
     generators=Any[g for r in E.representatives for g in r.stabilizer]
     append!(generators,[inv(e.transporter) for e in E.neighbours])
     if group==:SL
@@ -214,9 +298,18 @@ function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=fals
         ensure(all(g->det(g)==1,generators),"Schreier generator has nontrivial determinant")
     end
     unique!(generators)
-    stabilizers=[[cell_maps(P,c.vectors,c.vectors;determinant_one=group==:SL) for c in layer] for layer in cells]
-    boundaries=[[Tuple{Int,Any}[] for _ in layer] for layer in cells]
-    for k in 1:length(cells)-1,(i,upper) in enumerate(cells[k+1])
+    stabilizers=[Vector{Any}[] for layer in cells]
+    last_report=time()
+    for (k,layer) in enumerate(cells),(i,c) in enumerate(layer)
+        push!(stabilizers[k],cell_maps(P,c.vectors,c.vectors;determinant_one=group==:SL))
+        if progress && time()-last_report>=10
+            println("Native cell stabilizers: dimension ",k-1,", orbit ",i,"/",length(layer));flush(stdout)
+            last_report=time()
+        end
+    end
+    boundaries=group==:GL ? native_gl_boundaries(E,cells,stabilizers,enumeration.local_data;progress) :
+        [[Tuple{Int,Any}[] for _ in layer] for layer in cells]
+    for k in (group==:GL ? (1:0) : (1:length(cells)-1)),(i,upper) in enumerate(cells[k+1])
         for (j,lower) in enumerate(cells[k])
             seen=Set{Any}()
             for h in cell_maps(P,upper.vectors,lower.vectors;determinant_one=group==:SL)
@@ -233,13 +326,14 @@ function voronoi_complex(E::ArithmeticVoronoiEnumeration;group=:GL,progress=fals
         end
     end
     C=VoronoiComplex(E,group,cells,stabilizers,boundaries,generators)
-    validate_voronoi_complex(C)
+    validate_voronoi_complex(C;progress)
     C
 end
 
 """Check stabilizers, oriented incidences and d²=0 in the integral G-modules."""
-function validate_voronoi_complex(C::VoronoiComplex)
+function validate_voronoi_complex(C::VoronoiComplex;progress=false)
     P=C.enumeration.problem
+    last_report=time()
     for g in C.generators
         check_group_matrix(P,encode_matrix(P,g))
         C.group==:SL && ensure(det(g)==1,"SL generator has nontrivial determinant")
@@ -276,6 +370,10 @@ function validate_voronoi_complex(C::VoronoiComplex)
             coefficients[key]=(reference,value+sign(j)*sign(l)*cell_orientation(P,lower,s))
         end
         ensure(all(iszero(last(x)) for x in values(coefficients)),"equivariant boundary does not square to zero")
+        if progress && time()-last_report>=10
+            println("Native boundary validation: dimension ",k-1,", orbit ",i,"/",length(layer));flush(stdout)
+            last_report=time()
+        end
     end
     true
 end
@@ -325,7 +423,7 @@ end
 Compute a fresh complex and return a HAP non-free resolution. `D` is a quadratic
 field discriminant; omitting it selects Z. Records describe the field, order,
 lattice, group and rank. GL is supported over Z and maximal quadratic orders;
-SL and PSL over Z and imaginary quadratic maximal orders. Real-quadratic SL₂
+SL and PSL over Z and imaginary quadratic maximal orders. Real-quadratic SL
 uses a certified determinant-height level complex; construction stops if the
 link certificates cannot be obtained. All use free lattices of rank at least
 two. PSL divides by the full scalar centre of SL.
@@ -344,8 +442,8 @@ end
 
 function hap_request(request)
     r=normalize_voronoi_request(request)
-    r["group"]!="GL" && request_discriminant(r)>1 && !(r["group"]=="SL" && r["rank"]==2) &&
-        throw(ArgumentError("real-quadratic SL/PSL cell complexes currently support only SL at rank two; presentations are available through run_field_pipeline"))
+    r["group"]=="PSL" && request_discriminant(r)>1 &&
+        throw(ArgumentError("real-quadratic PSL cell complexes are not implemented; presentations are available through run_field_pipeline"))
     r
 end
 
@@ -358,9 +456,9 @@ function hap_voronoi_complex(P::ArithmeticVoronoiProblem;group=:GL,resolution_le
     group in (:GL,:SL,:PSL) || throw(ArgumentError("choose group=:GL, :SL or :PSL"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     if group!=:GL && P.degree!=1 && !is_hermitian(P)
-        group==:SL && P.degree==2 && P.rank==2 ||
-            throw(ArgumentError("real-quadratic SL/PSL cell complexes currently support only SL at rank two; presentations are available through run_field_pipeline"))
-        return RealQuadraticSL.compute_real_sl_complex(P.discriminant;resolution_length,progress).hap
+        group==:SL && P.degree==2 ||
+            throw(ArgumentError("real-quadratic PSL cell complexes are not implemented; presentations are available through run_field_pipeline"))
+        return RealQuadraticSL.compute_real_sl_complex(P;resolution_length,progress,max_cell_dimension=resolution_length).hap
     end
     E=enumerate_perfect_forms(P;backend=:native,progress)
     C=voronoi_complex(E;group=group==:PSL ? :SL : group,progress)

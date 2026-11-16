@@ -14,59 +14,155 @@ mutable struct MorseExperiment
     units::Any
     vertices::Any
     action_cache::Dict{Any,MorseVertex}
+    vertex_cache::Dict{Any,MorseVertex}
+    matrix_cache::IdDict{Any,Any}
     exponent_cache::Dict{Any,Int}
-    flags::Any
+    full_flag_counts::Vector{Vector{BigInt}}
     orbit_flags::Any
 end
 
-function morse_experiment(C;progress=false)
+# Keys are exact integers. Keep ordinary-sized coordinates inline; retaining a
+# heap-allocated BigInt for each small coordinate dominates large face posets.
+compact_integer(x)=typemin(Int)<=x<=typemax(Int) ? Int(x) : x
+morse_vertex_key(dim,V)=(dim,Tuple(Tuple(compact_integer(x) for x in v) for v in AV.cell_vector_key(V)))
+
+function morse_experiment(C;progress=false,maximal_flags=true)
     P=C.enumeration.problem
-    @assert P.degree==2 && P.discriminant>0 && P.rank==2
+    P.degree==2 && P.discriminant>0 && C.group==:GL ||
+        throw(ArgumentError("the determinant-height construction requires a real quadratic GL complex"))
     units=AV.verified_units(P)
     @assert all(layer->all(S->all(g->iszero(AV.unit_coordinates(P,units,det(g)).exponent),S),layer),C.stabilizers) "height is not invariant under a cell stabilizer"
     I=identity_matrix(P.field,P.rank)
-    vertices=[[MorseVertex(k-1,i,I,(k-1,AV.cell_vector_key(c.vectors)),0)
+    vertices=[[MorseVertex(k-1,i,I,morse_vertex_key(k-1,c.vectors),0)
         for (i,c) in enumerate(layer)] for (k,layer) in enumerate(C.cells)]
-    M=MorseExperiment(C,units,vertices,Dict(),Dict(one(P.field)=>0),
-        [[Vector{MorseVertex}[] for c in layer] for layer in C.cells],
+    interned=Dict{Any,MorseVertex}(v.key=>v for layer in vertices for v in layer)
+    M=MorseExperiment(C,units,vertices,Dict(),interned,IdDict(),Dict(one(P.field)=>0),
+        [zeros(BigInt,length(layer)) for layer in C.cells],
         [[Vector{MorseVertex}[] for c in layer] for layer in C.cells])
     for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
-        top=vertices[k][i]
-        if k==1
-            M.flags[k][i]=[[top]]
-        else
-            for (j,g) in C.boundaries[k][i],flag in M.flags[k-1][abs(j)]
-                push!(M.flags[k][i],[MorseVertex[morse_act(M,g,v) for v in flag];top])
-            end
-        end
-        seen=Set{Any}()
-        for flag in M.flags[k][i]
-            key=Tuple(v.key for v in flag)
-            key in seen && continue
-            push!(M.orbit_flags[k][i],flag)
-            for s in C.stabilizers[k][i]
-                push!(seen,Tuple(morse_act(M,s,v).key for v in flag))
-            end
-        end
+        M.full_flag_counts[k][i]=k==1 ? big(1) :
+            sum(M.full_flag_counts[k-1][abs(j)] for (j,g) in C.boundaries[k][i];init=big(0))
+        maximal_flags || continue
+        flags,covered=morse_flag_orbits(M,vertices[k][i],C.stabilizers[k][i])
+        @assert covered==M.full_flag_counts[k][i] "flag orbits do not cover the face lattice"
+        M.orbit_flags[k][i]=flags
         if progress
-            println("Flag orbits for cell ",(k-1,i),": ",length(M.orbit_flags[k][i])," / ",length(M.flags[k][i]));flush(stdout)
+            println("Flag orbits for cell ",(k-1,i),": ",length(flags)," / ",covered);flush(stdout)
         end
     end
     M
 end
 
-function morse_act(M,g,v)
-    P=M.complex.enumeration.problem
-    key=(AV.matrix_key(AV.encode_matrix(P,g)),v.key)
-    get!(M.action_cache,key) do
-        t=g*v.translate
-        d=det(t)
-        shift=get!(M.exponent_cache,d) do
-            Int(AV.unit_coordinates(P,M.units,d).exponent)
+# Descend through one facet from each orbit under the stabilizer of the flag
+# chosen so far. Restrict that stabilizer at each step. This enumerates maximal
+# flags directly up to symmetry, without constructing all their translates.
+function morse_flag_orbits(M,top,stabilizer)
+    result=Vector{MorseVertex}[]
+    covered=big(0)
+    function descend(flag,S)
+        v=first(flag)
+        if v.dim==0
+            push!(result,flag)
+            @assert length(stabilizer)%length(S)==0
+            covered+=div(length(stabilizer),length(S))
+            return
         end
-        V=AV.cell_image(P,t,M.complex.cells[v.dim+1][v.orbit].vectors)
-        MorseVertex(v.dim,v.orbit,t,(v.dim,AV.cell_vector_key(V)),shift)
+        facets=[morse_act(M,v.translate*g,M.vertices[v.dim][abs(j)])
+                for (j,g) in M.complex.boundaries[v.dim+1][v.orbit]]
+        keys=Set(w.key for w in facets)
+        @assert length(keys)==length(facets) "a cell boundary repeats a facet"
+        seen=Set{Any}()
+        for w in facets
+            w.key in seen && continue
+            next=Any[]
+            for s in S
+                image=morse_act(M,s,w)
+                @assert image.key in keys "flag stabilizer does not preserve its facets"
+                push!(seen,image.key)
+                image.key==w.key && push!(next,s)
+            end
+            descend([w;flag],next)
+        end
     end
+    descend([top],stabilizer)
+    result,covered
+end
+
+function clear_action_cache!(M)
+    empty!(M.action_cache)
+    empty!(M.matrix_cache)
+end
+
+# Most incidence coordinates are small. Checked machine arithmetic has a
+# BigInt fallback, including sign normalization of typemin(Int); no overflow
+# or rounding can change a cell key.
+function morse_ray_image(rows,small,v)
+    if small && all(x->x isa Int,v)
+        try
+            w=Tuple(begin
+                value=0
+                for j in eachindex(v)
+                    value=Base.Checked.checked_add(value,Base.Checked.checked_mul(row[j],v[j]))
+                end
+                value
+            end for row in rows)
+            i=findfirst(!iszero,w)
+            @assert !isnothing(i) "a group matrix mapped a minimum vector to zero"
+            return w[i]<0 ? map(Base.Checked.checked_neg,w) : w
+        catch error
+            error isa OverflowError || rethrow()
+        end
+    end
+    w=Tuple(sum(BigInt(row[j])*BigInt(v[j]) for j in eachindex(v)) for row in rows)
+    i=findfirst(!iszero,w)
+    @assert !isnothing(i) "a group matrix mapped a minimum vector to zero"
+    w[i]<0 && (w=map(-,w))
+    map(compact_integer,w)
+end
+
+function morse_act(M,g,v)
+    g==M.vertices[1][1].translate && return v # identity
+    P=M.complex.enumeration.problem
+    action=get!(M.matrix_cache,g) do
+        A=AV.encode_matrix(P,g)
+        rows=Tuple(Tuple(compact_integer(BigInt(ZZ(A[i,j]))) for j in 1:ncols(A)) for i in 1:nrows(A))
+        (rows=rows,small=all(row->all(x->x isa Int,row),rows),
+            key=Tuple(compact_integer(x) for x in AV.matrix_key(A)))
+    end
+    get!(M.action_cache,(action.key,v.key)) do
+        # Act on the already-translated minimum set. Multiplying two field
+        # matrices and recomputing a unit exponent is needed only for a new cell.
+        image_key=(v.dim,Tuple(sort!([morse_ray_image(action.rows,action.small,w) for w in v.key[2]])))
+        image=get!(M.vertex_cache,image_key) do
+            d=det(g)
+            shift=v.shift+get!(M.exponent_cache,d) do
+                Int(AV.unit_coordinates(P,M.units,d).exponent)
+            end
+            MorseVertex(v.dim,v.orbit,g*v.translate,image_key,shift)
+        end
+        @assert image.orbit==v.orbit
+        image
+    end
+end
+
+# This numerical value only proposes a rational height. Exact link collapses
+# certify the result. For a totally positive delta=A+B*sqrt(D), evaluate the
+# larger conjugate without cancellation and recover the other via norm(delta).
+function morse_base_height(P,units,F)
+    bf(x)=BigFloat(BigInt(numerator(x)))/BigFloat(BigInt(denominator(x)))
+    root=sqrt(BigFloat(P.discriminant))
+    delta=det(F)
+    a,b=coeff(delta,0),coeff(delta,1)
+    middle=a+b*P.root_sum/2
+    absolute_norm=norm(delta)
+    @assert middle>0 && absolute_norm>0 "determinant is not totally positive"
+    larger=bf(middle)+abs(bf(b))*root/2
+    log_ratio=iszero(b) ? zero(BigFloat) : Int(sign(b))*(2log(larger)-log(bf(absolute_norm)))
+    a,b=coeff(units.epsilon,0),coeff(units.epsilon,1)
+    epsilon1=bf(a+b*P.root_sum/2)+bf(b)*root/2
+    result=Float64(-log_ratio/(4log(epsilon1)))
+    isfinite(result) || throw(ArgumentError("could not propose a finite determinant height"))
+    result
 end
 
 function morse_link_data(M)
@@ -92,15 +188,10 @@ function morse_link_data(M)
     end
     # The numerical determinant height only proposes a rational Morse function.
     # The later exact link-collapse checks, not these approximations, certify it.
-    w1=(P.root_sum+sqrt(Float64(P.discriminant)))/2
-    w2=(P.root_sum-sqrt(Float64(P.discriminant)))/2
-    at(x,w)=Float64(coeff(x,0))+w*Float64(coeff(x,1))
-    epsilon1=at(M.units.epsilon,w1)
     bases=Float64[]
     for (k,layer) in enumerate(C.cells),(i,c) in enumerate(layer)
         F=sum(AV.act_form(P,c.point,inv(s)) for s in C.stabilizers[k][i])/length(C.stabilizers[k][i])
-        delta=det(F)
-        push!(bases,-log(at(delta,w1)/at(delta,w2))/(4log(epsilon1)))
+        push!(bases,morse_base_height(P,M.units,F))
     end
     data=Dict("D"=>P.discriminant,"base_heights"=>bases,"orbit_dimensions"=>[k-1 for (k,l) in enumerate(C.cells) for c in l],
         "links"=>[Dict("vertices"=>[Dict("orbit"=>ids[v.dim+1][v.orbit],"shift"=>v.shift) for v in link.vertices],
@@ -108,11 +199,18 @@ function morse_link_data(M)
     data,links
 end
 
+# Avoid machine-word overflow when the flag length exceeds the Int bit width.
+function subset_masks(n;include_empty=false)
+    n>=0 || throw(ArgumentError("a subset size must be nonnegative"))
+    stop=n<8sizeof(Int)-1 ? (1<<n)-1 : (big(1)<<n)-1
+    (include_empty ? 0 : 1):stop
+end
+
 function simplicial_faces(facets)
     faces=Set{Tuple}()
     for facet in facets
-        for mask in 1:(1<<length(facet))-1
-            push!(faces,Tuple(facet[j] for j in eachindex(facet) if !iszero(mask & (1<<(j-1)))))
+        for mask in subset_masks(length(facet))
+            push!(faces,Tuple(facet[j] for j in eachindex(facet) if isodd(mask>>(j-1))))
         end
     end
     faces
@@ -145,10 +243,7 @@ function collapse_link(facets)
     (;passed=length(faces)==1 && length(only(faces))==1,pairs,residual=faces)
 end
 function evaluate_morse_links(data;bases=nothing,verbose=true)
-    if isnothing(bases)
-        bases=[(round(Int,x*1000)*1_000_000+i)//1_000_000_000 for (i,x) in enumerate(data["base_heights"])]
-    end
-    @assert length(unique(mod.(bases,1)))==length(bases)
+    bases=rational_morse_heights(data;bases)
     reports=Any[]
     for (i,link) in enumerate(data["links"]),sgn in (-1,1)
         delta=[bases[v["orbit"]]+v["shift"]-bases[i] for v in link["vertices"]]
@@ -158,7 +253,7 @@ function evaluate_morse_links(data;bases=nothing,verbose=true)
         result=collapse_link(facets)
         push!(reports,(;orbit=i,sgn,result))
         if verbose
-            println("Link ",i," ",sgn,"; ",length(unique(v for f in facets for v in f))," vertices; collapsible=",result.passed,"; residual ",[count(f->length(f)==k,result.residual) for k in 1:4]);flush(stdout)
+            println("Link ",i," ",sgn,"; ",length(unique(v for f in facets for v in f))," vertices; collapsible=",result.passed,"; residual ",[count(f->length(f)==k,result.residual) for k in 1:maximum(length,result.residual;init=0)]);flush(stdout)
         end
     end
     (;passed=all(x->x.result.passed,reports),bases,reports)

@@ -364,9 +364,8 @@ Native complexes also accept higher rank through `voronoi_request(D; rank=n)`:
 quadratic GLₙ and imaginary-quadratic SLₙ on Oⁿ. Rational GLₙ and SLₙ use
 `classical_problem(rank=n)`. The combined `run_field_pipeline` computes
 GLₙ/SLₙ/PSLₙ presentations over all supported fields. HAP also supports
-rational and imaginary-quadratic PSLₙ, and [certified real-quadratic SL₂
-complexes](real_quadratic_sl.md). Higher-rank real SL and real PSL complexes
-remain unsupported.
+rational and imaginary-quadratic PSLₙ, and [certified real-quadratic SLₙ
+complexes](real_quadratic_sl.md). Real PSL complexes remain unsupported.
 See [higher-rank computations and validation](higher_rank.md).
 Cup products require additional contracting-homotopy data.
 

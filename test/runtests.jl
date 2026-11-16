@@ -9,6 +9,7 @@ using Test
     include("model.jl")
     include("requests.jl")
     include("quadratic_units.jl")
+    include("real_quadratic_sl_dimensions.jl")
     include("native.jl")
     include("imaginary.jl")
     include("gl_presentations.jl")

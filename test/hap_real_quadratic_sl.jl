@@ -31,7 +31,16 @@ import Oscar: GAP
             end
         end
     end
-    @test_throws ArgumentError hap_voronoi_complex(5;group=:SL,rank=3)
+    # A requested finite-degree resolution can use a skeleton, but it must
+    # never silently advertise missing higher cells as zero chain modules.
+    K=hap_voronoi_complex(5;group=:SL,resolution_length=2)
+    metadata=GAP.evalstr("K -> K!.arithmeticVoronoi")(K)
+    @test Int(metadata.computedCellDimension)==2
+    @test Int(metadata.certifiedCellDimension)==3
+    R=GAP.Globals.FreeGResolution(K,2)
+    @test isempty(GAP.gap_to_julia(GAP.Globals.Homology(GAP.Globals.TensorWithIntegers(R),1)))
+    @test_throws GAP.GAPError GAP.evalstr("K -> K!.dimension(3)")(K)
+    @test_throws ArgumentError hap_voronoi_complex(5;group=:SL,rank=1)
     @test_throws ArgumentError hap_voronoi_complex(5;group=:PSL)
     @test_throws ArgumentError hap_voronoi_complex(5;group=:SL,resolution_length=0)
 end

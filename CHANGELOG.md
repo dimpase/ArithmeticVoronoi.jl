@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Generalize certified real-quadratic SL complexes to every rank `n ≥ 2`, retaining the correct scalar centre in odd and even rank.
+- Construct GL boundaries from local face incidences and certify Morse links by exact graph collapses, avoiding exhaustive flag expansion.
+- Compute the cell skeleton needed by a requested HAP resolution and report its dimension explicitly. The detailed construction interface still offers the full geometric level.
+- Generalize the independent Magma/HAP comparison to the index-`2n` subgroup `SL_n × Z`; reference data remain outside the engine.
+
 ## 0.1.1
 
 - Construct certified real-quadratic SL₂ complexes through `hap_voronoi_complex(D; group=:SL)` and HAP's Julia provider. The determinant-height construction computes fresh cells and exact link-collapse certificates, with validation for discriminants 5 and 12. No Magma or C++ backend is required.

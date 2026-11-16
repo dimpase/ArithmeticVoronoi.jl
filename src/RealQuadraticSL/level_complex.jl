@@ -19,38 +19,69 @@ struct MorseLevelComplex
     boundaries::Vector{Vector{Vector{Tuple{Int,Any}}}}
 end
 
-function all_flag_orbits(M)
-    C=M.complex
+function all_flag_orbits(M;faces=morse_cell_faces(M),max_length=length(M.complex.cells),height=nothing,progress=false)
+    C=M.complex;P=C.enumeration.problem
     orbits=FlagOrbit[]
     lookup=[[Dict{Any,Tuple{Int,Any}}() for c in layer] for layer in C.cells]
-    for (k,layer) in enumerate(M.flags),(i,fullflags) in enumerate(layer)
+    I=identity_matrix(P.field,P.rank)
+    meets_level(flag)=isnothing(height) || floor(BigInt,-maximum(height,flag))+1<=ceil(BigInt,-minimum(height,flag))-1
+    for (k,layer) in enumerate(C.cells),i in eachindex(layer)
         table=lookup[k][i]
-        for full in fullflags,mask in 0:(1<<(length(full)-1))-1
-            flag=[full[j] for j in 1:length(full)-1 if !iszero(mask & (1<<(j-1)))]
-            push!(flag,last(full))
-            key=Tuple(v.key for v in flag)
-            haskey(table,key) && continue
-            stabilizer=Any[]
-            id=length(orbits)+1
-            for s in C.stabilizers[k][i]
-                image=Tuple(morse_act(M,s,v).key for v in flag)
-                table[image]=(id,s)
-                image==key && push!(stabilizer,s)
+        function descend(flag,S)
+            if meets_level(flag)
+                id=length(orbits)+1
+                for s in C.stabilizers[k][i]
+                    image=Tuple(morse_act(M,s,v).key for v in flag)
+                    @assert !haskey(table,image) || first(table[image])==id "a partial-flag orbit was repeated"
+                    table[image]=(id,s)
+                end
+                push!(orbits,FlagOrbit(flag,S))
             end
-            push!(orbits,FlagOrbit(flag,stabilizer))
+            length(flag)>=max_length && return
+            v=first(flag)
+            v.dim==0 && return
+            candidates=[morse_act(M,v.translate,w) for w in faces[v.dim+1][v.orbit]]
+            seen=Set{Any}()
+            scalar=all(s->s==I || s==-I,S)
+            for w in candidates
+                w.key in seen && continue
+                next=Any[]
+                if scalar
+                    next=S
+                else
+                    for s in S
+                        image=morse_act(M,s,w)
+                        push!(seen,image.key)
+                        image.key==w.key && push!(next,s)
+                    end
+                end
+                descend([w;flag],next)
+            end
         end
+        descend([M.vertices[k][i]],C.stabilizers[k][i])
+        if progress
+            println("Partial flag orbits through cell ",(k-1,i),": ",length(orbits));flush(stdout)
+        end
+        # Release temporary matrices and action lookups. Interned vertices
+        # remain shared by the incidence posets and flag representatives.
+        clear_action_cache!(M)
     end
     orbits,lookup
 end
 
-function build_level_complex(M,data,certificate;progress=false)
+function build_level_complex(M,data,certificate;progress=false,max_cell_dimension=nothing,faces=morse_cell_faces(M))
     @assert certificate.passed
     C=M.complex;P=C.enumeration.problem
     ids=[[sum(length,C.cells[1:k-1];init=0)+i for i in eachindex(layer)] for (k,layer) in enumerate(C.cells)]
     height(v)=certificate.bases[ids[v.dim+1][v.orbit]]+v.shift
-    orbits,lookup=all_flag_orbits(M)
-    if progress;println("Barycentric simplex orbits: ",length(orbits));flush(stdout);end
     top=length(C.cells)-2
+    if !isnothing(max_cell_dimension)
+        max_cell_dimension isa Integer && !(max_cell_dimension isa Bool) && max_cell_dimension>=0 ||
+            throw(ArgumentError("max_cell_dimension must be a nonnegative integer"))
+        top=min(top,max_cell_dimension)
+    end
+    orbits,lookup=all_flag_orbits(M;faces,max_length=top+2,height,progress)
+    if progress;println("Level-intersecting barycentric simplex orbits: ",length(orbits));flush(stdout);end
     cells=[LevelCell[] for _ in 0:top]
     stabilizers=[Vector{Any}[] for _ in 0:top]
     cell_ids=Dict{Tuple{Int,Int,Int},Int}()
@@ -100,13 +131,14 @@ end
 function validate_level_complex(L)
     P=L.experiment.complex.enumeration.problem
     I=identity_matrix(P.field,P.rank)
-    @assert all(layer->all(S->I in S && all(g->det(g)==1,S),layer),L.stabilizers)
+    centre=iseven(P.rank) ? (I,-I) : (I,)
+    @assert all(layer->all(S->all(z->z in S,centre) && all(g->det(g)==1,S),layer),L.stabilizers)
     function term_key(k,i,g)
         minimum(AV.matrix_key(AV.encode_matrix(P,g*s)) for s in L.stabilizers[k][i])
     end
     for k in 2:length(L.cells),(i,c) in enumerate(L.cells[k])
         b=L.boundaries[k][i]
-        @assert !isempty(b)
+        L isa MorseLevelComplex && @assert !isempty(b)
         @assert all(t->det(t[2])==1,b)
         if k==2
             @assert sum(sign(j) for (j,g) in b)==0
@@ -137,6 +169,11 @@ end
 
 function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
     @assert validate_level_complex(L)
+    computed_dimension=length(L.cells)-1
+    certified_dimension=length(L.experiment.complex.cells)-2
+    if computed_dimension<certified_dimension && resolution_length>computed_dimension
+        throw(ArgumentError("the computed skeleton supports resolutions only through degree $computed_dimension"))
+    end
     P=L.experiment.complex.enumeration.problem
     GAP=Oscar.GAP
     GAP.Packages.load(hap_root) || error("HAP not available")
@@ -160,5 +197,7 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
         "boundaries"=>boundaries,"generators"=>wire.(generators),
         "name"=>"SL($(P.rank),O), D=$(P.discriminant), certified determinant-height level complex",
         "discriminant"=>P.discriminant,"rank"=>P.rank,"groupKind"=>"SL")
+    data["certifiedCellDimension"]=certified_dimension
+    data["computedCellDimension"]=computed_dimension
     GAP.Globals.HAPArithmeticVoronoiComplex(GAP.GapObj(data;recursive=true),resolution_length)
 end

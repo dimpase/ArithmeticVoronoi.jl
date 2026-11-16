@@ -126,7 +126,7 @@ end
           hap_homology(GAP.Globals.ResolutionGL2QuadraticIntegers(2,2),1)
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(1,-7 : backend := \"julia\")")
     @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexGL(2,-12 : backend := \"julia\")")
-    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(3,5 : backend := \"julia\")")
+    @test_throws GAP.GAPError GAP.evalstr("VoronoiComplexSL(1,5 : backend := \"julia\")")
 end
 
 include("hap_projective.jl")
