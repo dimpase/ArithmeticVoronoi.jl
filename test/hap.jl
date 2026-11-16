@@ -135,3 +135,5 @@ include("real_quadratic_sl_sections.jl")
 include("higher_rank.jl")
 include("gl_presentations.jl")
 test_gl_presentations(;with_hap=true)
+
+include("hap_orientation_characters.jl")

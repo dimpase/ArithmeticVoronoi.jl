@@ -3,11 +3,18 @@
 if not IsBound(HAPArithmeticVoronoiComplex) then
 BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
     local dims, elts, stabs, evens, boundaries, group, dimension, stabilizer,
-          boundary, action, metadata, skeleton;
+          boundary, action, metadata, skeleton, trivialOrientation;
     dims := ShallowCopy(data.dimensions);
     elts := StructuralCopy(data.elts);
     stabs := List(data.stabilizers, layer -> List(layer, Group));
     evens := List(data.evenStabilizers, layer -> List(layer, Group));
+    # Equal generating lists certify that every stabilizer preserves the
+    # orientation. In that case the induced character is identically one,
+    # including for transporters outside the stabilizer, so no coset search
+    # is needed. Different lists simply use the general calculation below.
+    trivialOrientation := List([1..Length(stabs)], n ->
+        List([1..Length(stabs[n])], k ->
+            data.stabilizers[n][k] = data.evenStabilizers[n][k]));
     boundaries := StructuralCopy(data.boundaries);
     group := Group(data.generators);
     SetName(group, data.name);
@@ -44,6 +51,7 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
     end;
     action := function(n,k,g)
         local H, r, u;
+        if trivialOrientation[n+1][AbsInt(k)] then return 1; fi;
         H := stabilizer(n,k);
         r := CanonicalRightCosetElement(H,One(H))^-1
              * CanonicalRightCosetElement(H,elts[g]^-1);
