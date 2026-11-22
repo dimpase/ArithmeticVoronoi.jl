@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.1.2
 
 - Generalize certified real-quadratic SL complexes to every rank `n ≥ 2`, retaining the correct scalar centre in odd and even rank.
+- Fix the stabilizer check in equivariant cancellation: for a boundary term g·f of t, compare Stab(t) with g Stab(f) g⁻¹. A regression test uses noncentral stabilizers.
+- Verify H₁ = 0 for SL₃ over the integers of Q(√5) against an independent presentation and a Magma/HAP calculation.
 - Construct GL boundaries from local face incidences and certify Morse links by exact graph collapses, avoiding exhaustive flag expansion.
 - Compute the cell skeleton needed by a requested HAP resolution and report its dimension explicitly. The detailed construction interface still offers the full geometric level.
 - Generalize the independent Magma/HAP comparison to the index-`2n` subgroup `SL_n × Z`; reference data remain outside the engine.

@@ -7,8 +7,8 @@ contractibility by exact ascending and descending link collapses. The full
 level has dimension `n²−1`. Every run must pass certification; an accepted rank
 is not a promise that enumeration or certification will finish quickly.
 
-Rank two was introduced in ArithmeticVoronoi 0.1.1. Higher ranks require the
-subsequent development version. Validation covers integral homology through
+Rank two was introduced in ArithmeticVoronoi 0.1.1. Version 0.1.2 extends the construction to every rank
+`n ≥ 2`. Validation covers integral homology through
 degree three for SL₂ over Q(√5) and Q(√3), and through degree one for SL₃ over
 Q(√5). Higher ranks use the same construction and certification, but have not
 yet been run through the full pipeline; see the validation details below.

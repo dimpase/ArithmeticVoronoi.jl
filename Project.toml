@@ -1,6 +1,6 @@
 name = "ArithmeticVoronoi"
 uuid = "ad54a9ab-83c5-468c-8b76-196f5a70a2f9"
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
