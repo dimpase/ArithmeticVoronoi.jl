@@ -28,6 +28,9 @@ BindGlobal("HAPArithmeticVoronoiComplex", function(data, length)
             skeleton := data.computedCellDimension;
         fi;
     fi;
+    if IsBound(data.reduction) then
+        metadata.reduction := data.reduction;
+    fi;
     if IsBound(data.levelModel) then
         metadata.levelModel := data.levelModel;
         metadata.retainedOriginalDimension := data.retainedOriginalDimension;

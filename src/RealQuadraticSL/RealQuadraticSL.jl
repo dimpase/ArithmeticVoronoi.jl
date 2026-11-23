@@ -6,9 +6,17 @@ include("flag_links.jl")
 include("orbit_links.jl")
 include("level_complex.jl")
 include("section_complex.jl")
+include("regular_boundaries.jl")
 include("reduce_level.jl")
 
 export compute_real_sl_complex
+
+function reduction_mode(reduce)
+    reduce === true && return :algebraic
+    reduce === false && return :none
+    reduce === :regular && return :regular
+    throw(ArgumentError("reduce must be true, false or :regular"))
+end
 
 """
     compute_real_sl_complex(D; rank=2, resolution_length=4, reduce=true, progress=false,
@@ -30,8 +38,12 @@ geometric output is then a partial level subcomplex, exact below the requested
 resolution degree, and is not asserted to be contractible. With `reduce=true`,
 the partial chain model also omits top generators with zero or repeated boundary
 maps; when any are omitted, `chain.omitted_top_generators` records these
-dependencies against `chain.original`. This preserves
-exactness below the computed degree, but does not preserve top homology.
+dependencies against `chain.original`. With `reduce=:regular`, only pivots
+preserving regular cellular incidence are retained. The reducer checks that
+changed cell boundaries through dimension three are spheres. It keeps the
+closures of higher-dimensional surviving cells intact. Only `reduce=true`
+applies the extra trimming to partial complexes. Trimming preserves the top
+boundary image and can change top-degree homology.
 
 Stabilizers retain the full scalar centre
 of SL: -I is retained in even rank and excluded in odd rank.
@@ -59,6 +71,7 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
             throw(ArgumentError("a proper skeleton must include cells through resolution_length"))
     end
     cell_model in (:flags,:sections) || throw(ArgumentError("cell_model must be :flags or :sections"))
+    mode = reduction_mode(reduce)
     D=P.discriminant
     timings=Dict{String,Float64}()
     function stage(label,f)
@@ -81,12 +94,16 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
         end
     end)
     @assert validate_level_complex(L)
-    reduced=reduce ? stage("equivariant chain cancellations",()->reduce_level_complex(L;progress)) : L
+    reduced = L
+    if mode != :none
+        reduced = stage("equivariant chain cancellations",
+                        () -> reduce_level_complex(L;progress,regular=(mode == :regular)))
+    end
     @assert validate_level_complex(reduced)
-    if reduce
+    if mode == :algebraic
         reduced=stage("partial chain top generators",()->trim_partial_level_complex(reduced;progress))
     end
-    K=stage("HAP export",()->level_hap_complex(reduced;resolution_length,hap_root))
+    K=stage("HAP export",()->level_hap_complex(reduced;resolution_length,hap_root,reduction=mode))
     if !isnothing(certificate_directory)
         mkpath(certificate_directory)
         open(joinpath(certificate_directory,"links.json"),"w") do io
@@ -106,7 +123,7 @@ function compute_real_sl_complex(P::ArithmeticVoronoiProblem;resolution_length=4
         end
         write(joinpath(certificate_directory,"construction.json"),JSON.json(Dict(
             "discriminant"=>D,"rank"=>P.rank,"actual_SL_complex"=>true,
-            "cell_model"=>String(level_model(L)),"retained_original_dimension"=>retained_parent_dimension(L),
+            "cell_model"=>String(level_model(L)),"reduction"=>String(mode),"retained_original_dimension"=>retained_parent_dimension(L),
             "certified_dimension"=>length(C.cells)-2,"computed_dimension"=>length(L.cells)-1,"cell_orbits"=>length.(L.cells),
             "chain_module_orbits"=>length.(reduced.cells),"timings"=>timings,
             "omitted_top_generators"=>hasproperty(reduced,:omitted_top_generators) ? reduced.omitted_top_generators : Any[],

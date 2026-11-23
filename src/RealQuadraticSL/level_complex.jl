@@ -197,7 +197,7 @@ function validate_level_complex(L)
     true
 end
 
-function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
+function level_hap_complex(L;resolution_length=4,reduction=nothing,hap_root=get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap"))
     @assert validate_level_complex(L)
     computed_dimension=length(L.cells)-1
     certified_dimension=length(L.experiment.complex.cells)-2
@@ -229,6 +229,7 @@ function level_hap_complex(L;resolution_length=4,hap_root=get(ENV,"ARITHMETIC_VO
         "boundaries"=>boundaries,"generators"=>wire.(generators),
         "name"=>"SL($(P.rank),O), D=$(P.discriminant), certified determinant-height level complex",
         "discriminant"=>P.discriminant,"rank"=>P.rank,"groupKind"=>"SL")
+    isnothing(reduction) || (data["reduction"]=String(reduction))
     data["levelModel"]=String(level_model(L))
     data["retainedOriginalDimension"]=retained_parent_dimension(L)
     data["certifiedCellDimension"]=certified_dimension

@@ -415,10 +415,10 @@ function hap_complex(C::VoronoiComplex;resolution_length=100)
 end
 
 """
-    hap_voronoi_complex(D; group=:GL, rank=2, resolution_length=100, progress=false)
-    hap_voronoi_complex(; group=:GL, rank=2, resolution_length=100, progress=false)
-    hap_voronoi_complex(request; resolution_length=100, progress=false)
-    hap_voronoi_complex(problem; group=:GL, resolution_length=100, progress=false)
+    hap_voronoi_complex(D; group=:GL, rank=2, resolution_length=100, progress=false, reduce=true)
+    hap_voronoi_complex(; group=:GL, rank=2, resolution_length=100, progress=false, reduce=true)
+    hap_voronoi_complex(request; resolution_length=100, progress=false, reduce=true)
+    hap_voronoi_complex(problem; group=:GL, resolution_length=100, progress=false, reduce=true)
 
 Compute a fresh complex and return a HAP non-free resolution. `D` is a quadratic
 field discriminant; omitting it selects Z. Records describe the field, order,
@@ -426,18 +426,20 @@ lattice, group and rank. GL is supported over Z and maximal quadratic orders;
 SL and PSL over Z and imaginary quadratic maximal orders. Real-quadratic SL
 uses a certified determinant-height level complex; construction stops if the
 link certificates cannot be obtained. All use free lattices of rank at least
-two. PSL divides by the full scalar centre of SL.
+two. For real-quadratic SL, `reduce=:regular` selects regular cellular incidence,
+`false` exports geometric cells and `true` selects the smaller algebraic model.
+PSL divides by the full scalar centre of SL.
 
 HAP is loaded automatically; no provider registration or GAP record conversion
 is needed. Apply `GAP.Globals.FreeGResolution(K, n+1)` to compute homology through
 degree n. A contracting homotopy is not provided.
 """
-function hap_voronoi_complex(D::Integer;group=:GL,rank=2,resolution_length=100,progress=false)
-    hap_voronoi_complex(voronoi_request(D;group,rank);resolution_length,progress)
+function hap_voronoi_complex(D::Integer;group=:GL,rank=2,resolution_length=100,progress=false,reduce=true)
+    hap_voronoi_complex(voronoi_request(D;group,rank);resolution_length,progress,reduce)
 end
 
-function hap_voronoi_complex(;group=:GL,rank=2,resolution_length=100,progress=false)
-    hap_voronoi_complex(voronoi_request(;group,rank);resolution_length,progress)
+function hap_voronoi_complex(;group=:GL,rank=2,resolution_length=100,progress=false,reduce=true)
+    hap_voronoi_complex(voronoi_request(;group,rank);resolution_length,progress,reduce)
 end
 
 function hap_request(request)
@@ -447,18 +449,19 @@ function hap_request(request)
     r
 end
 
-function hap_voronoi_complex(request::VoronoiRequestRecord;resolution_length=100,progress=false)
+function hap_voronoi_complex(request::VoronoiRequestRecord;resolution_length=100,progress=false,reduce=true)
     r=hap_request(request)
-    hap_voronoi_complex(arithmetic_problem(r);group=Symbol(r["group"]),resolution_length,progress)
+    hap_voronoi_complex(arithmetic_problem(r);group=Symbol(r["group"]),resolution_length,progress,reduce)
 end
 
-function hap_voronoi_complex(P::ArithmeticVoronoiProblem;group=:GL,resolution_length=100,progress=false)
+function hap_voronoi_complex(P::ArithmeticVoronoiProblem;group=:GL,resolution_length=100,progress=false,reduce=true)
+    RealQuadraticSL.reduction_mode(reduce)
     group in (:GL,:SL,:PSL) || throw(ArgumentError("choose group=:GL, :SL or :PSL"))
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     if group!=:GL && P.degree!=1 && !is_hermitian(P)
         group==:SL && P.degree==2 ||
             throw(ArgumentError("real-quadratic PSL cell complexes are not implemented; presentations are available through run_field_pipeline"))
-        return RealQuadraticSL.compute_real_sl_complex(P;resolution_length,progress,max_cell_dimension=resolution_length).hap
+        return RealQuadraticSL.compute_real_sl_complex(P;resolution_length,progress,reduce,max_cell_dimension=resolution_length).hap
     end
     E=enumerate_perfect_forms(P;backend=:native,progress)
     C=voronoi_complex(E;group=group==:PSL ? :SL : group,progress)
@@ -483,13 +486,26 @@ end
 Register the in-process Julia provider with HAP's optional backend dispatcher.
 Afterwards use VoronoiComplex(request : backend := "julia") in GAP. The
 quadratic GL/SL convenience constructors still accept squarefree radicands.
+For real-quadratic SL, set the Julia keyword `reduce=:regular` or pass
+`reduce := "regular"` in a GAP call. GAP also accepts `true` and `false`.
 """
-function enable_hap_julia_backend(;progress=false,resolution_length=100)
+function enable_hap_julia_backend(;progress=false,resolution_length=100,reduce=true)
+    RealQuadraticSL.reduction_mode(reduce)
     resolution_length isa Integer && resolution_length>0 || throw(ArgumentError("resolution_length must be positive"))
     GAP.Packages.load(get(ENV,"ARITHMETIC_VORONOI_HAP_ROOT","hap")) || error("HAP is not installed")
     GAP.Globals.Read(GAP.GapObj(joinpath(PACKAGE_ROOT,"gap","VoronoiBackends.g")))
     provider=function(request)
-        hap_voronoi_complex(GAP.gap_to_julia(request;recursive=true);progress,resolution_length)
+        option = GAP.Globals.ValueOption(GAP.GapObj("reduce"))
+        choice = if option === GAP.Globals.fail
+            reduce
+        elseif option isa Bool
+            option
+        elseif option == GAP.GapObj("regular")
+            :regular
+        else
+            throw(ArgumentError("the GAP reduce option must be true, false or \"regular\""))
+        end
+        hap_voronoi_complex(GAP.gap_to_julia(request;recursive=true);progress,resolution_length,reduce=choice)
     end
     GAP.Globals.RegisterVoronoiBackend(GAP.GapObj("julia"),GAP.GapObj(provider))
     nothing

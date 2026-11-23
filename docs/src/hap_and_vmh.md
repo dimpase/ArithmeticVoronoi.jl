@@ -69,6 +69,12 @@ in rank three at discriminant 5. For example,
 a fresh partial complex sufficient for H₁ of SL₃ over Q(√5). Finite-degree requests
 compute the needed skeleton after certifying the full level. Real PSL and
 nonfree-lattice complexes remain unsupported.
+For regular cellular incidence in a real-quadratic SL complex, pass
+`reduce=:regular` to `hap_voronoi_complex` or to `enable_hap_julia_backend`.
+The GAP option `reduce := "regular"` selects it for a single call. GAP also
+accepts `reduce := false` for the original cells and `reduce := true` for
+algebraic reduction. [Reduction and incidence calculations](real_quadratic_sl.md#Reducing-a-complex-for-incidence-calculations)
+
 The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and
 maximal quadratic orders; a presentation alone does not provide the cell
 stabilizers and boundaries needed here.

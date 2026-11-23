@@ -101,6 +101,18 @@ end
         Dict{Any,SectionRQSL.MorseVertex}(),Dict{Any,SectionRQSL.MorseVertex}(),
         IdDict{Any,Any}(),Dict{Any,Int}(),Vector{BigInt}[],nothing)
     cell=SectionRQSL.LevelCell(0,I,0,1)
+    # Two parallel edges are followed by a triangle sharing vertex 1.
+    # The cheapest pivot on the first edge would create a loop. Continue
+    # searching and contract one of the triangle edges instead.
+    endpoints = [(1,2),(1,2),(1,3),(3,4),(4,1)]
+    graph = SectionRQSL.MorseLevelComplex(M,nothing,SectionRQSL.FlagOrbit[],
+        [fill(cell,4),fill(cell,5)],[[Any[I] for _ in 1:n] for n in (4,5)],
+        [[Tuple{Int,Any}[] for _ in 1:4],
+         [Tuple{Int,Any}[(-u,I),(v,I)] for (u,v) in endpoints]])
+    reduced_graph = SectionRQSL.reduce_level_complex(graph;regular=true)
+    @test length.(reduced_graph.cells) == [3,4]
+    @test only(reduced_graph.cancellation_pairs)[2] in 3:5
+
     for n in 3:6
         simplices=[[findall(i->!iszero(mask & (1<<(i-1))),1:n)
             for mask in reverse(1:(1<<n)-1) if count_ones(mask)==k] for k in 1:n]
@@ -119,8 +131,44 @@ end
             expected=zeros(Int,last);expected[1]=1;full || (expected[end]=1)
             @test length.(R.cells)==expected
             @test SectionRQSL.validate_level_complex(R)
+
+            if n == 3 && !full
+                # A triangle boundary reduces to a digon. The next algebraic
+                # pivot would give the surviving edge equal endpoints.
+                regular = SectionRQSL.reduce_level_complex(L;regular=true)
+                @test length.(regular.cells) == [2,2]
+                @test SectionRQSL.validate_level_complex(regular)
+            elseif n == 6
+                regular = SectionRQSL.reduce_level_complex(L;regular=true)
+                if full
+                    # A free 4-face can still be removed with its 5-simplex.
+                    @test length(regular.cells[end]) == 0
+                else
+                    # Every move on this 4-sphere would change a surviving
+                    # 4-cell closure. No higher-dimensional sphere test is assumed.
+                    @test isempty(regular.cancellation_pairs)
+                end
+                @test SectionRQSL.validate_level_complex(regular)
+            end
         end
     end
+end
+
+@testset "A torus cannot bound a regular 3-cell" begin
+    # A 3-by-3 periodic square grid has circular vertex links and exactly
+    # two faces at every edge, but Euler characteristic zero.
+    vertex(x,y) = 1 + mod(x,3) + 3*mod(y,3)
+    horizontal(x,y) = vertex(x,y)
+    vertical(x,y) = 9 + vertex(x,y)
+    edges = [[-vertex(x,y),vertex(x+1,y)] for y in 0:2 for x in 0:2]
+    append!(edges, [[-vertex(x,y),vertex(x,y+1)] for y in 0:2 for x in 0:2])
+    faces = [[horizontal(x,y),vertical(x+1,y),-horizontal(x,y+1),-vertical(x,y)]
+             for y in 0:2 for x in 0:2]
+    rows = [[Int[] for _ in 1:9], edges, faces, [collect(1:9)]]
+    boundary(k,i) = [(j,1) for j in rows[k][i]]
+    canonical(k,i,g) = (1,1,1)
+    @test all(i -> SectionRQSL.regular_cell_boundary(boundary,canonical,3,i,1), eachindex(faces))
+    @test !SectionRQSL.regular_cell_boundary(boundary,canonical,4,1,1)
 end
 
 @testset "Partial top modules preserve the boundary image" begin

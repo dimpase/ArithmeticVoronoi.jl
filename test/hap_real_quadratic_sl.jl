@@ -48,3 +48,51 @@ import Oscar: GAP
     @test_throws ArgumentError hap_voronoi_complex(5;group=:PSL)
     @test_throws ArgumentError hap_voronoi_complex(5;group=:SL,resolution_length=0)
 end
+
+@testset "Regular real-quadratic SL incidence through the GAP dispatcher" begin
+    # Discriminant 12: an unrestricted face/edge pivot can put four distinct
+    # faces around an edge of a single 3-cell. Reconstruct lifts using GAP
+    # matrix groups independently of Julia's canonical transporter keys.
+    enable_hap_julia_backend(;resolution_length=3)
+    K = GAP.evalstr("""VoronoiComplexSL(2,3 : backend := "julia", reduce := "regular")""")
+    metadata = GAP.evalstr("K -> K!.arithmeticVoronoi")
+    @test metadata(K).reduction == GAP.GapObj("regular")
+    two_faces_per_edge = GAP.evalstr("""
+        function(K)
+            local lift, t, faces, face, edges;
+            lift := function(dim, a, g)
+                local i, m;
+                i := AbsInt(a[1]);
+                m := g*K!.elts[a[2]];
+                return [i, Minimum(List(Elements(K!.stabilizer(dim,i)), h -> m*h))];
+            end;
+            for t in [1..K!.dimension(3)] do
+                faces := Set(K!.boundary(3,t), a -> lift(2,a,One(K!.group)));
+                edges := [];
+                for face in faces do
+                    Append(edges,Set(K!.boundary(2,face[1]), a -> lift(1,a,face[2])));
+                od;
+                if IsEmpty(edges) or not ForAll(Collected(edges), p -> p[2]=2) then
+                    return false;
+                fi;
+            od;
+            return K!.dimension(3)>0;
+        end
+    """)
+    @test two_faces_per_edge(K)
+    R = GAP.Globals.FreeGResolution(K,3)
+    C = GAP.Globals.TensorWithIntegers(R)
+    @test sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,1)))) == [2,6]
+    @test Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,2))) == [0,0,0]
+
+    enable_hap_julia_backend(;resolution_length=2, reduce=:regular)
+    partial = GAP.evalstr("""VoronoiComplexSL(2,5 : backend := "julia")""")
+    @test metadata(partial).reduction == GAP.GapObj("regular")
+    @test Int(metadata(partial).computedCellDimension) == 2
+    @test Int(metadata(partial).omittedTopGenerators) == 0
+    geometric = GAP.evalstr("""VoronoiComplexSL(2,5 : backend := "julia", reduce := false)""")
+    @test metadata(geometric).reduction == GAP.GapObj("none")
+    @test_throws ArgumentError enable_hap_julia_backend(;reduce=:unknown)
+    @test_throws ArgumentError ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex(5;reduce=1)
+    enable_hap_julia_backend(;resolution_length=4)
+end

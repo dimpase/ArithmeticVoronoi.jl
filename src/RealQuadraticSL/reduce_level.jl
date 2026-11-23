@@ -15,7 +15,7 @@ end
 level_orientation(L::ReducedLevelComplex,k,i,g)=level_orientation(L.original,k,L.original_indices[k][i],g)
 level_model(L::ReducedLevelComplex)=level_model(L.original)
 retained_parent_dimension(L::ReducedLevelComplex)=retained_parent_dimension(L.original)
-function reduce_level_complex(L;progress=false)
+function reduce_level_complex(L;progress=false,regular=false)
     P=L.experiment.complex.enumeration.problem
     active=[trues(length(layer)) for layer in L.cells]
     boundaries=[[copy(b) for b in layer] for layer in L.boundaries]
@@ -54,6 +54,15 @@ function reduce_level_complex(L;progress=false)
         incoming[k-1][abs(j)]+=1
         push!(incident[k-1][abs(j)],i)
     end
+    identity = regular ? identity_matrix(P.field,P.rank) : nothing
+    if regular
+        boundary(k,i) = boundaries[k][i]
+        for k in 2:min(4,length(boundaries)), i in eachindex(boundaries[k])
+            regular_cell_boundary(boundary,canonical,k,i,identity) ||
+                throw(ArgumentError("input cell ($(k-1), $i) has a nonregular boundary"))
+        end
+    end
+    rejected = Set{NTuple{3,Int}}()
     versions=[zeros(Int,length(layer)) for layer in L.cells]
     candidates=[Any[nothing for _ in layer] for layer in L.cells]
     heap=NTuple{4,Int}[]
@@ -88,6 +97,7 @@ function reduce_level_complex(L;progress=false)
         bestcost=typemax(Int)
         for (j,g) in b
             counts[abs(j)]==1 || continue
+            regular && (k,i,abs(j)) in rejected && continue
             orders[k][i]==orders[k-1][abs(j)] || continue
             @assert active[k-1][abs(j)] && incoming[k-1][abs(j)]>0
             cost=(incoming[k-1][abs(j)]-1)*(length(b)-1)
@@ -113,7 +123,20 @@ function reduce_level_complex(L;progress=false)
     end
     for k in 2:length(L.cells),i in eachindex(L.cells[k]);refresh!(k,i);end
     cancellations=Any[]
-    while !isempty(heap)
+    pass_start = 0
+    while true
+        if isempty(heap)
+            # Retry rejected pairs on the new complex. A full pass with no
+            # accepted pivot establishes that no eligible single move remains.
+            (isempty(rejected) || length(cancellations)==pass_start) && break
+            pass_start = length(cancellations)
+            rows = unique!([(k,i) for (k,i,b) in rejected])
+            empty!(rejected)
+            for (k,i) in rows
+                refresh!(k,i)
+            end
+            isempty(heap) && break
+        end
         cost,k,i,version=dequeue!()
         version==versions[k][i] && active[k][i] || continue
         j,g=candidates[k][i]
@@ -123,8 +146,8 @@ function reduce_level_complex(L;progress=false)
         @assert all(level_orientation(L,k,i,h)==level_orientation(L,k-1,b,inverse*h*g)
                     for h in L.stabilizers[k][i]) "pivot orientation characters are incompatible"
         remainder=[(l,h) for (l,h) in boundaries[k][i] if abs(l)!=b]
-        affected=Set{Tuple{Int,Int}}()
-        for q in collect(incident[k-1][b])
+        proposed = Dict{Tuple{Int,Int},Vector{Tuple{Int,Any}}}()
+        for q in incident[k-1][b]
             q==i && continue
             @assert active[k][q]
             hits=[(l,h) for (l,h) in boundaries[k][q] if abs(l)==b]
@@ -132,14 +155,23 @@ function reduce_level_complex(L;progress=false)
             for (l,h) in hits,(m,t) in remainder
                 push!(terms,(-sign(l)*s*m,h*inverse*t))
             end
-            replace_boundary!(k,q,simplify(k-1,terms),affected)
+            proposed[k,q] = simplify(k-1,terms)
         end
         if k<length(L.cells)
-            for q in collect(incident[k][i])
+            for q in incident[k][i]
                 @assert active[k+1][q]
                 terms=[term for term in boundaries[k+1][q] if abs(term[1])!=i]
-                replace_boundary!(k+1,q,terms,affected)
+                proposed[k+1,q] = terms
             end
+        end
+        if regular && !preserves_regular_boundaries(proposed,boundaries,incident,canonical,identity)
+            push!(rejected,(k,i,b))
+            refresh!(k,i)
+            continue
+        end
+        affected=Set{Tuple{Int,Int}}()
+        for ((layer,orbit),terms) in proposed
+            replace_boundary!(layer,orbit,terms,affected)
         end
         active[k][i]=false;active[k-1][b]=false
         replace_boundary!(k,i,Tuple{Int,Any}[],affected)

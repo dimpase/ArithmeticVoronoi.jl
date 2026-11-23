@@ -172,6 +172,46 @@ of their orientation characters are checked at every pivot. The full geometric o
 object is a chain model, not a claim that its basis still consists of geometric
 product cells. Both can be exported as HAP non-free resolutions.
 
+## Reducing a complex for incidence calculations
+
+Use `reduce=:regular` to keep a smaller model with regular cellular incidence.
+For example, compute the complex for SL₂ over ℤ[√3] in Julia.
+
+```julia
+using ArithmeticVoronoi
+result = ArithmeticVoronoi.RealQuadraticSL.compute_real_sl_complex(12; reduce=:regular);
+length.(result.chain.cells)
+```
+
+After `enable_hap_julia_backend()` in Julia, the corresponding GAP call uses
+the radicand 3. The option applies to this call only.
+
+```gap
+K := VoronoiComplexSL(2,3 : backend := "julia", reduce := "regular");;
+K!.arithmeticVoronoi.reduction;
+```
+
+For each proposed cancellation the reducer checks the changed cell boundaries
+and the boundaries of their cofaces. It distinguishes actual translated faces
+using their stabilizer cosets. Edges must have two distinct endpoints, and a
+polygon boundary must be a single cycle. A 3-cell boundary must be a connected
+closed surface with circular vertex links and Euler characteristic two. These
+tests recognize the spheres required for regular cellular incidence through
+dimension three. [The face-poset criterion](https://arxiv.org/abs/1411.1296)
+
+A failed test leaves the current complex available for other pivots. Rejected
+pairs can become admissible after another cancellation. The search finds a
+sequence of certified single moves. Its size can depend on the pivot order.
+Above cell dimension three the reducer accepts moves that leave the closures
+of all surviving higher-dimensional cells intact, including free-face
+collapses. For a partial complex, the checks cover its computed skeleton.
+
+The regularity certificate concerns the incidence structure in this basis.
+The pivots give an equivariant chain-homotopy equivalence. Use `reduce=false`
+for the original geometric cells and their attaching maps. The default
+`reduce=true` uses algebraic pivots and may also trim redundant top generators
+in a partial complex.
+
 ## Certified cell sections
 
 The default `cell_model=:sections` avoids many barycentric cells while keeping
