@@ -69,11 +69,6 @@ in rank three at discriminant 5. For example,
 a fresh partial complex sufficient for H₁ of SL₃ over Q(√5). Finite-degree requests
 compute the needed skeleton after certifying the full level. Real PSL and
 nonfree-lattice complexes remain unsupported.
-For regular cellular incidence in a real-quadratic SL complex, pass
-`reduce=:regular` to `hap_voronoi_complex` or to `enable_hap_julia_backend`.
-The GAP option `reduce := "regular"` selects it for a single call. GAP also
-accepts `reduce := false` for the original cells and `reduce := true` for
-algebraic reduction. [Reduction and incidence calculations](real_quadratic_sl.md#Reducing-a-complex-for-incidence-calculations)
 
 The separate presentation pipeline computes GLₙ, SLₙ and PSLₙ over Z and
 maximal quadratic orders; a presentation alone does not provide the cell
@@ -104,6 +99,34 @@ K = construct(GAP.GapObj(voronoi_request(-7); recursive=true));
 # Existing quadratic convenience calls also work:
 S = GAP.evalstr("VoronoiComplexSL(2,-7 : backend := \"julia\")");
 ```
+
+For real-quadratic SL, choose the reduction for a single computation at the
+GAP prompt. After the Julia call `enable_hap_julia_backend()`, enter
+`GAP.prompt()`. This example uses the discriminant-8 field ℚ(√2).
+
+```gap
+request := rec(group := "SL", rank := 2,
+    field := rec(kind := "quadratic", discriminant := 8),
+    order := rec(kind := "maximal"), lattice := rec(kind := "free"));;
+K := VoronoiComplex(request : backend := "julia", reduce := false);;
+K!.arithmeticVoronoi.reduction;    # "none"
+```
+
+The shorter call `VoronoiComplexSL(2,2 : backend := "julia", reduce := false)`
+uses the squarefree radicand 2. Both entry points accept the same GAP options.
+
+| GAP option | Cells or chains returned | `K!.arithmeticVoronoi.reduction` |
+| --- | --- | --- |
+| `reduce := false` | Original geometric cells in the computed dimensions | `"none"` |
+| `reduce := "regular"` | Cancellations preserving regular cellular incidence | `"regular"` |
+| `reduce := true` | Algebraic chain reduction for homology | `"algebraic"` |
+
+The default is algebraic reduction. Set `enable_hap_julia_backend(; reduce=:regular)`
+in Julia to make regular reduction the session default. An explicit GAP option
+overrides it for one call. In a direct Julia call, use
+`hap_voronoi_complex(8; group=:SL, reduce=:regular)`. ArithmeticVoronoi
+v0.1.2 always uses its default reduction through the GAP dispatcher, even
+when given a GAP `reduce` option. [Reduction and incidence calculations](real_quadratic_sl.md#Reducing-a-complex-for-incidence-calculations)
 
 The request record describes the group, rank, field, order and lattice. It is
 also accepted by the Julia enumerator and presentation pipeline; see

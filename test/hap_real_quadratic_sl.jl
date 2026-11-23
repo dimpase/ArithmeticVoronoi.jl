@@ -85,6 +85,24 @@ end
     @test sort(Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,1)))) == [2,6]
     @test Int.(GAP.gap_to_julia(GAP.Globals.Homology(C,2))) == [0,0,0]
 
+    # The general dispatcher and the quadratic convenience constructor share
+    # the callback. Pass real GAP booleans and a GAP string through a record call.
+    enable_hap_julia_backend(;resolution_length=3, reduce=:regular)
+    request = GAP.evalstr("""
+        rec(group := "SL", rank := 2,
+            field := rec(kind := "quadratic", discriminant := 8),
+            order := rec(kind := "maximal"), lattice := rec(kind := "free"))
+    """)
+    construct = GAP.evalstr("""{r,mode} -> VoronoiComplex(r : backend := "julia", reduce := mode)""")
+    orbit_count = GAP.evalstr("K -> Sum([0..3], K!.dimension)")
+    original = construct(request,false)
+    @test metadata(original).reduction == GAP.GapObj("none")
+    for (option,expected) in ((true,"algebraic"), (GAP.GapObj("regular"),"regular"))
+        reduced = construct(request,option)
+        @test metadata(reduced).reduction == GAP.GapObj(expected)
+        @test orbit_count(reduced) < orbit_count(original)
+    end
+
     enable_hap_julia_backend(;resolution_length=2, reduce=:regular)
     partial = GAP.evalstr("""VoronoiComplexSL(2,5 : backend := "julia")""")
     @test metadata(partial).reduction == GAP.GapObj("regular")
